@@ -13,7 +13,32 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 	int pport = 9559;
-	string pip = "127.0.0.1";	
+	string pip = "127.0.0.1";
+
+	if(argc > 2)
+	{
+		if(string(argv[1]) == "--pip")
+		{
+			pip = argv[2];
+			if (argc > 4)
+			{
+				if(string(argv[3]) == "--pport")
+					pport = atoi(argv[4]);
+			} 
+		}
+		else if (string(argv[1]) == "--pport")
+		{
+			pport = atoi(argv[2]);
+			if (argc > 4)
+			{
+				if(string(argv[3]) == "--pip")
+					pip = argv[4];
+			} 
+		}
+	}
+	else 
+		exit(2);	
+	
 
 	
 	char msg[255]={0,};
