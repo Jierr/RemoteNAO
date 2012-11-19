@@ -7,6 +7,8 @@ find_package(qibuild)
 # with the source file: main.cpp
 qi_create_bin(remoteServer "main.cpp")
 
+qi_use_lib(remoteServer ALCOMMON)
+
 # Add a simple test:
 enable_testing()
 qi_create_test(test_remoteServer "test.cpp")
