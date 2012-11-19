@@ -1,4 +1,4 @@
-//#include <stdio.h>
+#include <iostream>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,9 +7,15 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
+using namespace std;
 
-int main()
+
+int main(int argc, char* argv[])
 {
+	int pport = 9559;
+	string pip = "127.0.0.1";	
+
+	
 	char msg[255]={0,};
 	int status = 0;
 	struct in_addr ip;
@@ -51,11 +57,11 @@ int main()
 //		printf("Sende Message...\r\n");
 		strcpy(msg, "[Remote Server NAO] Willkommen\r\n");
 		send(sclient, msg, strlen(msg),0);
+		strcpy(msg, "[Remote Server NAO] Tschueß\r\n");
+		send(sclient, msg, strlen(msg),0);
 		close(sclient);
-		close(sserver);
-		freeaddrinfo(servinfo);
-		exit(0);
 	}
+	close(sserver);
 	freeaddrinfo(servinfo);
 	return 0;
 }

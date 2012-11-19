@@ -4,7 +4,7 @@ SDK	=/home/jierr/development/naoqi-sdk-1.12.3-linux32
 
 host:
 	qitoolchain create stdtool $(SDK)/toolchain.xml --default
-	qibuild configure --release -v  $(PROJECT)
+	qibuild configure  -c stdtool  $(PROJECT)
 	qibuild make -v $(PROJECT)
 
 atom:
