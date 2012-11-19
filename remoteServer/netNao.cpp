@@ -1,0 +1,74 @@
+#include "netNao.h"
+
+
+NetNao::NetNao(boost::shared_ptr<AL::ALBroker> broker, 
+	const string &name)
+:	ALModule(broker, name)
+{
+	setModuleDescription("This Module enables the setup of a Server for TCP Communication.");
+	
+	functionName("bindTcp", getName(), "Bind to a port for listening.");
+	addParam("port", "specify Port");
+	setReturn("int", "return the Server Socket");
+	BIND_METHOD(NetNao::bindTcp);	
+
+	functionName("singleListen", getName(), "Listen for a single Client to connect");
+	addParam("sockServer", "Server Socket returned by bindTcp()");
+	BIND_METHOD(NetNao::singleListen);
+
+	functionName("acceptClient", getName(), "Accept the Client");
+	addParam("sockServer", "Server Socket returned by bindTcp()");
+	setReturn("int", "return the Client Socket");
+	BIND_METHOD(NetNao::acceptClient);
+
+	functionName("sendData", getName(), "send data");
+	addParam("sockClient", "Client Socket returned by acceptClient()");
+	setReturn("int", "return the bytes sent");
+	BIND_METHOD(NetNao::sendData);	
+}
+
+NetNao::~NetNao(){};
+void NetNao::init(){};
+
+
+int NetNao::bindTcp(const string& port)
+{
+	int status = 0;
+	int sserver = 0;
+	struct addrinfo hints;
+	struct addrinfo *servinfo;
+	int optval = 1;
+
+	memset (&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+	
+	status = getaddrinfo(NULL, port.c_str(), &hints, &servinfo);
+	sserver = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+	setsockopt(sserver, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
+	status = bind(sserver, servinfo->ai_addr, servinfo->ai_addrlen);
+	return sserver;
+}
+
+void NetNao::singleListen(const int& sockServer)
+{	
+	listen(sockServer, 1);
+}
+
+int NetNao::acceptClient(const int& sockServer)
+{	
+	int sclient = 0;
+	struct sockaddr_storage incomming;
+	socklen_t addr_size;
+
+	addr_size = sizeof(incomming);
+	sclient = accept(sockServer, (struct sockaddr*)&incomming, &addr_size);
+	return sclient;
+}
+
+
+int NetNao::sendData(const int& sockClient, const char* const& buf, const unsigned int& len)
+{
+	return send(sockClient, buf, len, 0);
+}
