@@ -83,13 +83,14 @@ int main(int argc, char* argv[])
 	AL::ALBrokerManager::getInstance()->addBroker(broker);
 
 	static boost::shared_ptr<NetNao> net = \
-		net=AL::ALModule::createModule<NetNao>(broker, "NetNao");
+		AL::ALModule::createModule<NetNao>(broker, "NetNao");
 	
 	//NetNao* net = new NetNao(broker, "NetNao");
 	string port = "32768";
 	int sserver = 0;
 	int sclient = 0;
 	char buf[255] = {0,};
+	unsigned int bytesRead = 0; 
 	const std::string msg = "Hello there, everything is initialized.";
 
 	sserver = net->bindTcp(port);
@@ -101,6 +102,7 @@ int main(int argc, char* argv[])
 		cout<< "Sende Daten\r\n";
 		//send(sclient, buf, strlen(buf), 0);
 		net->sendData(sclient, (const char*)buf, strlen(buf));
+		
 		cout<< "Sende Daten beendet\r\n";
 		try 
 		{
@@ -110,6 +112,31 @@ int main(int argc, char* argv[])
 		catch(const AL::ALError& e)
 		{
 			cerr<< "EXCEPTION: " << e.what() << endl;
+		}
+		while(buf[0] != '#')
+		{
+			//bytesRead = recv(sclient, buf, 1, 0);
+			cout<< "receive...\r\n";
+			bytesRead = 0;
+			do
+			{
+				boost::shared_ptr<char*> buffer(new char*(&buf[bytesRead]));
+				bytesRead += net->recvData(sclient, buffer, 1);
+				cout<< "receive done: [" << bytesRead << "] = " << buf[bytesRead-1] << endl;	
+			}
+			while (buf[bytesRead-1] != '+');
+
+			buf[bytesRead-1] = 0;			
+			try 
+			{
+				AL::ALTextToSpeechProxy tts(pip, pport);
+				const string str = string(buf);
+				tts.say(str);
+			}
+			catch(const AL::ALError& e)
+			{
+				cerr<< "EXCEPTION: " << e.what() << endl;
+			}			
 		}
 		net->disconnect(sclient);
 		net->unbind(sserver);

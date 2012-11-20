@@ -26,7 +26,14 @@ NetNao::NetNao(boost::shared_ptr<AL::ALBroker> broker,
 	addParam("buf", "Buffer for Data (Bytestream)");
 	addParam("len", "length of data to stream");
 	setReturn("int", "return the bytes sent");
-	BIND_METHOD(NetNao::sendData);	
+	BIND_METHOD(NetNao::sendData);
+
+	functionName("recvData", getName(), "recv data");
+	addParam("sockClient", "Client Socket returned by acceptClient()");
+	addParam("buf", "Buffer for Data (Bytestream)");
+	addParam("len", "length of data to stream");
+	setReturn("int", "return the bytes sent");
+	BIND_METHOD(NetNao::recvData);	
 
 	functionName("disconnect", getName(), "disconnect Client");
 	addParam("sockClient", "Client Socket");
@@ -93,4 +100,19 @@ void NetNao::unbind(const int& sockServer)
 int NetNao::sendData(const int& sockClient, const char* const &buf, const unsigned int& len)
 {
 	return send(sockClient, buf, len, 0);
+}
+
+//shared_ptr<scoped_ptr<Resource>>
+int NetNao::recvData(const int& sockClient, boost::shared_ptr<char*> const& buf, const unsigned int& len)
+{
+	int result = 0;
+	//char* nbuf = new char[len];
+	//memcpy(nbuf, buf.get(), len);
+	result = recv(sockClient, *buf.get(), len, 0);	
+	//boost::shared_ptr<char> change(nbuf);
+	return result;
+	
+
+	//delete[] nbuf;
+
 }

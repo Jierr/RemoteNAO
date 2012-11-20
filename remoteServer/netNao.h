@@ -28,6 +28,8 @@ class NetNao : public AL::ALModule
 		void singleListen(const int& sockServer);
 		int acceptClient(const int& sockServer);
 		int sendData(const int& sockClient, const char* const &buf, const unsigned int& len);
+		int recvData(const int& sockClient, boost::shared_ptr<char*> const& buf, const unsigned int& len);
+		
 		void disconnect(const int& sockClient);
 		void unbind(const int& sockServer);
 		
