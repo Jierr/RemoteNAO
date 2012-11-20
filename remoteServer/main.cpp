@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
 		}
 		net->disconnect(sclient);
 		net->unbind(sserver);
-		exit(1);
+		exit(0);
 	}
 	
 	
