@@ -23,8 +23,8 @@ NetNao::NetNao(boost::shared_ptr<AL::ALBroker> broker,
 
 	functionName("sendData", getName(), "send data");
 	addParam("sockClient", "Client Socket returned by acceptClient()");
-	addParam("buf", "Client Socket returned by acceptClient()");
-	addParam("len", "Client Socket returned by acceptClient()");
+	addParam("buf", "Buffer for Data (Bytestream)");
+	addParam("len", "length of data to stream");
 	setReturn("int", "return the bytes sent");
 	BIND_METHOD(NetNao::sendData);	
 
@@ -58,7 +58,7 @@ int NetNao::bindTcp(const string& port)
 	sserver = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
 	setsockopt(sserver, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
 	status = bind(sserver, servinfo->ai_addr, servinfo->ai_addrlen);	
-	//freeaddrinfo(servinfo);
+	freeaddrinfo(servinfo);
 
 	return sserver;
 }
