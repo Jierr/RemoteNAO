@@ -6,7 +6,14 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+
 #include "netNao.h"
+
+#include <alcommon/almodule.h>
+#include <alcommon/albroker.h>
+#include <alcommon/albrokermanager.h>
+#include <qi/os.hpp>
+
 
 using namespace std;
 
@@ -38,10 +45,72 @@ int main(int argc, char* argv[])
 		}
 	}
 	else 
-		exit(2);	
+	{
+		pport = 9559;
+		pip = "127.0.0.1";
+	}	
+
+
+	//for SOAP serializations of floats
+	setlocale(LC_NUMERIC, "C");	
 	
+	const string brokerName = "AppToNAO_BROKER";
+	//assign open port via port 0 from os
+	//will be the port of the newly created broker
+	int brokerPort = 50000;
+	//ANYIP
+	const string brokerIp = "0.0.0.0";
+	boost::shared_ptr<AL::ALBroker> broker;
+	try
+	{
+		broker = AL::ALBroker::createBroker(
+			brokerName,
+			brokerIp,
+			brokerPort,
+			pip,
+			pport);
+	}
+	catch(...)
+	{
+		AL::ALBrokerManager::getInstance()->killAllBroker();
+		AL::ALBrokerManager::kill();
+	}
+	
+	//kills old BrokerManager Singleton and replaces it with a new one
+	AL::ALBrokerManager::setInstance(broker->fBrokerManager.lock());
+	AL::ALBrokerManager::getInstance()->addBroker(broker);
+
+	//AL::ALModule::createModule<NetNao>(broker, "NetNao");
+	
+	NetNao* net = new NetNao(broker, "NetNao");
+	string port = "32768";
+	int sserver = 0;
+	int sclient = 0;
+	char buf[255] = {0,};
+
+	sserver = net->bindTcp(port);
+	net->singleListen(sserver);
+	sclient = net->acceptClient(sserver);
+	strcpy(buf, "[Remote NAO] Willkommen!\r\n");
+	cout<< "Sende Daten\r\n";
+	//send(sclient, buf, strlen(buf), 0);
+	net->sendData(sclient, (const char*)buf, strlen(buf));
+	cout<< "Sende Daten beendet\r\n";
+	net->disconnect(sclient);
+	net->unbind(sserver);
+	
+	
+	cout<< "loop\r\n";
+	//delete net;
+
+	while(1)
+		qi::os::sleep(1);
 
 	
+
+
+
+/*	
 	char msg[255]={0,};
 	int status = 0;
 	struct in_addr ip;
@@ -90,4 +159,5 @@ int main(int argc, char* argv[])
 	close(sserver);
 	freeaddrinfo(servinfo);
 	return 0;
+*/
 }

@@ -27,7 +27,9 @@ class NetNao : public AL::ALModule
 		int bindTcp(const string& port);	
 		void singleListen(const int& sockServer);
 		int acceptClient(const int& sockServer);
-		int sendData(const int& sockClient, const char* const& buf, const unsigned int& len);
+		int sendData(const int& sockClient, const char* const &buf, const unsigned int& len);
+		void disconnect(const int& sockClient);
+		void unbind(const int& sockServer);
 		
 };
 

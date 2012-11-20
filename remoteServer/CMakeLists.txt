@@ -8,11 +8,13 @@ set(_srcs
     netNao.h
     netNao.cpp)
 
+
 # Create a executable named remoteServer
 # with the source file: main.cpp
 qi_create_bin(remoteServer ${_srcs})
+#qi_create_lib(netnao SHARED ${_srcs} SUBFOLDER naoqi)
 
-qi_use_lib(remoteServer ALCOMMON)
+qi_use_lib(remoteServer ALCOMMON BOOST)
 
 # Add a simple test:
 #enable_testing()

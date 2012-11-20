@@ -23,8 +23,18 @@ NetNao::NetNao(boost::shared_ptr<AL::ALBroker> broker,
 
 	functionName("sendData", getName(), "send data");
 	addParam("sockClient", "Client Socket returned by acceptClient()");
+	addParam("buf", "Client Socket returned by acceptClient()");
+	addParam("len", "Client Socket returned by acceptClient()");
 	setReturn("int", "return the bytes sent");
 	BIND_METHOD(NetNao::sendData);	
+
+	functionName("disconnect", getName(), "disconnect Client");
+	addParam("sockClient", "Client Socket");
+	BIND_METHOD(NetNao::disconnect);
+
+	functionName("unbind", getName(), "unbind from port");
+	addParam("sockServer", "Server Socket");
+	BIND_METHOD(NetNao::unbind);
 }
 
 NetNao::~NetNao(){};
@@ -47,7 +57,9 @@ int NetNao::bindTcp(const string& port)
 	status = getaddrinfo(NULL, port.c_str(), &hints, &servinfo);
 	sserver = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
 	setsockopt(sserver, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
-	status = bind(sserver, servinfo->ai_addr, servinfo->ai_addrlen);
+	status = bind(sserver, servinfo->ai_addr, servinfo->ai_addrlen);	
+	//freeaddrinfo(servinfo);
+
 	return sserver;
 }
 
@@ -67,8 +79,18 @@ int NetNao::acceptClient(const int& sockServer)
 	return sclient;
 }
 
+void NetNao::disconnect(const int& sockClient)
+{
+	close(sockClient);
+}
 
-int NetNao::sendData(const int& sockClient, const char* const& buf, const unsigned int& len)
+
+void NetNao::unbind(const int& sockServer)
+{
+	close(sockServer);
+}
+
+int NetNao::sendData(const int& sockClient, const char* const &buf, const unsigned int& len)
 {
 	return send(sockClient, buf, len, 0);
 }
