@@ -12,6 +12,8 @@
 #include <alcommon/almodule.h>
 #include <alcommon/albroker.h>
 #include <alcommon/albrokermanager.h>
+#include <alerror/alerror.h>
+#include <alproxies/altexttospeechproxy.h>
 #include <qi/os.hpp>
 
 
@@ -80,27 +82,41 @@ int main(int argc, char* argv[])
 	AL::ALBrokerManager::setInstance(broker->fBrokerManager.lock());
 	AL::ALBrokerManager::getInstance()->addBroker(broker);
 
-	//AL::ALModule::createModule<NetNao>(broker, "NetNao");
+	static boost::shared_ptr<NetNao> net = \
+		net=AL::ALModule::createModule<NetNao>(broker, "NetNao");
 	
-	NetNao* net = new NetNao(broker, "NetNao");
+	//NetNao* net = new NetNao(broker, "NetNao");
 	string port = "32768";
 	int sserver = 0;
 	int sclient = 0;
 	char buf[255] = {0,};
+	const std::string msg = "Hello there, everything is initialized.";
 
 	sserver = net->bindTcp(port);
-	net->singleListen(sserver);
-	sclient = net->acceptClient(sserver);
-	strcpy(buf, "[Remote NAO] Willkommen!\r\n");
-	cout<< "Sende Daten\r\n";
-	//send(sclient, buf, strlen(buf), 0);
-	net->sendData(sclient, (const char*)buf, strlen(buf));
-	cout<< "Sende Daten beendet\r\n";
-	net->disconnect(sclient);
-	net->unbind(sserver);
+	while (1)
+	{
+		net->singleListen(sserver);
+		sclient = net->acceptClient(sserver);
+		strcpy(buf, "[Remote NAO] Willkommen!\r\n");
+		cout<< "Sende Daten\r\n";
+		//send(sclient, buf, strlen(buf), 0);
+		net->sendData(sclient, (const char*)buf, strlen(buf));
+		cout<< "Sende Daten beendet\r\n";
+		try 
+		{
+			AL::ALTextToSpeechProxy tts(pip, pport);
+			tts.say(msg);
+		}
+		catch(const AL::ALError& e)
+		{
+			cerr<< "EXCEPTION: " << e.what() << endl;
+		}
+		net->disconnect(sclient);
+		net->unbind(sserver);
+		exit(1);
+	}
 	
 	
-	cout<< "loop\r\n";
 	//delete net;
 
 	while(1)
