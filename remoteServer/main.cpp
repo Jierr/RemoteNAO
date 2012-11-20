@@ -94,7 +94,9 @@ int main(int argc, char* argv[])
 	const std::string msg = "Hello there, everything is initialized.";
 
 	sserver = net->bindTcp(port);
-	while (1)
+	
+
+	while(buf[0] != '-')
 	{
 		net->singleListen(sserver);
 		sclient = net->acceptClient(sserver);
@@ -102,18 +104,19 @@ int main(int argc, char* argv[])
 		cout<< "Sende Daten\r\n";
 		//send(sclient, buf, strlen(buf), 0);
 		net->sendData(sclient, (const char*)buf, strlen(buf));
-		
+	
 		cout<< "Sende Daten beendet\r\n";
 		try 
 		{
 			AL::ALTextToSpeechProxy tts(pip, pport);
 			tts.say(msg);
-		}
+		}		
 		catch(const AL::ALError& e)
 		{
 			cerr<< "EXCEPTION: " << e.what() << endl;
 		}
-		while(buf[0] != '#')
+		buf[0] = 0;
+		while((buf[0] != '#') && (buf[0] != '-'))
 		{
 			//bytesRead = recv(sclient, buf, 1, 0);
 			cout<< "receive...\r\n";
@@ -139,9 +142,10 @@ int main(int argc, char* argv[])
 			}			
 		}
 		net->disconnect(sclient);
-		net->unbind(sserver);
-		exit(0);
 	}
+	net->unbind(sserver);
+	exit(0);
+	
 	
 	
 	//delete net;
