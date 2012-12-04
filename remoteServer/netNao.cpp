@@ -97,18 +97,20 @@ void NetNao::unbind(const int& sockServer)
 	close(sockServer);
 }
 
-int NetNao::sendData(const int& sockClient, const char* const &buf, const unsigned int& len)
+int NetNao::sendData(const int& sockClient, const boost::shared_ptr<char*>& buf, 
+					 const unsigned int& len, const unsigned int& indexStart)
 {
-	return send(sockClient, buf, len, 0);
+	return send(sockClient,  &((*buf.get())[indexStart]), len, 0);
 }
 
 //shared_ptr<scoped_ptr<Resource>>
-int NetNao::recvData(const int& sockClient, boost::shared_ptr<char*> const& buf, const unsigned int& len)
+int NetNao::recvData(const int& sockClient, const boost::shared_ptr<char*>& buf, 
+					 const unsigned int& len, const unsigned int& indexStart)
 {
 	int result = 0;
 	//char* nbuf = new char[len];
 	//memcpy(nbuf, buf.get(), len);
-	result = recv(sockClient, *buf.get(), len, 0);	
+	result = recv(sockClient, &((*buf.get())[indexStart]), len, 0);	
 	//boost::shared_ptr<char> change(nbuf);
 	return result;
 	

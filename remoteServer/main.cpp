@@ -54,6 +54,8 @@ int main(int argc, char* argv[])
 
 
 	//for SOAP serializations of floats
+	//The call to setlocale is very important. Due to SOAP issues, you must make
+	//sure your client and your server are using the same LC_NUMERIC settings
 	setlocale(LC_NUMERIC, "C");	
 	
 	const string brokerName = "AppToNAO_BROKER";
@@ -75,11 +77,15 @@ int main(int argc, char* argv[])
 	catch(...)
 	{
 		AL::ALBrokerManager::getInstance()->killAllBroker();
+		//Reset the ALBrokerManager singleton
 		AL::ALBrokerManager::kill();
 	}
 	
 	//kills old BrokerManager Singleton and replaces it with a new one
+	//fBrokerManager is weak pointer and converted to shared ptr via lock
+	//lock additionally checks if there is one reference existing to AlBM
 	AL::ALBrokerManager::setInstance(broker->fBrokerManager.lock());
+	//Add Broker to the map!
 	AL::ALBrokerManager::getInstance()->addBroker(broker);
 
 	static boost::shared_ptr<NetNao> net = \
@@ -90,21 +96,31 @@ int main(int argc, char* argv[])
 	int sserver = 0;
 	int sclient = 0;
 	char buf[255] = {0,};
+	char last = 0;
 	unsigned int bytesRead = 0; 
+	unsigned int bytesSent = 0;
+	unsigned int len;
 	const std::string msg = "Hello there, everything is initialized.";
-
-	sserver = net->bindTcp(port);
+	boost::shared_ptr<char*> buffer(new char*(buf));
 	
-
-	while(buf[0] != '-')
+	
+	sserver = net->bindTcp(port);
+	while(last != '-')
 	{
 		net->singleListen(sserver);
 		sclient = net->acceptClient(sserver);
 		strcpy(buf, "[Remote NAO] Willkommen!\r\n");
 		cout<< "Sende Daten\r\n";
 		//send(sclient, buf, strlen(buf), 0);
-		net->sendData(sclient, (const char*)buf, strlen(buf));
-	
+		
+		bytesSent = 0;
+		len = strlen(buf);
+		do 
+		{
+			bytesSent += net->sendData(sclient, buffer, len, 0);
+		}
+		while (bytesSent < len);
+		
 		cout<< "Sende Daten beendet\r\n";
 		try 
 		{
@@ -116,18 +132,18 @@ int main(int argc, char* argv[])
 			cerr<< "EXCEPTION: " << e.what() << endl;
 		}
 		buf[0] = 0;
-		while((buf[0] != '#') && (buf[0] != '-'))
+		while((last != '#') && (last != '-'))
 		{
 			//bytesRead = recv(sclient, buf, 1, 0);
 			cout<< "receive...\r\n";
 			bytesRead = 0;
 			do
 			{
-				boost::shared_ptr<char*> buffer(new char*(&buf[bytesRead]));
-				bytesRead += net->recvData(sclient, buffer, 1);
-				cout<< "receive done: [" << bytesRead << "] = " << buf[bytesRead-1] << endl;	
+				bytesRead += net->recvData(sclient, buffer, 1, bytesRead);
+				cout<< "receive done: [" << bytesRead-1 << "] = " << buf[bytesRead-1] << endl;	
 			}
 			while (buf[bytesRead-1] != '+');
+			last = buf[bytesRead-2];
 
 			buf[bytesRead-1] = 0;			
 			try 

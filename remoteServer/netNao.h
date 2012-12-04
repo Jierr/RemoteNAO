@@ -27,12 +27,15 @@ class NetNao : public AL::ALModule
 		int bindTcp(const string& port);	
 		void singleListen(const int& sockServer);
 		int acceptClient(const int& sockServer);
-		int sendData(const int& sockClient, const char* const &buf, const unsigned int& len);
-		int recvData(const int& sockClient, boost::shared_ptr<char*> const& buf, const unsigned int& len);
+		int sendData(const int& sockClient, const boost::shared_ptr<char*>& buf, 
+					 const unsigned int& len, const unsigned int& indexStart);
+		int recvData(const int& sockClient, const boost::shared_ptr<char*>& buf, 
+					 const unsigned int& len, const unsigned int& indexStart);
 		
 		void disconnect(const int& sockClient);
 		void unbind(const int& sockServer);
 		
 };
+
 
 #endif
