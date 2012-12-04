@@ -1,0 +1,12 @@
+<resources>
+
+    <string name="app_name">remoteclient</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    
+	<string name="bew_button1">Up</string>
+	<string name="bew_button2">Left</string>
+	<string name="bew_button3">Right</string>
+	<string name="bew_button4">Down</string>
+
+</resources>

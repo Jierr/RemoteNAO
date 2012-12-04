@@ -1,3 +1,7 @@
 .qi
 build-*
 *~
+remoteclient/assets
+remoteclient/bin
+remoteclient/gen
+remoteclient/libs

@@ -1,0 +1,127 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <!--  <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:text="@string/hello_world"
+        tools:context=".MainActivity" />-->
+    
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/linearLayout1" >
+	    <Button 
+	        android:id="@+id/bew_button1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_centerHorizontal="true"
+	        android:text="@string/bew_button1"
+	    />
+	    <Button 
+	        android:id="@+id/bew_button2"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_centerVertical="true"
+	        android:text="@string/bew_button2" 
+		/>
+	    <Button 
+	        android:id="@+id/bew_button3"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentRight="true"
+	        android:layout_centerVertical="true"
+	        android:text="@string/bew_button3" 
+		/>
+	    <Button 
+	        android:id="@+id/bew_button4"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_centerHorizontal="true"
+	        android:layout_alignParentBottom="true"
+	        android:text="@string/bew_button4" 
+		/>
+	    </RelativeLayout>
+	    
+	    
+	    <ScrollView 
+	    android:id="@+id/linearLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        >
+
+	    <LinearLayout
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:orientation="vertical" >
+
+        <Button
+            android:id="@+id/menu_button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="20dip"
+            android:text="Button1"
+            android:onClick="sendMessage" />
+        <Button
+            android:id="@+id/menu_button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="20dip"
+            android:text="Button2" 
+            android:onClick="sendMessage" />
+
+        <Button
+            android:id="@+id/menu_button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="20dip"
+            android:text="Button3" 
+            android:onClick="sendMessage" />
+
+        <Button
+            android:id="@+id/menu_button4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="20dip"
+            android:text="Button4" 
+            android:onClick="sendMessage" />
+
+        <Button
+            android:id="@+id/menu_button5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="20dip"
+            android:text="Button5" 
+            android:onClick="sendMessage" />
+        <Button
+            android:id="@+id/menu_button6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="20dip"
+            android:text="Button6" 
+            android:onClick="sendMessage" />
+        <Button
+            android:id="@+id/menu_button7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="20dip"
+            android:text="Button7" 
+            android:onClick="sendMessage" />
+    </LinearLayout>
+    </ScrollView>
+
+    
+    
+    
+
+</RelativeLayout>
