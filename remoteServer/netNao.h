@@ -13,6 +13,7 @@
 
 using namespace std;
 
+
 class NetNao : public AL::ALModule
 {
 	public:

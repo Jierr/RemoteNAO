@@ -11,7 +11,12 @@ set(_srcs1
 set(_srcs2
 	managerModule.cpp
 	manager.h
-	manager.cpp)
+	manager.cpp)  
+	  
+#set(_srcs3
+#	decoderModule.cpp
+#	decoder.h
+#	decoder.cpp)
     
 
 

@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 	AL::ALBrokerManager::getInstance()->addBroker(broker);
 
 	static boost::shared_ptr<NetNao> net = \
-		AL::ALModule::createModule<NetNao>(broker, "NetNao");
+		AL::ALModule::createModule<NetNao>(broker, "RMNetNao");
 	
 	//NetNao* net = new NetNao(broker, "NetNao");
 	string port = "32768";
