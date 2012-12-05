@@ -8,11 +8,13 @@
 #include <arpa/inet.h>
 
 #include "netNao.h"
+#include "manager.h"
 
 #include <alcommon/almodule.h>
 #include <alcommon/albroker.h>
 #include <alcommon/albrokermanager.h>
 #include <alerror/alerror.h>
+#include <alcommon/alproxy.h>
 #include <alproxies/altexttospeechproxy.h>
 #include <qi/os.hpp>
 
@@ -100,10 +102,13 @@ int main(int argc, char* argv[])
 	unsigned int bytesRead = 0; 
 	unsigned int bytesSent = 0;
 	unsigned int len;
+	
+	// connect to local module RMManager
+	AL::ALProxy proxyManager = AL::ALProxy(string("RMManager"), pip, 9559);
+	proxyManager.callVoid("localRespond");
+	
 	const std::string msg = "Hello there, everything is initialized.";
 	boost::shared_ptr<char*> buffer(new char*(buf));
-	
-	
 	sserver = net->bindTcp(port);
 	while(last != '-')
 	{
@@ -132,6 +137,7 @@ int main(int argc, char* argv[])
 			cerr<< "EXCEPTION: " << e.what() << endl;
 		}
 		buf[0] = 0;
+		
 		while((last != '#') && (last != '-'))
 		{
 			//bytesRead = recv(sclient, buf, 1, 0);
