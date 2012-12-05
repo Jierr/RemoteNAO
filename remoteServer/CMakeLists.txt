@@ -11,7 +11,11 @@ set(_srcs1
 set(_srcs2
 	managerModule.cpp
 	manager.h
-	manager.cpp)  
+	manager.cpp
+	decoder.h
+	decoder.cpp
+	executer.h
+	executer.cpp)  
 	  
 #set(_srcs3
 #	decoderModule.cpp
@@ -28,6 +32,9 @@ qi_use_lib(remoteServer ALCOMMON BOOST)
 
 qi_create_lib(rm_manager SHARED ${_srcs2} SUBFOLDER naoqi)
 qi_use_lib(rm_manager ALCOMMON BOOST)
+
+#qi_create_lib(rm_decoder SHARED ${_srcs3} SUBFOLDER naoqi)
+#qi_use_lib(rm_decoder ALCOMMON BOOST)
 
 
 

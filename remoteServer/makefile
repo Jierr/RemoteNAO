@@ -18,4 +18,4 @@ matom:
 	qibuild make --release -v -c cross-atom $(PROJECT)
 
 clean:
-	qibuild clean
+	qibuild clean -f

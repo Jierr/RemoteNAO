@@ -95,6 +95,7 @@ int main(int argc, char* argv[])
 	
 	//NetNao* net = new NetNao(broker, "NetNao");
 	string port = "32768";
+	int taskID = 0;
 	int sserver = 0;
 	int sclient = 0;
 	char buf[255] = {0,};
@@ -105,8 +106,22 @@ int main(int argc, char* argv[])
 	
 	// connect to local module RMManager
 	AL::ALProxy proxyManager = AL::ALProxy(string("RMManager"), pip, 9559);
-	proxyManager.callVoid("localRespond");
 	
+	taskID = proxyManager.pCall(string("localRespond")); //callVoid("localRespond");
+	cout<<"ID of Thread = " << taskID << endl;
+	if (!proxyManager.wait(taskID, 1000))
+		cout<< "localRespond wurde abgeschlossen" << endl;
+	else
+		cout<< "localRespond timed out!" << endl;
+		
+	taskID = proxyManager.pCall(string("runExecuter")); //callVoid("runExecuter");
+	cout<<"ID of Thread = " << taskID << endl;
+	if (!proxyManager.wait(taskID, 1000))
+		cout<< "runExecuter wurde abgeschlossen" << endl;
+	else
+		cout<< "runExecuter timed out!" << endl;
+	
+	proxyManager.destroyConnection();
 	const std::string msg = "Hello there, everything is initialized.";
 	boost::shared_ptr<char*> buffer(new char*(buf));
 	sserver = net->bindTcp(port);
@@ -165,16 +180,20 @@ int main(int argc, char* argv[])
 		}
 		net->disconnect(sclient);
 	}
+	
 	net->unbind(sserver);
+	broker->shutdown();
+	//AL::ALBrokerManager::removeBroker(broker);
+	
 	exit(0);
 	
 	
 	
 	//delete net;
 
-	while(1)
+	/*while(1)
 		qi::os::sleep(1);
-
+	*/
 	
 
 
