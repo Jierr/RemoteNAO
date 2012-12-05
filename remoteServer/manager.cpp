@@ -18,10 +18,16 @@ Manager::~Manager()
 
 void Manager::init()
 {
+	//managerSingleton = boost::shared_ptr;
 }
 
 void Manager::localRespond()
 {
 	cout<< "RMManager was pinged at!" << endl;
+}
+
+boost::shared_ptr<Manager> Manager::getManager()
+{
+	return managerSingleton.lock();
 }
 
