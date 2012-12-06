@@ -3,6 +3,8 @@
 
 #include <alcommon/almodule.h>
 #include <alcommon/albroker.h>
+#include <alvalue/alvalue.h>
+#include <alproxies/almemoryproxy.h>
 //#include <boost/enable_shared_from_this.hpp>
 #include <string>
 #include "decoder.h"
@@ -18,6 +20,8 @@ class Manager:public AL::ALModule
 		/*struct null_deleter{
 			void operator()(void const*) const{}
 		};*/
+		AL::ALMemoryProxy mem;
+		AL::ALValue lastOp;
 		boost::shared_ptr<Decoder> dec;
 		boost::shared_ptr<Executer> exec;
 	public:

@@ -1,4 +1,6 @@
 #include <iostream>
+#include <alproxies/almemoryproxy.h>
+#include <alvalue/alvalue.h>
 #include "manager.h"
 #include "decoder.h"
 #include "executer.h"
@@ -17,6 +19,14 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	functionName("runExecuter", getName(), "run Executer");
 	BIND_METHOD(Manager::runExecuter);
 	
+	mem = AL::ALMemoryProxy(broker);
+	//mem.setDescription(string("lastOp"), string("Last Operation"));	
+	lastOp = 42;	
+	mem.insertData("lastOp", lastOp);
+	lastOp = mem.getData("lastOp");
+	cout<< "lastOp Constructor: " << (int&)lastOp << endl;
+	
+	
 	dec = AL::ALModule::createModule<Decoder>(broker, "RMDecoder");
 	exec = AL::ALModule::createModule<Executer>(broker, "RMExecuter");
 }
@@ -33,6 +43,9 @@ void Manager::init()
 void Manager::localRespond()
 {
 	cout<< "RMManager was pinged at!" << endl;
+	cout<< "Value of lastOp: ";
+	//lastOp = mem.getData("lastOp");
+	cout<< (int&)lastOp << endl;
 	dec->decoderRespond();
 	while(1);
 }
