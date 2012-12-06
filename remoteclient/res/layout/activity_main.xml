@@ -17,36 +17,41 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/linearLayout1" >
-	    <Button 
+	    <ImageButton 
 	        android:id="@+id/bew_button1"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_centerHorizontal="true"
-	        android:text="@string/bew_button1"
+	        android:background="@drawable/arrow_up"
+	        android:contentDescription="@string/bew_button1"
 	    />
-	    <Button 
+	    <!--android:text="@string/bew_button1"-->
+	    <ImageButton 
 	        android:id="@+id/bew_button2"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentLeft="true"
 	        android:layout_centerVertical="true"
-	        android:text="@string/bew_button2" 
+	        android:background="@drawable/arrow_left"
+	        android:contentDescription="@string/bew_button2" 
 		/>
-	    <Button 
+	    <ImageButton 
 	        android:id="@+id/bew_button3"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentRight="true"
 	        android:layout_centerVertical="true"
-	        android:text="@string/bew_button3" 
+	        android:background="@drawable/arrow_right"
+	        android:contentDescription="@string/bew_button3" 
 		/>
-	    <Button 
+	    <ImageButton 
 	        android:id="@+id/bew_button4"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_centerHorizontal="true"
 	        android:layout_alignParentBottom="true"
-	        android:text="@string/bew_button4" 
+	        android:background="@drawable/arrow_down"
+	        android:contentDescription="@string/bew_button4" 
 		/>
 	    </RelativeLayout>
 	    

@@ -111,7 +111,7 @@ public class NetworkModule {
 		
 		try
 		{
-			SendCommand("-");
+			SendCommand("#");
 			Client.close();
 			Log.v("NetMod", "Connection closed.");
 		}

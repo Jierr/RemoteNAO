@@ -8,5 +8,8 @@
 	<string name="bew_button2">Left</string>
 	<string name="bew_button3">Right</string>
 	<string name="bew_button4">Down</string>
+	
+	<string name="edit_sprachausgabe">Text eingeben</string>
+	<string name="sprachausgabe_text">Sprachausgabe</string>
 
 </resources>
