@@ -23,10 +23,26 @@ public class MainActivity extends Activity {
     /** Called when the user clicks the Send button */
     public void sendMessage(View view) {
         // Do something in response to button
-    	new AlertDialog.Builder(this)
-		.setMessage("Not Implemented yet")
-		.setNeutralButton("och", null)
-		.show();
+    	boolean RetVal;
+    	
+    	//NetworkModule.SetIPAddress("134.109.146.139");
+    	NetworkModule.SetIPAddress("134.109.151.142");
+    	RetVal = NetworkModule.OpenConnection();
+    	if (! RetVal)
+    	{
+	    	new AlertDialog.Builder(this)
+			.setMessage("Connection failed")
+			.setNeutralButton("och", null)
+			.show();
+    	}
+    	
+    	NetworkModule.net_test();
+    	NetworkModule.CloseConnection();
+    	/*new AlertDialog.Builder(this)
+			.setMessage("Test done.")
+			.setNeutralButton("och", null)
+			.show();*/
+    	
     	return;
     }
 }
