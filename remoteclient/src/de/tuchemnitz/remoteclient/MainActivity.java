@@ -4,12 +4,14 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.graphics.Color;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -32,7 +34,7 @@ public class MainActivity extends Activity {
     	boolean RetVal;
     	
     	//NetworkModule.SetIPAddress("134.109.146.139");
-    	NetworkModule.SetIPAddress("134.109.151.142");
+    	NetworkModule.SetIPAddress("192.168.5.42");
     	RetVal = NetworkModule.OpenConnection();
     	if (! RetVal)
     	{
@@ -78,13 +80,14 @@ public class MainActivity extends Activity {
     	}
     
     
+    
     public void menu_button2_event(View view) {
     	/* Dialogbox erstellen*/
     	final Dialog spk_dialog = new Dialog(MainActivity.this);
     	spk_dialog.setContentView(R.layout.sprachausgabe);
     	spk_dialog.setTitle("Sprachausgabe");
     	
-    	/*Funktion bei OK Button*/
+    	/* ------------ Funktion bei OK Button ------------ */
     	Button dial_button_ok = (Button) spk_dialog.findViewById(R.id.spk_ok_button);
     	dial_button_ok.setOnClickListener(new OnClickListener() {
 		
@@ -101,5 +104,65 @@ public class MainActivity extends Activity {
     	/*Dialogbox anzeigen*/
     	spk_dialog.show();
     }
+    
+    
+    public void menu_button5_event(View view) {
+    	/* Dialogbox erstellen*/
+    	final Dialog verbindungs_dialog = new Dialog(MainActivity.this);
+    	verbindungs_dialog.setContentView(R.layout.netzwerkverbindung);
+    	verbindungs_dialog.setTitle("Netzwerkverbindung");
+    	
+    	final TextView text_verbindungsstatus = (TextView)verbindungs_dialog.findViewById(R.id.verbindungsstatus_wert);
+    	final EditText textfeld_ipeingabe = (EditText)verbindungs_dialog.findViewById(R.id.verbindungsip_eingabe);
+    	
+    	if(NetworkModule.IsConnected()){
+    		text_verbindungsstatus.setText("verbunden");
+        	text_verbindungsstatus.setTextColor(Color.GREEN);
+    	}
+    	else{
+    		text_verbindungsstatus.setText("nicht verbunden");
+        	text_verbindungsstatus.setTextColor(Color.RED);
+    	}
+    	textfeld_ipeingabe.setText(NetworkModule.GetIPAddress());
+    	
+    	
+    	/* ----------- Funktionen der Button ------------- */
+    	Button dial_button_close = (Button) verbindungs_dialog.findViewById(R.id.verbindungsbutton_close);
+    	Button dial_button_verbinden = (Button) verbindungs_dialog.findViewById(R.id.verbindungsbutton);
+    	/* Verbinden */
+    	dial_button_verbinden.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				/*Text aus dem Texteingabefeld*/
+		    	String ip_word = textfeld_ipeingabe.getText().toString();
+		    	NetworkModule.SetIPAddress(ip_word);
+		    	if(NetworkModule.IsConnected()){
+		    		NetworkModule.CloseConnection();
+		    	}
+	        	if(NetworkModule.OpenConnection()){
+	        		text_verbindungsstatus.setText("verbunden");
+	            	text_verbindungsstatus.setTextColor(Color.GREEN);
+	        	}
+	        	else{
+	        		text_verbindungsstatus.setText("nicht verbunden");
+	            	text_verbindungsstatus.setTextColor(Color.RED);
+	        	}
+			}
+		});
+    	/* schließen */
+    	dial_button_close.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				verbindungs_dialog.dismiss();
+			}
+		});
+    	
+    	
+    	/*Dialogbox anzeigen*/
+    	verbindungs_dialog.show();
+    }
+    
+    
+    
     
 }

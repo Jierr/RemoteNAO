@@ -9,8 +9,9 @@
 	<string name="bew_button3_text">Right</string>
 	<string name="bew_button4_text">Down</string>
 	
-	<string name="menu_button1">Auswahl\nder Bew-\nKategorie</string>
-	<string name="menu_button2">Sprach-\nausgabe</string>
+	<string name="menu_button1_text">Auswahl\nder Bew-\nKategorie</string>
+	<string name="menu_button2_text">Sprach-\nausgabe</string>
+	<string name="menu_button5_text">Netzwerk</string>
 	
 	<string name="edit_sprachausgabe">Text eingeben</string>
 	<string name="sprachausgabe_text">Sprachausgabe</string>
@@ -19,7 +20,7 @@
 	<string name="verbindungsstatus_wert_text">nicht verbunden</string>
 	<string name="verbindungsip_text">IP-Adresse : </string>
 	<string name="verbindungsip_eingabe">0.0.0.0</string>
-	<string name="verbindungsbutton">verbinden</string>
-	<string name="verbindungsbutton_ok_text"> OK </string>
+	<string name="verbindungsbutton_text">verbinden</string>
+	<string name="verbindungsbutton_close_text"> Schließen </string>
 
 </resources>

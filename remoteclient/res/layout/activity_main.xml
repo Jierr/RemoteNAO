@@ -80,14 +80,14 @@
             android:layout_height="wrap_content"
             android:minHeight="20dip"
             android:onClick="sendMessage"
-            android:text="@string/menu_button1" />
+            android:text="@string/menu_button1_text" />
 
         <Button
             android:id="@+id/menu_button2"
             android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:minHeight="20dip"
-            android:text="@string/menu_button2" 
+            android:text="@string/menu_button2_text" 
             android:onClick="menu_button2_event" />
 
         <Button
@@ -111,8 +111,8 @@
             android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:minHeight="20dip"
-            android:text="Button5" 
-            android:onClick="sendMessage" />
+            android:text="@string/menu_button5_text"
+            android:onClick="menu_button5_event" />
         <Button
             android:id="@+id/menu_button6"
             android:layout_width="120dp"

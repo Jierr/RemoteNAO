@@ -23,12 +23,9 @@ public class NetworkModule {
 		return;
 	}
 	
-	public static String GetIPAddress(String IP_Str)
+	public static String GetIPAddress()
 	{
-		if (Client == null)
-			return "Keine Verindung";
-		else
-			return IP_Str;
+			return IP_Addr;
 	}
 	
 	public static void Move(boolean Start, char Direction)
@@ -85,7 +82,7 @@ public class NetworkModule {
 			Log.v("NetMod", "Connection open successful.");
 			return true;
 		}
-		catch(IOException e)
+		catch(Exception e)
 		{
 			e.printStackTrace();
 			Log.v("NetMod", "Connection open failed.");
@@ -113,6 +110,7 @@ public class NetworkModule {
 		{
 			SendCommand("#");
 			Client.close();
+			Client = null;
 			Log.v("NetMod", "Connection closed.");
 		}
 		catch(IOException e)
