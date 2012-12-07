@@ -22,8 +22,9 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_centerHorizontal="true"
-	        android:background="@drawable/arrow_up"
-	        android:contentDescription="@string/bew_button1"
+	        android:background="@drawable/arrowup_button"
+	        android:contentDescription="@string/bew_button1_text"
+	        android:onClick="bew_button1_event"
 	    />
 	    <!--android:text="@string/bew_button1"-->
 	    <ImageButton 
@@ -32,8 +33,9 @@
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentLeft="true"
 	        android:layout_centerVertical="true"
-	        android:background="@drawable/arrow_left"
-	        android:contentDescription="@string/bew_button2" 
+	        android:background="@drawable/arrowleft_button"
+	        android:contentDescription="@string/bew_button2_text"
+	        android:onClick="bew_button2_event"
 		/>
 	    <ImageButton 
 	        android:id="@+id/bew_button3"
@@ -41,8 +43,9 @@
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentRight="true"
 	        android:layout_centerVertical="true"
-	        android:background="@drawable/arrow_right"
-	        android:contentDescription="@string/bew_button3" 
+	        android:background="@drawable/arrowright_button"
+	        android:contentDescription="@string/bew_button3_text"
+	        android:onClick="bew_button3_event"
 		/>
 	    <ImageButton 
 	        android:id="@+id/bew_button4"
@@ -50,8 +53,9 @@
 	        android:layout_height="wrap_content"
 	        android:layout_centerHorizontal="true"
 	        android:layout_alignParentBottom="true"
-	        android:background="@drawable/arrow_down"
-	        android:contentDescription="@string/bew_button4" 
+	        android:background="@drawable/arrowdown_button"
+	        android:contentDescription="@string/bew_button4_text"
+	        android:onClick="bew_button4_event"
 		/>
 	    </RelativeLayout>
 	    
@@ -72,22 +76,23 @@
 
         <Button
             android:id="@+id/menu_button1"
-            android:layout_width="wrap_content"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:minHeight="20dip"
-            android:text="Button1"
-            android:onClick="sendMessage" />
+            android:onClick="sendMessage"
+            android:text="@string/menu_button1" />
+
         <Button
             android:id="@+id/menu_button2"
-            android:layout_width="wrap_content"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:minHeight="20dip"
-            android:text="Button2" 
-            android:onClick="sendMessage" />
+            android:text="@string/menu_button2" 
+            android:onClick="menu_button2_event" />
 
         <Button
             android:id="@+id/menu_button3"
-            android:layout_width="wrap_content"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:minHeight="20dip"
             android:text="Button3" 
@@ -95,7 +100,7 @@
 
         <Button
             android:id="@+id/menu_button4"
-            android:layout_width="wrap_content"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:minHeight="20dip"
             android:text="Button4" 
@@ -103,21 +108,21 @@
 
         <Button
             android:id="@+id/menu_button5"
-            android:layout_width="wrap_content"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:minHeight="20dip"
             android:text="Button5" 
             android:onClick="sendMessage" />
         <Button
             android:id="@+id/menu_button6"
-            android:layout_width="wrap_content"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:minHeight="20dip"
             android:text="Button6" 
             android:onClick="sendMessage" />
         <Button
             android:id="@+id/menu_button7"
-            android:layout_width="wrap_content"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:minHeight="20dip"
             android:text="Button7" 
