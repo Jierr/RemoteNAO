@@ -90,8 +90,10 @@ int main(int argc, char* argv[])
 	//Add Broker to the map!
 	AL::ALBrokerManager::getInstance()->addBroker(broker);
 
+	cout<< "connect to Broker naoqi" << endl;
 	static boost::shared_ptr<NetNao> net = \
-		AL::ALModule::createModule<NetNao>(broker, "RMNetNao");
+		AL::ALModule::createModule<NetNao>(broker, "RMNetNao");	
+	cout<< "connected" << endl;
 	
 	//NetNao* net = new NetNao(broker, "NetNao");
 	string port = "32768";
@@ -109,19 +111,24 @@ int main(int argc, char* argv[])
 	
 	taskID = proxyManager.pCall(string("localRespond")); //callVoid("localRespond");
 	cout<<"ID of Thread = " << taskID << endl;
-	if (!proxyManager.wait(taskID, 1000))
+	if (!proxyManager.wait(taskID, 0))
 		cout<< "localRespond wurde abgeschlossen" << endl;
 	else
 		cout<< "localRespond timed out!" << endl;
 		
 	taskID = proxyManager.pCall(string("runExecuter")); //callVoid("runExecuter");
 	cout<<"ID of Thread = " << taskID << endl;
-	if (!proxyManager.wait(taskID, 1000))
+	if (!proxyManager.wait(taskID, 0))
 		cout<< "runExecuter wurde abgeschlossen" << endl;
 	else
 		cout<< "runExecuter timed out!" << endl;
 	
 	proxyManager.destroyConnection();
+	
+	/*AL::ALProxy proxyExecuter = AL::ALProxy(string("RMExecuter"), pip, 9559);
+	proxyExecuter.callVoid<int>(string("setPosture"), 0);
+	proxyExecuter.destroyConnection();*/
+	
 	const std::string msg = "Hello there, everything is initialized.";
 	boost::shared_ptr<char*> buffer(new char*(buf));
 	sserver = net->bindTcp(port);

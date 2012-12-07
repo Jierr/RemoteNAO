@@ -17,7 +17,8 @@ class Executer:public AL::ALModule
 		Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name);
 		virtual ~Executer();
 		virtual void init();
-		void executerRespond();		
+		void executerRespond();	
+		void setPosture(const int& pos);	
 };
 
 #endif
