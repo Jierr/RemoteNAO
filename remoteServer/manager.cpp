@@ -1,10 +1,12 @@
 #include <iostream>
-#include <alproxies/almemoryproxy.h>
 #include <alvalue/alvalue.h>
+#include <alproxies/almemoryproxy.h>
 #include <alproxies/altexttospeechproxy.h>
+
 #include "manager.h"
 #include "decoder.h"
 #include "executer.h"
+#include "gen.h"
 
 
 using namespace std;
@@ -18,7 +20,11 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	BIND_METHOD(Manager::localRespond);
 	
 	functionName("runExecuter", getName(), "run Executer");
-	BIND_METHOD(Manager::runExecuter);
+	BIND_METHOD(Manager::runExecuter);	
+	
+	functionName("decode", getName(), "decode the argument given");
+	addParam("symbol", "const int&: the symbol to be decoded");
+	BIND_METHOD(Manager::decode);
 	
 	mem = AL::ALMemoryProxy(broker);
 	//mem.setDescription(string("lastOp"), string("Last Operation"));	
@@ -34,6 +40,8 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 
 Manager::~Manager()
 {
+	exec->exit();
+	dec->exit();
 }
 
 void Manager::init()
@@ -51,6 +59,11 @@ void Manager::localRespond()
 
 void Manager::decode(const int& symbol)
 {
+	AL::ALValue code(symbol);
+	cout<< "In DECODE ====================" << endl
+		<< "code-argument = " << (int&)code << endl
+		<< "End DECODE ===================" << endl;
+	lastOp = code;
 	
 }
 
@@ -59,7 +72,7 @@ void Manager::runExecuter()
 	AL::ALValue posVal = mem.getData("robotPose");
 	cout<< "ROBOT POSE: " << posVal.toString() << endl;
 	//mem.insertData("robotPoseChanged", string("Sit"));
-	mem.insertData("robotPose", 2);
+	//mem.insertData("robotPose", 2);
 	posVal = mem.getData("robotPose");
 	cout<< "ROBOT POSE: " << posVal.toString() << endl;
 	//mem.insertData("robotPose", 5.0f);
@@ -67,6 +80,27 @@ void Manager::runExecuter()
 	exec->executerRespond();
 	AL::ALValue post;
 	exec->setPosture((int&)post);
+	
+	switch ((int&)lastOp)
+	{
+		case INIT_WALK:
+			exec->initWalk();
+			break;
+		default:
+		{
+			try
+			{
+				AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+				tts.say("Unknown command!");
+			}	
+			catch(const AL::ALError& e)
+			{
+				cout<< "Error runExecuter case default: " << e.what() << endl;
+			}
+			break;
+		}
+		
+	};
 	//while(1)
 	//{
 		/*post = mem.getData("lastOp");

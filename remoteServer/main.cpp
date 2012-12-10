@@ -9,6 +9,7 @@
 
 #include "netNao.h"
 #include "manager.h"
+#include "gen.h"
 
 #include <alcommon/almodule.h>
 #include <alcommon/albroker.h>
@@ -24,8 +25,8 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-	int pport = 9559;
-	string pip = "127.0.0.1";
+	int pport = MB_PORT;
+	string pip = MB_IP;
 
 	if(argc > 2)
 	{
@@ -50,8 +51,8 @@ int main(int argc, char* argv[])
 	}
 	else 
 	{
-		pport = 9559;
-		pip = "127.0.0.1";
+		pport = MB_PORT;
+		pip = MB_IP;
 	}	
 
 
@@ -96,7 +97,7 @@ int main(int argc, char* argv[])
 	cout<< "connected" << endl;
 	
 	//NetNao* net = new NetNao(broker, "NetNao");
-	string port = "32768";
+	string port = RM_PORT;
 	int taskID = 0;
 	int sserver = 0;
 	int sclient = 0;
@@ -107,7 +108,7 @@ int main(int argc, char* argv[])
 	unsigned int len;
 	
 	// connect to local module RMManager
-	AL::ALProxy proxyManager = AL::ALProxy(string("RMManager"), pip, 9559);
+	AL::ALProxy proxyManager = AL::ALProxy(string("RMManager"), pip, MB_PORT);
 	
 	taskID = proxyManager.pCall(string("localRespond")); //callVoid("localRespond");
 	cout<<"ID of Thread = " << taskID << endl;
@@ -115,14 +116,24 @@ int main(int argc, char* argv[])
 		cout<< "localRespond wurde abgeschlossen" << endl;
 	else
 		cout<< "localRespond timed out!" << endl;
+
+
+	taskID = proxyManager.pCall<int>(string("decode"), INIT_WALK); //callVoid("runExecuter");
+	cout<<"ID of Thread = " << taskID << endl;
+	if (!proxyManager.wait(taskID, 0))
+		cout<< "decode wurde abgeschlossen" << endl;
+	else
+		cout<< "decode timed out!" << endl;
 		
+				
 	taskID = proxyManager.pCall(string("runExecuter")); //callVoid("runExecuter");
 	cout<<"ID of Thread = " << taskID << endl;
 	if (!proxyManager.wait(taskID, 0))
 		cout<< "runExecuter wurde abgeschlossen" << endl;
 	else
 		cout<< "runExecuter timed out!" << endl;
-	
+		
+
 	proxyManager.destroyConnection();
 	
 	/*AL::ALProxy proxyExecuter = AL::ALProxy(string("RMExecuter"), pip, 9559);

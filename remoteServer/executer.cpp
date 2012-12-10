@@ -1,9 +1,13 @@
 #include <iostream>
-#include "executer.h"
 #include <alproxies/altexttospeechproxy.h>
 #include <alproxies/alrobotposeproxy.h>
+#include <alproxies/almotionproxy.h>
 #include <alvalue/alvalue.h>
 #include <qi/os.hpp>
+
+
+#include "executer.h"
+#include "gen.h"
 
 using namespace std;
 	
@@ -28,26 +32,47 @@ void Executer::init()
 
 void Executer::executerRespond()
 {
-	AL::ALTextToSpeechProxy tts("127.0.0.1", 9559);
+	AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 			tts.say(string("Executer"));
 	
 	
 }
 
+void Executer::initWalk()
+{
+	try
+	{
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		tts.say("Initializing Posture!");
+		motion.walkInit();
+		tts.say("Standing!");
+		//boost::shared_ptr<AL::ALMotionProxy> motion = getParentBroker()->getMotionProxy(); 
+		//motion->walkInit(); 
+	}
+	catch(const AL::ALError& e)
+	{
+		cout<< "Error initWalk: " << e.what() << endl; 
+	}
+}
+
+
 
 void Executer::setPosture(const int& pos)
 {
-	AL::ALRobotPoseProxy rr("127.0.0.1", 9559);
+	AL::ALRobotPoseProxy rr(MB_IP, MB_PORT);
 	AL::ALValue posStr = "";
 	cout<< "In setPosture" << endl;
 	//qi::os::sleep(4);
 	cout<< "Current Posture: " << rr.getActualPoseAndTime().toString() << endl;
 	
-	AL::ALTextToSpeechProxy tts("127.0.0.1", 9559);
-	//tts.say(rr.getPoseNames().toString());
 	
-	rr.exit();
-	//posStr = rr.getPosNames();
+	cout<< "======set Posture END =======" << endl 
+	    << rr.getPoseNames().toString() << endl
+	    << "======set Posture END =======" << endl;
+	
+	//AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+	//tts.say(rr.getPoseNames().toString());
 	
 /*	if (pos == 0)
 		return;

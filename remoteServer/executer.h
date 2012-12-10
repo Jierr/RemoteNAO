@@ -19,6 +19,7 @@ class Executer:public AL::ALModule
 		virtual void init();
 		void executerRespond();	
 		void setPosture(const int& pos);	
+		void initWalk();
 };
 
 #endif

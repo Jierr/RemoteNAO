@@ -1,7 +1,7 @@
 PROJECT = .
 SDK	=/home/jierr/development/naoqi-sdk-1.12.3-linux64
 HOST	= 169.254.130.18
-.PHONY: clean aatom  catom matom  host 
+.PHONY: clean aatom  catom matom host edit
 
 host:
 	qitoolchain create stdtool $(SDK)/toolchain.xml --default
@@ -24,3 +24,6 @@ clean:
 scp:
 	scp ./build-cross-atom-release/sdk/bin/remoteServer nao@$(HOST):rServer
 	scp -r ./build-cross-atom-release/sdk/lib/ nao@$(HOST):RMlib
+
+edit:
+	gedit *.cpp *.h &
