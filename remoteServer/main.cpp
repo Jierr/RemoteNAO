@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 		cout<< "localRespond timed out!" << endl;
 
 
-	taskID = proxyManager.pCall<int>(string("decode"), INIT_WALK); //callVoid("runExecuter");
+	taskID = proxyManager.pCall<string>(string("decode"), "INIT"); //callVoid("runExecuter");
 	cout<<"ID of Thread = " << taskID << endl;
 	if (!proxyManager.wait(taskID, 0))
 		cout<< "decode wurde abgeschlossen" << endl;
@@ -134,7 +134,6 @@ int main(int argc, char* argv[])
 		cout<< "runExecuter timed out!" << endl;
 		
 
-	proxyManager.destroyConnection();
 	
 	/*AL::ALProxy proxyExecuter = AL::ALProxy(string("RMExecuter"), pip, 9559);
 	proxyExecuter.callVoid<int>(string("setPosture"), 0);
@@ -181,10 +180,12 @@ int main(int argc, char* argv[])
 				bytesRead += net->recvData(sclient, buffer, 1, bytesRead);
 				cout<< "receive done: [" << bytesRead-1 << "] = " << buf[bytesRead-1] << endl;	
 			}
-			while (buf[bytesRead-1] != '+');
+			while (buf[bytesRead-1] != '\0');
 			last = buf[bytesRead-2];
-
-			buf[bytesRead-1] = 0;			
+						
+			buf[bytesRead-1] = 0;	
+			proxyManager.callVoid<string>("decode", string(buf));
+					
 			try 
 			{
 				AL::ALTextToSpeechProxy tts(pip, pport);
@@ -199,7 +200,9 @@ int main(int argc, char* argv[])
 		net->disconnect(sclient);
 	}
 	
+	
 	net->unbind(sserver);
+	proxyManager.destroyConnection();
 	broker->shutdown();
 	//AL::ALBrokerManager::removeBroker(broker);
 	

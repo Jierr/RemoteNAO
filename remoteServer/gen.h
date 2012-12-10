@@ -8,4 +8,7 @@
 
 #define INIT_WALK 10
 
+#define CODE_INVALID 0
+#define CODE_MOV 11
+
 #endif

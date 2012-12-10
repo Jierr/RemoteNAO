@@ -23,7 +23,7 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	BIND_METHOD(Manager::runExecuter);	
 	
 	functionName("decode", getName(), "decode the argument given");
-	addParam("symbol", "const int&: the symbol to be decoded");
+	addParam("toParse", "const string&: the symbol to be decoded");
 	BIND_METHOD(Manager::decode);
 	
 	mem = AL::ALMemoryProxy(broker);
@@ -57,13 +57,75 @@ void Manager::localRespond()
 	dec->decoderRespond();
 }
 
-void Manager::decode(const int& symbol)
+string Manager::fetch(const string& untouched)
 {
-	AL::ALValue code(symbol);
+	int pos = 0;
+	string result = "";
+	while (pos < untouched.length())
+	{
+		if (untouched[pos] != '_')
+			result+=untouched[pos];
+		else
+			return result;
+		++pos;
+	}
+	return result;
+}
+
+
+bool Manager::getParams(const string& code, const string& touched, void**& params)
+{
+
+	if (code.compare("INIT") == 0)
+	{
+		params = new void*[2];
+		params[0] = new int;
+		params[1] = 0;
+		*(int*)params[0] = INIT_WALK;
+		return true;
+	}
+	else if (code.compare("MOV") == 0)
+	{
+		params = new void*[2];
+		params[0] = new int;
+		params[1] = 0;
+		*(int*)params[0] = CODE_MOV;
+		return true;
+	}
+	return false;
+}
+
+void Manager::decode(const string& toParse)
+{
+	AL::ALValue result;
+	int pos = 0;
+	string symbol = "";
+	bool valid = false;
+	void** params = 0;
 	cout<< "In DECODE ====================" << endl
-		<< "code-argument = " << (int&)code << endl
+		<< "code-argument = " << toParse << endl
 		<< "End DECODE ===================" << endl;
-	lastOp = code;
+	
+	symbol = fetch(toParse);
+	cout<< "Symbol = " << symbol << endl;
+	valid = getParams(symbol, toParse, params);
+	
+	
+	if (valid)
+	{
+	    result = *(int*)params[0];
+		cout<< "Decoded Function: " << (int&)result << endl;
+		mem.insertData("lastOp", result);
+		
+		for (int i = 0; params[i] != 0; ++i)
+		{
+			delete params[i];
+		}
+		delete[] params;
+	}
+	else 
+		mem.insertData("lastOp", CODE_INVALID);
+	//lastOp = code;
 	
 }
 
@@ -81,10 +143,17 @@ void Manager::runExecuter()
 	AL::ALValue post;
 	exec->setPosture((int&)post);
 	
+	lastOp = mem.getData("lastOp");
+	
 	switch ((int&)lastOp)
 	{
 		case INIT_WALK:
 			exec->initWalk();
+			break;
+		case CODE_MOV:
+			break;
+		case CODE_INVALID:
+			cout<< "Nothing to do" << endl;
 			break;
 		default:
 		{
@@ -95,7 +164,7 @@ void Manager::runExecuter()
 			}	
 			catch(const AL::ALError& e)
 			{
-				cout<< "Error runExecuter case default: " << e.what() << endl;
+				cout<< "Error runExecuter case default: " << endl << e.what() << endl;
 			}
 			break;
 		}

@@ -24,6 +24,10 @@ class Manager:public AL::ALModule
 		AL::ALValue lastOp;
 		boost::shared_ptr<Decoder> dec;
 		boost::shared_ptr<Executer> exec;
+		
+		string fetch(const string& untouched);
+		bool getParams(const string& code, const string& touched, void**& params);
+		
 	public:
 		//always get a shared_ptr from this via lock()		
 		boost::weak_ptr<Manager> managerSingleton;
@@ -32,7 +36,7 @@ class Manager:public AL::ALModule
 		virtual ~Manager();
 		virtual void init();
 		void localRespond();	
-		void decode(const int& symbol);
+		void decode(const string& toParse);
 		void runExecuter();	
 		//boost::weak_ptr<Manager> getManager();
 };
