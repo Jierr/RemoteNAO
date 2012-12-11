@@ -2,6 +2,7 @@ package de.tuchemnitz.remoteclient;
 
 import java.io.*;
 import java.net.Socket;
+
 import android.util.Log;
 
 public class NetworkModule {
@@ -82,10 +83,27 @@ public class NetworkModule {
 			Log.v("NetMod", "Connection open successful.");
 			return true;
 		}
-		catch(Exception e)
+		catch(IOException e)
 		{
 			e.printStackTrace();
 			Log.v("NetMod", "Connection open failed.");
+			try
+			{
+				if (Client != null)
+					Client.close();
+			}
+			catch(IOException e1)
+			{
+				// do nothing
+			}
+			Client = null;
+			
+			return false;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			Log.v("NetMod", "Unexpected Error.");
 			try
 			{
 				if (Client != null)
@@ -145,7 +163,7 @@ public class NetworkModule {
 			{
 				DataOutputStream out = new DataOutputStream(outToServer);
 				
-				out.writeBytes(CommandStr + "+");
+				out.writeBytes(CommandStr + "\0");
 				//out.writeBytes(CommandStr + "\n");
 				TryResend = 0;
 			}
