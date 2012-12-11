@@ -10,5 +10,6 @@
 
 #define CODE_INVALID 0
 #define CODE_MOV 11
+#define RAD (3.1415926535897932384626/360.0)
 
 #endif

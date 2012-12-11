@@ -20,6 +20,7 @@ class Executer:public AL::ALModule
 		void executerRespond();	
 		void setPosture(const int& pos);	
 		void initWalk();
+		void initSecure();
 };
 
 #endif

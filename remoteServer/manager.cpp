@@ -148,7 +148,8 @@ void Manager::runExecuter()
 	switch ((int&)lastOp)
 	{
 		case INIT_WALK:
-			exec->initWalk();
+			exec->initSecure();
+			cout << "Done initSecure()" << endl;
 			break;
 		case CODE_MOV:
 			break;
