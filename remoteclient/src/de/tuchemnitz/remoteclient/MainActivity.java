@@ -22,6 +22,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
     	//NetworkModule.SetIPAddress("134.109.146.139");
         NetworkModule.SetIPAddress("134.109.151.142");
+        menu_button5_event(null);
     }
 
     @Override
