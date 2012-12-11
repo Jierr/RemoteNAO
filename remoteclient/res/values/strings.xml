@@ -11,7 +11,11 @@
 	
 	<string name="menu_button1_text">Auswahl\nder Bew-\nKategorie</string>
 	<string name="menu_button2_text">Sprach-\nausgabe</string>
+	<string name="menu_button3_text">Button3</string>
+	<string name="menu_button4_text">Button4</string>
 	<string name="menu_button5_text">Netzwerk</string>
+	<string name="menu_button6_text">Button6</string>
+	<string name="menu_button7_text">Beenden</string>
 	
 	<string name="edit_sprachausgabe">Text eingeben</string>
 	<string name="sprachausgabe_text">Sprachausgabe</string>

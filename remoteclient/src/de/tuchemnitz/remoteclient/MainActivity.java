@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
     	boolean RetVal;
     	
     	//NetworkModule.SetIPAddress("134.109.146.139");
-    	NetworkModule.SetIPAddress("192.168.5.42");
+    	NetworkModule.SetIPAddress("134.109.147.95");
     	RetVal = NetworkModule.OpenConnection();
     	if (! RetVal)
     	{
@@ -162,7 +162,10 @@ public class MainActivity extends Activity {
     	verbindungs_dialog.show();
     }
     
-    
+    public void menu_button7_event(View view) {
+    	NetworkModule.CloseConnection();
+    	MainActivity.this.finish();
+    }
     
     
 }
