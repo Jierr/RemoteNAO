@@ -1,10 +1,17 @@
 package de.tuchemnitz.remoteclient;
 
+import java.util.*;
+
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.res.Configuration;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
@@ -16,13 +23,24 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
+	private Timer BattTimer = null;
+	private boolean DoOnce = false;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    	//NetworkModule.SetIPAddress("134.109.146.139");
-        NetworkModule.SetIPAddress("134.109.151.142");
-        menu_button5_event(null);
+        
+        if (! DoOnce)
+        {
+	    	//NetworkModule.SetIPAddress("134.109.146.139");
+	        NetworkModule.SetIPAddress("134.109.151.142");
+	        menu_button5_event(null);
+	        
+			BattTimer = new Timer();
+			BattTimer.schedule(new BattTmrTask(), 1000, 5000);
+			DoOnce = true;
+        }
     }
 
     @Override
@@ -34,7 +52,7 @@ public class MainActivity extends Activity {
     /** Called when the user clicks the Send button */
     public void sendMessage(View view) {
         // Do something in response to button
-    	boolean RetVal;
+    	/*boolean RetVal;
     	
     	RetVal = NetworkModule.OpenConnection(this);
     	if (! RetVal)
@@ -43,10 +61,10 @@ public class MainActivity extends Activity {
 			.setMessage("Connection failed")
 			.setNeutralButton("och", null)
 			.show();
-    	}
+    	}*/
     	
     	NetworkModule.net_test();
-    	NetworkModule.CloseConnection();
+    	//NetworkModule.CloseConnection();
     	/*new AlertDialog.Builder(this)
 			.setMessage("Test done.")
 			.setNeutralButton("och", null)
@@ -136,6 +154,7 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				/*Text aus dem Texteingabefeld*/
 		    	String ip_word = textfeld_ipeingabe.getText().toString();
+		    	ip_word = ip_word.trim();
 		    	NetworkModule.SetIPAddress(ip_word);
 		    	if(NetworkModule.IsConnected()){
 		    		NetworkModule.CloseConnection();
@@ -164,9 +183,34 @@ public class MainActivity extends Activity {
     }
     
     public void menu_button7_event(View view) {
+    	BattTimer.cancel();
     	NetworkModule.CloseConnection();
     	MainActivity.this.finish();
     }
     
-    
+	class BattTmrTask extends TimerTask
+	{
+		private Handler updateUI = new Handler(){
+			@Override
+			public void dispatchMessage(Message msg) {
+			    super.dispatchMessage(msg);
+		    	Toast toast = Toast.makeText(MainActivity.this, "Batt: " + Integer.toHexString(msg.what).toUpperCase(), Toast.LENGTH_SHORT);
+		    	toast.setGravity(Gravity.TOP | Gravity.RIGHT, 0, 0);
+		    	toast.show();
+			}
+		};
+		
+		public void run()  
+		{
+			if (! NetworkModule.IsConnected())
+				return;
+			
+			int BattState;
+			
+			//System.out.println("Make my day.");
+			//NetworkModule.Speak(MainActivity.NOTIFICATION_SERVICE);
+			BattState = NetworkModule.GetBatteryState();
+			updateUI.sendEmptyMessage(BattState);
+		}
+	}
 }
