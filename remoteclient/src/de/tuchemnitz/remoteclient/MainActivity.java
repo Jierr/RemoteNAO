@@ -20,6 +20,8 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    	//NetworkModule.SetIPAddress("134.109.146.139");
+        NetworkModule.SetIPAddress("134.109.151.142");
     }
 
     @Override
@@ -33,9 +35,7 @@ public class MainActivity extends Activity {
         // Do something in response to button
     	boolean RetVal;
     	
-    	//NetworkModule.SetIPAddress("134.109.146.139");
-    	NetworkModule.SetIPAddress("134.109.147.95");
-    	RetVal = NetworkModule.OpenConnection();
+    	RetVal = NetworkModule.OpenConnection(this);
     	if (! RetVal)
     	{
 	    	new AlertDialog.Builder(this)
@@ -139,7 +139,7 @@ public class MainActivity extends Activity {
 		    	if(NetworkModule.IsConnected()){
 		    		NetworkModule.CloseConnection();
 		    	}
-	        	if(NetworkModule.OpenConnection()){
+	        	if(NetworkModule.OpenConnection(MainActivity.this)){
 	        		text_verbindungsstatus.setText("verbunden");
 	            	text_verbindungsstatus.setTextColor(Color.GREEN);
 	        	}
