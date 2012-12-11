@@ -2,6 +2,7 @@
 #include <alvalue/alvalue.h>
 #include <alproxies/almemoryproxy.h>
 #include <alproxies/altexttospeechproxy.h>
+#include <qi/os.hpp>
 
 #include "manager.h"
 #include "decoder.h"
@@ -143,34 +144,40 @@ void Manager::runExecuter()
 	AL::ALValue post;
 	exec->setPosture((int&)post);
 	
-	lastOp = mem.getData("lastOp");
-	
-	switch ((int&)lastOp)
+	while(1)
 	{
-		case INIT_WALK:
-			exec->initSecure();
-			cout << "Done initSecure()" << endl;
-			break;
-		case CODE_MOV:
-			break;
-		case CODE_INVALID:
-			cout<< "Nothing to do" << endl;
-			break;
-		default:
+		qi::os::msleep(50);
+		lastOp = mem.getData("lastOp");
+		mem.insertData("lastOp", CODE_INVALID);
+	
+		switch ((int&)lastOp)
 		{
-			try
+			case INIT_WALK:
+				exec->initWalk();
+				cout << "Done initWalk()" << endl;
+				break;
+			case CODE_MOV:
+				exec->walk(1,0);
+				break;
+			case CODE_INVALID:
+				//cout<< "Nothing to do" << endl;
+				break;
+			default:
 			{
-				AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-				tts.say("Unknown command!");
-			}	
-			catch(const AL::ALError& e)
-			{
-				cout<< "Error runExecuter case default: " << endl << e.what() << endl;
+				try
+				{
+					AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+					tts.say("Unknown command!");
+				}	
+				catch(const AL::ALError& e)
+				{
+					cout<< "Error runExecuter case default: " << endl << e.what() << endl;
+				}
+				break;
 			}
-			break;
-		}
 		
-	};
+		};
+	}
 	//while(1)
 	//{
 		/*post = mem.getData("lastOp");

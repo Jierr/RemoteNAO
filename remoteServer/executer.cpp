@@ -92,6 +92,7 @@ void Executer::initSecure()
        	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
         AL::ALValue targetAngles(vtargetAngles);
         float maxSpeedFraction = 0.2;
+        qi::os::msleep(100);
         motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
 	    cout << motion.getSummary() << endl;
 		
@@ -106,6 +107,20 @@ void Executer::initSecure()
 	}
 }
 
+void Executer::walk(const int& x, const int& y)
+{
+	try
+	{
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		motion.walkInit();
+		motion.walkTo(x,y,0);
+	}
+	catch(const AL::ALError& e)
+	{
+		cout << "Error walk: " << e.what() << endl;
+	}
+}
 
 
 void Executer::setPosture(const int& pos)
