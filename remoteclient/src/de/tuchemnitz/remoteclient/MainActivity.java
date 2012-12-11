@@ -24,23 +24,18 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
 	private Timer BattTimer = null;
-	private boolean DoOnce = false;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        if (! DoOnce)
-        {
-	    	//NetworkModule.SetIPAddress("134.109.146.139");
-	        NetworkModule.SetIPAddress("134.109.151.142");
-	        menu_button5_event(null);
-	        
-			BattTimer = new Timer();
-			BattTimer.schedule(new BattTmrTask(), 1000, 5000);
-			DoOnce = true;
-        }
+    	//NetworkModule.SetIPAddress("134.109.146.139");
+        NetworkModule.SetIPAddress("134.109.151.142");
+        menu_button5_event(null);
+        
+		BattTimer = new Timer();
+		BattTimer.schedule(new BattTmrTask(), 1000, 5000);
     }
 
     @Override
