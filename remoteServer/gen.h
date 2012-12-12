@@ -7,9 +7,11 @@
 
 
 #define INIT_WALK 10
+#define INIT_REST 11
 
 #define CODE_INVALID 0
-#define CODE_MOV 11
-#define RAD (3.1415926535897932384626/360.0)
+#define CODE_MOV 20
+#define CODE_SPK 21
+#define RAD (2*3.1415926535897932384626/360.0)
 
 #endif

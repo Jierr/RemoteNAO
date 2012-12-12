@@ -31,6 +31,7 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	//mem.setDescription(string("lastOp"), string("Last Operation"));	
 	lastOp = 42;	
 	mem.insertData("lastOp", lastOp);
+	mem.insertData("msg", string(""));
 	lastOp = mem.getData("lastOp");
 	cout<< "lastOp Constructor: " << (int&)lastOp << endl;
 	
@@ -55,7 +56,7 @@ void Manager::localRespond()
 	cout<< "Value of lastOp: ";
 	//lastOp = mem.getData("lastOp");
 	cout<< (int&)lastOp << endl;
-	dec->decoderRespond();
+	//dec->decoderRespond();
 }
 
 string Manager::fetch(const string& untouched)
@@ -64,10 +65,11 @@ string Manager::fetch(const string& untouched)
 	string result = "";
 	while (pos < untouched.length())
 	{
-		if (untouched[pos] != '_')
-			result+=untouched[pos];
-		else
-			return result;
+		if ((untouched[pos] != '\r') && (untouched[pos] != '\n'))
+			if (untouched[pos] != '_')
+				result+=untouched[pos];
+			else
+				return result;
 		++pos;
 	}
 	return result;
@@ -91,6 +93,23 @@ bool Manager::getParams(const string& code, const string& touched, void**& param
 		params[0] = new int;
 		params[1] = 0;
 		*(int*)params[0] = CODE_MOV;
+		return true;
+	}
+	else if(code.compare("REST") == 0)
+	{
+		params = new void*[2];
+		params[0] = new int;
+		params[1] = 0;
+		*(int*)params[0] = INIT_REST;
+		return true;
+	}	
+	else if(code.compare("SPK") == 0)
+	{
+		params = new void*[2];
+		params[0] = new int;
+		mem.insertData("msg", touched);
+		params[1] = 0;
+		*(int*)params[0] = CODE_SPK;
 		return true;
 	}
 	return false;
@@ -140,21 +159,29 @@ void Manager::runExecuter()
 	cout<< "ROBOT POSE: " << posVal.toString() << endl;
 	//mem.insertData("robotPose", 5.0f);
 	//mem.insertData("robotPose", 3.0f);
-	exec->executerRespond();
+	//exec->executerRespond();
 	AL::ALValue post;
-	exec->setPosture((int&)post);
+	//xec->setPosture((int&)post);
 	
 	while(1)
 	{
+		string msg = "";
 		qi::os::msleep(50);
 		lastOp = mem.getData("lastOp");
+		msg = (string&)mem.getData("msg");
 		mem.insertData("lastOp", CODE_INVALID);
 	
 		switch ((int&)lastOp)
 		{
 			case INIT_WALK:
 				exec->initWalk();
-				cout << "Done initWalk()" << endl;
+				//cout << "Done initWalk()" << endl;
+				break;
+			case INIT_REST:
+				exec->initSecure();
+				break;
+			case CODE_SPK:
+				exec->speak(msg);
 				break;
 			case CODE_MOV:
 				exec->walk(1,0);

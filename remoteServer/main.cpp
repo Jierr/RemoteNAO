@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 				
 	taskID = proxyManager.pCall(string("runExecuter")); //callVoid("runExecuter");
 	cout<<"ID of Thread = " << taskID << endl;
-	if (!proxyManager.wait(taskID, 0))
+	/*if (!proxyManager.wait(taskID, 0))
 		cout<< "runExecuter wurde abgeschlossen" << endl;
 	else
 		cout<< "runExecuter timed out!" << endl;
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
 			cerr<< "EXCEPTION: " << e.what() << endl;
 		}
 		buf[0] = 0;
-		
+		last = 0;
 		while((last != '#') && (last != '-'))
 		{
 			//bytesRead = recv(sclient, buf, 1, 0);
@@ -202,6 +202,7 @@ int main(int argc, char* argv[])
 	
 	
 	net->unbind(sserver);
+	//todo kill the proxy manager
 	proxyManager.destroyConnection();
 	broker->shutdown();
 	//AL::ALBrokerManager::removeBroker(broker);

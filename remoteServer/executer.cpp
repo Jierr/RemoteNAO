@@ -44,15 +44,24 @@ void Executer::initWalk()
 {
 	try
 	{
-		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-		AL::ALMotionProxy motion(MB_IP, MB_PORT);
-		tts.say("init standing!");
+		//AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		//AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		//tts.say("init standing!");
 		//motion.wakeUp();
-		motion.walkInit();
-		cout << motion.getSummary() << endl;
-		tts.say("Standing!");
-		//boost::shared_ptr<AL::ALMotionProxy> motion = getParentBroker()->getMotionProxy(); 
-		//motion->walkInit(); 
+		//motion.walkInit();
+		float stiffnesses  = 1.0f;
+		string snames = "Body";
+		float x(1.0), y(0.0), t(0.0); 
+		
+		boost::shared_ptr<AL::ALMotionProxy> motion = getParentBroker()->getMotionProxy(); 
+        motion->stiffnessInterpolation(snames, stiffnesses, 1.0);
+        //motion->setStiffnesses(snames, stiffnesses);
+		motion->walkInit(); 
+		//motion->walkTo(x,y,t);
+		stiffnesses  = 0.0f;
+        //motion->setStiffnesses(snames, stiffnesses);
+		//cout << motion.getSummary() << endl;
+		//tts.say("Standing!");
 	}
 	catch(const AL::ALError& e)
 	{
@@ -69,21 +78,29 @@ void Executer::initSecure()
 		AL::ALMotionProxy motion(MB_IP, MB_PORT);
 		tts.say("init secure!");
 		
-		roboConfig = motion.getRobotConfig();
-		tts.say(roboConfig[1][0]);
 		
 		//motion.rest();
-		motion.walkInit();
+		//motion.walkInit();
+		
+		
+		//boost::shared_ptr<AL::ALMotionProxy> motion = getParentBroker()->getMotionProxy();
+		roboConfig = motion.getRobotConfig();
+		tts.say(roboConfig[1][0]);
+		float stiffnesses  = 1.0f; 
+		string snames = "Body";
+        motion.stiffnessInterpolation("Body", 1.0, 1.0);
 		
 		//interpolate to full stiffness in 0.5 seconds
-        motion.stiffnessInterpolation("Body", 1.0, 0.5);
+       // motion.setStiffnesses(snames, stiffnesses);
+		motion.walkInit(); 
+		//qi::os::sleep(5);
         AL::ALValue names = "Body";
         float ftargetAngles[] = {
         						 	 0.0, 0.0,
 		    						 80.0, 20.0, -80.0, -60.0, 0.0, 0.0,
-		    						 80.0, -20.0, +80.0, +60.0, 0.0, 0.0,
 		    						 0.0, 0.0, -40.0/2 - 0.0, 40.0, -40.0/2, -0.0,
-		    						 0.0, -0.0, -40.0/2 - 0.0, 40.0, -40.0/2, 0.0
+		    						 0.0, -0.0, -40.0/2 - 0.0, 40.0, -40.0/2, 0.0,
+		    						 80.0, -20.0, +80.0, +60.0, 0.0, 0.0
         						};
        // cout<< "sizeof(ftargetAngles) = " << sizeof(ftargetAngles) << endl;
         for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
@@ -93,11 +110,17 @@ void Executer::initSecure()
         AL::ALValue targetAngles(vtargetAngles);
         float maxSpeedFraction = 0.2;
         qi::os::msleep(100);
+        
+		float x(1.0), y(0.0), t(0.0); 
+		//motion.walkTo(x,y,0);
         motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
-	    cout << motion.getSummary() << endl;
+		
+		stiffnesses  = 0.0f; 
+       // motion->setStiffnesses(snames, stiffnesses);
+	    //cout << motion.getSummary() << endl;
 		
 		
-		tts.say("Save state!");
+		//tts.say("Save state!");
 		//boost::shared_ptr<AL::ALMotionProxy> motion = getParentBroker()->getMotionProxy(); 
 		//motion->walkInit(); 
 	}
@@ -113,12 +136,27 @@ void Executer::walk(const int& x, const int& y)
 	{
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 		AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		
+        motion.stiffnessInterpolation("Body", 1.0, 1.0);
 		motion.walkInit();
 		motion.walkTo(x,y,0);
 	}
 	catch(const AL::ALError& e)
 	{
 		cout << "Error walk: " << e.what() << endl;
+	}
+}
+
+void Executer::speak(const string& msg)
+{
+	try
+	{
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		tts.say(msg);
+	}
+	catch(const AL::ALError& e)
+	{
+		cout << "Error speak: " << e.what() << endl;
 	}
 }
 

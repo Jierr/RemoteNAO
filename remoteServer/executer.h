@@ -22,6 +22,7 @@ class Executer:public AL::ALModule
 		void initWalk();
 		void initSecure();
 		void walk(const int& x, const int& y);
+		void speak(const string& msg);
 };
 
 #endif

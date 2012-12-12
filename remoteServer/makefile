@@ -1,6 +1,6 @@
 PROJECT = .
 SDK	=/home/jierr/development/naoqi-sdk-1.12.3-linux64
-HOST	= 169.254.130.18
+HOST	= 10.42.0.55#169.254.130.18
 .PHONY: clean aatom  catom matom host edit
 
 host:
