@@ -71,7 +71,7 @@ public class NetworkModule {
 		if (Client == null || ! Client.isConnected())
 			return 0;
 		
-		return (int)(Math.random() * 0x100);
+		return (int)(Math.random()*100);
 	}
 	
 	public static boolean OpenConnection(Activity MainAct)

@@ -26,5 +26,10 @@
 	<string name="verbindungsip_eingabe">0.0.0.0</string>
 	<string name="verbindungsbutton_text">verbinden</string>
 	<string name="verbindungsbutton_close_text"> Schließen </string>
+	
+	<string name="bewegungsauswahl_radiobutton1_text"> Arme </string>
+	<string name="bewegungsauswahl_radiobutton2_text"> Beine </string>
+	<string name="bewegungsauswahl_radiobutton3_text"> Kopf </string>
+	<string name="bewegungsauswahl_OKbutton_text"> OK </string>
 
 </resources>

@@ -18,6 +18,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -93,7 +97,30 @@ public class MainActivity extends Activity {
     	toast.show();
     	}
     
-    
+    public void menu_button1_event(View view) {
+    	final Dialog bewa_dialog = new Dialog(MainActivity.this);
+    	//final RadioGroup bewa_radiogroup = (RadioGroup)bewa_dialog.findViewById(R.id.bew_radioGroup1);
+    	bewa_dialog.setContentView(R.layout.bewegungsauswahl);
+    	bewa_dialog.setTitle("Bewegungsauswahl");
+    	/*
+    	bewa_radiogroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			
+			@Override
+			public void onCheckedChanged(RadioGroup group, int checkedId) {
+				
+				
+			}
+		});*/
+    	
+    	/* ------------ Funktion bei OK Button ------------ */
+    	Button dial_button_ok = (Button) bewa_dialog.findViewById(R.id.bewa_OKbutton);
+    	dial_button_ok.setOnClickListener(new OnClickListener() {
+    		@Override
+			public void onClick(View v) {
+    			bewa_dialog.dismiss();
+    		}
+    	});
+    }
     
     public void menu_button2_event(View view) {
     	/* Dialogbox erstellen*/
@@ -185,14 +212,34 @@ public class MainActivity extends Activity {
     
 	class BattTmrTask extends TimerTask
 	{
+		final ImageView battery_view = (ImageView)findViewById(R.id.img_bat);
+		
 		private Handler updateUI = new Handler(){
 			@Override
 			public void dispatchMessage(Message msg) {
 			    super.dispatchMessage(msg);
-		    	Toast toast = Toast.makeText(MainActivity.this, "Batt: " + Integer.toHexString(msg.what).toUpperCase(), Toast.LENGTH_SHORT);
+		    	/*Toast toast = Toast.makeText(MainActivity.this, "Batt: " + Integer.toHexString(msg.what).toUpperCase(), Toast.LENGTH_SHORT);
 		    	toast.setGravity(Gravity.TOP | Gravity.RIGHT, 0, 0);
-		    	toast.show();
+		    	toast.show();*/
+			    if(msg.what > 90)
+			    {
+			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat100));
+			    }
+			    else if (msg.what <= 90 && msg.what > 65) {
+			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat75));
+				}
+			    else if (msg.what <= 65 && msg.what > 35) {
+			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat50));
+				}
+			    else if (msg.what <= 35 && msg.what > 10) {
+			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat25));
+				}
+			    else
+			    {
+			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat0));
+			    }
 			}
+			
 		};
 		
 		public void run()  
