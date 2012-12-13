@@ -4,13 +4,22 @@
 #include <alcommon/almodule.h>
 #include <alcommon/albroker.h>
 #include <alvalue/alvalue.h>
+#include <althread/almutex.h>
 #include <alproxies/almemoryproxy.h>
 //#include <boost/enable_shared_from_this.hpp>
 #include <string>
 #include "decoder.h"
 #include "executer.h"
+#include "gen.h"
 
 using namespace std;
+
+
+typedef struct{
+	int type;
+	int iparams[IPARAM_LEN];
+	string sparam;
+} event_params_t;
 
 class Manager:public AL::ALModule
 {
@@ -24,9 +33,11 @@ class Manager:public AL::ALModule
 		AL::ALValue lastOp;
 		boost::shared_ptr<Decoder> dec;
 		boost::shared_ptr<Executer> exec;
+		boost::shared_ptr<AL::ALMutex> mutex;
 		
-		string fetch(const string& untouched);
-		bool getParams(const string& code, const string& touched, void**& params);
+		bool fetch(const string& toParse, int& pos, event_params_t& ep);
+		bool getParams(const string& toParse, int& pos, event_params_t& ep, int& paramCount);
+		//void setEventParams(const );
 		
 	public:
 		//always get a shared_ptr from this via lock()		
@@ -36,7 +47,7 @@ class Manager:public AL::ALModule
 		virtual ~Manager();
 		virtual void init();
 		void localRespond();	
-		void decode(const string& toParse);
+		int decode(const string& toParse);
 		void runExecuter();	
 		//boost::weak_ptr<Manager> getManager();
 };

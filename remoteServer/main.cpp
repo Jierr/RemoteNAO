@@ -118,12 +118,6 @@ int main(int argc, char* argv[])
 		cout<< "localRespond timed out!" << endl;
 
 
-	taskID = proxyManager.pCall<string>(string("decode"), "INIT"); //callVoid("runExecuter");
-	cout<<"ID of Thread = " << taskID << endl;
-	if (!proxyManager.wait(taskID, 0))
-		cout<< "decode wurde abgeschlossen" << endl;
-	else
-		cout<< "decode timed out!" << endl;
 		
 				
 	taskID = proxyManager.pCall(string("runExecuter")); //callVoid("runExecuter");
@@ -138,6 +132,13 @@ int main(int argc, char* argv[])
 	/*AL::ALProxy proxyExecuter = AL::ALProxy(string("RMExecuter"), pip, 9559);
 	proxyExecuter.callVoid<int>(string("setPosture"), 0);
 	proxyExecuter.destroyConnection();*/
+	
+	/*taskID = proxyManager.pCall<string>(string("decode"), "SPK_Test_"); //callVoid("runExecuter");
+	cout<<"ID of Thread = " << taskID << endl;
+	if (!proxyManager.wait(taskID, 0))
+		cout<< "decode wurde abgeschlossen" << endl;
+	else
+		cout<< "decode timed out!" << endl;*/
 	
 	const std::string msg = "Hello there, everything is initialized.";
 	boost::shared_ptr<char*> buffer(new char*(buf));
@@ -178,13 +179,18 @@ int main(int argc, char* argv[])
 			do
 			{
 				bytesRead += net->recvData(sclient, buffer, 1, bytesRead);
-				cout<< "receive done: [" << bytesRead-1 << "] = " << buf[bytesRead-1] << endl;	
+				buf[bytesRead] = 0;
+				/*if (bytesRead == 3)
+					proxyManager.call<int>("decode", string(buf));
+				else if (bytesRead > 3)*/
+				cout<< "receive done: [BUFFER] = " << string(buf) << endl;
+				bytesRead = proxyManager.call<int, string>("decode", string(buf));	
 			}
-			while (buf[bytesRead-1] != '\0');
+			while (1 /*buf[bytesRead-1] != '\0'*/);
 			last = buf[bytesRead-2];
 						
 			buf[bytesRead-1] = 0;	
-			proxyManager.callVoid<string>("decode", string(buf));
+			//proxyManager.callVoid<string>("decode", string(buf));
 					
 			try 
 			{

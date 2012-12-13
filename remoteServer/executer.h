@@ -21,7 +21,7 @@ class Executer:public AL::ALModule
 		void setPosture(const int& pos);	
 		void initWalk();
 		void initSecure();
-		void walk(const int& x, const int& y);
+		void walk(const int& x);
 		void speak(const string& msg);
 };
 

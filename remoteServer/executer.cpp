@@ -116,6 +116,7 @@ void Executer::initSecure()
         motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
 		
 		stiffnesses  = 0.0f; 
+        motion.stiffnessInterpolation("Body", 0.0, 1.0);
        // motion->setStiffnesses(snames, stiffnesses);
 	    //cout << motion.getSummary() << endl;
 		
@@ -130,7 +131,7 @@ void Executer::initSecure()
 	}
 }
 
-void Executer::walk(const int& x, const int& y)
+void Executer::walk(const int& x)
 {
 	try
 	{
@@ -139,7 +140,26 @@ void Executer::walk(const int& x, const int& y)
 		
         motion.stiffnessInterpolation("Body", 1.0, 1.0);
 		motion.walkInit();
-		motion.walkTo(x,y,0);
+		
+		switch (x)
+		{
+			case MOV_FORWARD:
+				cout << "------> Move Forward <------" << endl;
+				motion.walkTo(0,0,0);
+				break;
+			case MOV_BACKWARD:
+				cout << "------> Move Backward <------" << endl;
+				break;
+			case MOV_LEFT:
+				cout << "------> Move Left <------" << endl;
+				break;
+			case MOV_RIGHT:
+				cout << "------> Move Right <------" << endl;
+				break;
+			default:
+				break;
+		};
+		
 	}
 	catch(const AL::ALError& e)
 	{
@@ -149,6 +169,7 @@ void Executer::walk(const int& x, const int& y)
 
 void Executer::speak(const string& msg)
 {
+	cout << "In SPEAK:" << msg << endl;
 	try
 	{
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
