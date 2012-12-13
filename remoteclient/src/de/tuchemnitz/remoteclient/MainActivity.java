@@ -19,15 +19,14 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
 	private Timer BattTimer = null;
+	private int bewegungsart = R.id.bewa_rbutton_LAUFEN;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -72,43 +71,121 @@ public class MainActivity extends Activity {
     	return;
     }
     
-    public void bew_button1_event(View view) {
-    	NetworkModule.Move(true, NetworkModule.MOVE_UP);
-    	Toast toast = Toast.makeText(MainActivity.this, "vorwärts", Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    	}
-    public void bew_button2_event(View view) {
-    	NetworkModule.Move(true, NetworkModule.MOVE_LEFT);
-    	Toast toast = Toast.makeText(MainActivity.this, "links", Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    	}
-    public void bew_button3_event(View view) {
-    	NetworkModule.Move(true, NetworkModule.MOVE_RIGHT);
-    	Toast toast = Toast.makeText(MainActivity.this, "rechts", Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    	}
-    public void bew_button4_event(View view) {
-    	NetworkModule.Move(true, NetworkModule.MOVE_DOWN);
-    	Toast toast = Toast.makeText(MainActivity.this, "rückwärts", Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    	}
+    /************** BEW_BUTTONS ******************
+     *********************************************/
     
+    public void bew_button1_event(View view) {
+    	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
+    	{
+    		NetworkModule.Move(true, NetworkModule.MOVE_UP);
+        	Toast toast = Toast.makeText(MainActivity.this, "vorwärts", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    	else if(bewegungsart == R.id.bewa_rbutton_ARME)
+    	{
+    		NetworkModule.MoveArm(NetworkModule.MOVE_UP);
+        	Toast toast = Toast.makeText(MainActivity.this, "Arm hoch", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    	else
+    	{
+    		NetworkModule.MoveHead(NetworkModule.MOVE_UP);
+    		Toast toast = Toast.makeText(MainActivity.this, "Kopf hoch", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    	
+    }
+    
+    public void bew_button2_event(View view) {
+    	
+    	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
+    	{
+    		NetworkModule.Move(true, NetworkModule.MOVE_LEFT);
+        	Toast toast = Toast.makeText(MainActivity.this, "links", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    	else if(bewegungsart == R.id.bewa_rbutton_ARME)
+    	{
+    		NetworkModule.MoveArm(NetworkModule.MOVE_LEFT);
+        	Toast toast = Toast.makeText(MainActivity.this, "Arm links", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    	else
+    	{
+    		NetworkModule.MoveHead(NetworkModule.MOVE_LEFT);
+    		Toast toast = Toast.makeText(MainActivity.this, "Kopf links", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    }
+    
+    public void bew_button3_event(View view) {
+    	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
+    	{
+    		NetworkModule.Move(true, NetworkModule.MOVE_RIGHT);
+        	Toast toast = Toast.makeText(MainActivity.this, "rechts", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    	else if(bewegungsart == R.id.bewa_rbutton_ARME)
+    	{
+    		NetworkModule.MoveArm(NetworkModule.MOVE_RIGHT);
+        	Toast toast = Toast.makeText(MainActivity.this, "Arm rechts", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    	else
+    	{
+    		NetworkModule.MoveHead(NetworkModule.MOVE_RIGHT);
+    		Toast toast = Toast.makeText(MainActivity.this, "Kopf rechts", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    }
+    
+    public void bew_button4_event(View view) {
+    	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
+    	{
+    		NetworkModule.Move(true, NetworkModule.MOVE_DOWN);
+        	Toast toast = Toast.makeText(MainActivity.this, "rückwärts", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    	else if(bewegungsart == R.id.bewa_rbutton_ARME)
+    	{
+    		NetworkModule.MoveArm(NetworkModule.MOVE_DOWN);
+        	Toast toast = Toast.makeText(MainActivity.this, "Arm unten", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    	else
+    	{
+    		NetworkModule.MoveHead(NetworkModule.MOVE_DOWN);
+    		Toast toast = Toast.makeText(MainActivity.this, "Kinn rann", Toast.LENGTH_SHORT);
+        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+        	toast.show();
+    	}
+    }
+    
+    /********************** Menu *************************
+     *****************************************************/
     public void menu_button1_event(View view) {
     	final Dialog bewa_dialog = new Dialog(MainActivity.this);
-    	//final RadioGroup bewa_radiogroup = (RadioGroup)bewa_dialog.findViewById(R.id.bew_radioGroup1);
     	bewa_dialog.setContentView(R.layout.bewegungsauswahl);
     	bewa_dialog.setTitle("Bewegungsauswahl");
-    	/*
-    	bewa_radiogroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+    	((RadioGroup) bewa_dialog.findViewById(R.id.bew_radioGroup1)).check(bewegungsart);
+    	/*bewa_radiogroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			
 			@Override
 			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				
-				
+				Toast toast = Toast.makeText(MainActivity.this, "checked: " + Integer.toString(checkedId), Toast.LENGTH_SHORT);
+		    	toast.setGravity(Gravity.TOP | Gravity.RIGHT, 0, 0);
+		    	toast.show();
 			}
 		});*/
     	
@@ -116,11 +193,18 @@ public class MainActivity extends Activity {
     	Button dial_button_ok = (Button) bewa_dialog.findViewById(R.id.bewa_OKbutton);
     	dial_button_ok.setOnClickListener(new OnClickListener() {
     		@Override
-			public void onClick(View v) {
+			public void onClick(View view) {
     			bewa_dialog.dismiss();
+    			final RadioGroup bewa_radiogroup = (RadioGroup)bewa_dialog.findViewById(R.id.bew_radioGroup1);
+    			int checkedId = bewa_radiogroup.getCheckedRadioButtonId();
+    			
+    			bewegungsart = checkedId;
     		}
     	});
+    	/*Dialogbox anzeigen*/
+    	bewa_dialog.show();
     }
+    
     
     public void menu_button2_event(View view) {
     	/* Dialogbox erstellen*/
@@ -144,6 +228,10 @@ public class MainActivity extends Activity {
     	
     	/*Dialogbox anzeigen*/
     	spk_dialog.show();
+    }
+    
+    public void menu_button3_event(View view) {
+    	NetworkModule.SitToggle();
     }
     
     
@@ -218,9 +306,6 @@ public class MainActivity extends Activity {
 			@Override
 			public void dispatchMessage(Message msg) {
 			    super.dispatchMessage(msg);
-		    	/*Toast toast = Toast.makeText(MainActivity.this, "Batt: " + Integer.toHexString(msg.what).toUpperCase(), Toast.LENGTH_SHORT);
-		    	toast.setGravity(Gravity.TOP | Gravity.RIGHT, 0, 0);
-		    	toast.show();*/
 			    if(msg.what > 90)
 			    {
 			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat100));

@@ -51,6 +51,50 @@ public class NetworkModule {
 		return;
 	}
 	
+	public static void MoveArm(char Direction)
+	{
+		if (Client == null || ! Client.isConnected())
+			return;
+		
+		String CommandStr;
+		
+		CommandStr = "ARM";
+		CommandStr += "_";
+		CommandStr += String.valueOf(Direction);
+		SendCommand(CommandStr);
+		
+		return;
+	}
+	
+	public static void MoveHead(char Direction)
+	{
+		if (Client == null || ! Client.isConnected())
+			return;
+		
+		String CommandStr;
+		
+		CommandStr = "HAD";
+		CommandStr += "_";
+		CommandStr += String.valueOf(Direction);
+		SendCommand(CommandStr);
+		
+		return;
+	}
+	
+	public static void SitToggle()
+	{
+		if (Client == null || ! Client.isConnected())
+			return;
+		
+		String CommandStr;
+		
+		CommandStr = "SIT";
+		//CommandStr += "_";
+		SendCommand(CommandStr);
+		
+		return;
+	}
+	
 	public static void Speak(String Text)
 	{
 		if (Client == null || ! Client.isConnected())

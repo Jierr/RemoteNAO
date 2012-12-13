@@ -111,7 +111,7 @@
             android:layout_height="wrap_content"
             android:minHeight="20dip"
             android:text="@string/menu_button3_text"  
-            android:onClick="sendMessage" />
+            android:onClick="menu_button3_event" />
 
         <Button
             android:id="@+id/menu_button4"
