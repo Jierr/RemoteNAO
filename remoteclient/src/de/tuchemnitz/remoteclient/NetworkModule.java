@@ -2,22 +2,20 @@ package de.tuchemnitz.remoteclient;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Random;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.util.Log;
 
 public class NetworkModule {
 
-	private static final String TERMINATE_CHR = "\0";
+	//private static final String TERMINATE_CHR = "\0";
 	private static String IP_Addr = null;
 	private static final int Port = 0x8000;
 	private static Socket Client = null;
 	private static OutputStream outToServer;
 	private static InputStream inFromServer;
-	public static final char MOVE_UP = 'U';
-	public static final char MOVE_DOWN = 'D';
+	public static final char MOVE_UP = 'F';
+	public static final char MOVE_DOWN = 'B';
 	public static final char MOVE_LEFT = 'L';
 	public static final char MOVE_RIGHT = 'R';
 	private static Activity RefActivity;
@@ -34,7 +32,7 @@ public class NetworkModule {
 			return IP_Addr;
 	}
 	
-	public static void Move(boolean Start, char Direction)
+	public static void Move(char Direction)
 	{
 		if (Client == null || ! Client.isConnected())
 			return;
@@ -42,8 +40,6 @@ public class NetworkModule {
 		String CommandStr;
 		
 		CommandStr = "MOV";
-		CommandStr += "_";
-		CommandStr += Start ? "1" : "0";
 		CommandStr += "_";
 		CommandStr += String.valueOf(Direction);
 		SendCommand(CommandStr);
@@ -105,6 +101,7 @@ public class NetworkModule {
 		CommandStr = "SPK";
 		CommandStr += "_";
 		CommandStr += Text;
+		CommandStr += "_";
 		SendCommand(CommandStr);
 		
 		return;
@@ -178,7 +175,7 @@ public class NetworkModule {
 		try
 		{
 			DataOutputStream out = new DataOutputStream(outToServer);
-			out.writeBytes("#" + TERMINATE_CHR);
+			out.writeBytes("DIS");
 			
 			Client.close();
 			Log.v("NetMod", "Connection closed.");
@@ -218,7 +215,7 @@ public class NetworkModule {
 			{
 				DataOutputStream out = new DataOutputStream(outToServer);
 				
-				out.writeBytes(CommandStr + TERMINATE_CHR);
+				out.writeBytes(CommandStr);
 				TryResend = 0;
 			}
 			catch(IOException e)
@@ -257,7 +254,7 @@ public class NetworkModule {
 		{
 			DataOutputStream out = new DataOutputStream(outToServer);
 			
-			out.writeBytes(" " + TERMINATE_CHR);
+			out.writeBytes(" ");
 		}
 		catch(IOException e)
 		{

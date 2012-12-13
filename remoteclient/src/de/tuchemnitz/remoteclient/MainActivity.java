@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
     public void bew_button1_event(View view) {
     	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
     	{
-    		NetworkModule.Move(true, NetworkModule.MOVE_UP);
+    		NetworkModule.Move(NetworkModule.MOVE_UP);
         	Toast toast = Toast.makeText(MainActivity.this, "vorwärts", Toast.LENGTH_SHORT);
         	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
         	toast.show();
@@ -103,7 +103,7 @@ public class MainActivity extends Activity {
     	
     	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
     	{
-    		NetworkModule.Move(true, NetworkModule.MOVE_LEFT);
+    		NetworkModule.Move(NetworkModule.MOVE_LEFT);
         	Toast toast = Toast.makeText(MainActivity.this, "links", Toast.LENGTH_SHORT);
         	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
         	toast.show();
@@ -127,7 +127,7 @@ public class MainActivity extends Activity {
     public void bew_button3_event(View view) {
     	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
     	{
-    		NetworkModule.Move(true, NetworkModule.MOVE_RIGHT);
+    		NetworkModule.Move(NetworkModule.MOVE_RIGHT);
         	Toast toast = Toast.makeText(MainActivity.this, "rechts", Toast.LENGTH_SHORT);
         	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
         	toast.show();
@@ -151,7 +151,7 @@ public class MainActivity extends Activity {
     public void bew_button4_event(View view) {
     	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
     	{
-    		NetworkModule.Move(true, NetworkModule.MOVE_DOWN);
+    		NetworkModule.Move(NetworkModule.MOVE_DOWN);
         	Toast toast = Toast.makeText(MainActivity.this, "rückwärts", Toast.LENGTH_SHORT);
         	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
         	toast.show();
