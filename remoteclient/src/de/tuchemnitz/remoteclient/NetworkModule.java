@@ -77,14 +77,30 @@ public class NetworkModule {
 		return;
 	}
 	
-	public static void SitToggle()
+	public static String SitToggle()
+	{
+		if (Client == null || ! Client.isConnected())
+			return null;
+		
+		String CommandStr;
+		String ReceiveStr;
+		
+		CommandStr = "SIT";
+		//CommandStr += "_";
+		SendCommand(CommandStr);
+		ReceiveStr = Receive();
+		ReceiveStr = (ReceiveStr.split("_"))[1];
+		return ReceiveStr;
+	}
+	
+	public static void Rest()
 	{
 		if (Client == null || ! Client.isConnected())
 			return;
 		
 		String CommandStr;
 		
-		CommandStr = "SIT";
+		CommandStr = "RST";
 		//CommandStr += "_";
 		SendCommand(CommandStr);
 		
@@ -111,7 +127,17 @@ public class NetworkModule {
 	{
 		if (Client == null || ! Client.isConnected())
 			return 0;
+		/*
+		String CommandStr;
+		String ReceiveStr;
 		
+		CommandStr = "SPK";
+		CommandStr += "_";
+		SendCommand(CommandStr);
+		ReceiveStr = Receive();
+		ReceiveStr = (ReceiveStr.split("_"))[1];
+		return Integer.parseInt(ReceiveStr);
+		*/
 		return (int)(Math.random()*100);
 	}
 	
@@ -124,7 +150,7 @@ public class NetworkModule {
 		{
 			Log.v("NetMod", "Connecting to " + IP_Addr + " on port " + Port);
 			Client = new Socket(IP_Addr, Port);
-			Client.setSoTimeout(1000);
+			Client.setSoTimeout(3000); //receive Timeout is set
 			Log.v("NetMod", "Just connected to " + Client.getRemoteSocketAddress());
 			
 			outToServer = Client.getOutputStream();
@@ -238,6 +264,24 @@ public class NetworkModule {
 		}
 		
 		return;
+	}
+	
+	private static String Receive (){
+		if (Client == null || ! Client.isConnected())
+			return null;
+		
+		String inMessage = null;
+		try
+		{
+			DataInputStream in = new DataInputStream(inFromServer);
+			inMessage = in.readUTF();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			Log.v("NetMod", "Nothing received");
+		}
+		return inMessage;
 	}
 	
 	public static boolean IsConnected()

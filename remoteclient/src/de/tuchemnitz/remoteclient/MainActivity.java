@@ -231,7 +231,12 @@ public class MainActivity extends Activity {
     }
     
     public void menu_button3_event(View view) {
-    	NetworkModule.SitToggle();
+    	String sit_status = null;
+    	sit_status = NetworkModule.SitToggle();
+    	if (sit_status == "STAND")
+    		((Button)findViewById(R.id.menu_button3)).setText("setzen");
+    	else
+    		((Button)findViewById(R.id.menu_button3)).setText("aufstehen");
     }
     
     
