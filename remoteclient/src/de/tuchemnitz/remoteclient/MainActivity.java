@@ -34,11 +34,12 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         
     	//NetworkModule.SetIPAddress("134.109.146.139");
-        NetworkModule.SetIPAddress("134.109.151.142");
+        //NetworkModule.SetIPAddress("134.109.151.142");
+        NetworkModule.SetIPAddress("192.168.5.20");
         menu_button5_event(null);
         
 		BattTimer = new Timer();
-		BattTimer.schedule(new BattTmrTask(), 1000, 5000);
+		BattTimer.schedule(new BattTmrTask(), 1000, 20000);
     }
 
     @Override
@@ -234,9 +235,9 @@ public class MainActivity extends Activity {
     	String sit_status = null;
     	sit_status = NetworkModule.SitToggle();
     	if (sit_status == "STAND")
-    		((Button)findViewById(R.id.menu_button3)).setText("setzen");
+    		((Button)findViewById(R.id.menu_button3)).setText("Setzen");
     	else
-    		((Button)findViewById(R.id.menu_button3)).setText("aufstehen");
+    		((Button)findViewById(R.id.menu_button3)).setText("Aufstehen");
     }
     
     

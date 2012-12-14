@@ -83,13 +83,24 @@ public class NetworkModule {
 			return null;
 		
 		String CommandStr;
-		String ReceiveStr;
+		String ReceiveStr = "setzen/\nstehen";
 		
 		CommandStr = "SIT";
 		//CommandStr += "_";
 		SendCommand(CommandStr);
 		ReceiveStr = Receive();
-		ReceiveStr = (ReceiveStr.split("_"))[1];
+		Log.v("NetMod.SIT", "received string: " + ReceiveStr);
+		if(ReceiveStr != null)
+		{
+			ReceiveStr = ReceiveStr.trim();
+			if( ReceiveStr.compareToIgnoreCase("SIT_STAND")==0)
+				ReceiveStr =  "STAND";
+			else if( ReceiveStr.compareToIgnoreCase("SIT_SIT")==0)
+				ReceiveStr =  "SIT";
+			else ReceiveStr =  "MIST";
+			//ReceiveStr = (ReceiveStr.split("_"))[1];
+		}
+		Log.v("NetMod.SIT", "returned string: " + ReceiveStr);
 		return ReceiveStr;
 	}
 	
@@ -127,18 +138,29 @@ public class NetworkModule {
 	{
 		if (Client == null || ! Client.isConnected())
 			return 0;
-		/*
+		
 		String CommandStr;
 		String ReceiveStr;
+		char batv = 0;
 		
-		CommandStr = "SPK";
+		CommandStr = "BAT";
 		CommandStr += "_";
 		SendCommand(CommandStr);
 		ReceiveStr = Receive();
-		ReceiveStr = (ReceiveStr.split("_"))[1];
-		return Integer.parseInt(ReceiveStr);
-		*/
-		return (int)(Math.random()*100);
+		if(ReceiveStr != null)
+		{
+			if(ReceiveStr.length()>=5)
+			{
+				batv = ReceiveStr.charAt(4);
+				Log.v("NetMod.BAT", String.valueOf((int)batv));
+				return (int) batv;
+			}
+		}
+		
+		return 0;
+		
+		
+		//return (int)(Math.random()*100);
 	}
 	
 	public static boolean OpenConnection(Activity MainAct)
@@ -253,10 +275,10 @@ public class NetworkModule {
 				if (! OpenConnection(null))
 				{
 					Log.v("NetMod", "Reconnect failed.");
-			    	new AlertDialog.Builder(RefActivity)
+			    	/*new AlertDialog.Builder(RefActivity)
 						.setMessage("Connection lost.")
 						.setNeutralButton("bummer", null)
-						.show();
+						.show();*///Bringt die MAin zum Absturz --> nullpointer
 					break;
 				}
 				TryResend --;
@@ -273,13 +295,13 @@ public class NetworkModule {
 		String inMessage = null;
 		try
 		{
-			DataInputStream in = new DataInputStream(inFromServer);
-			inMessage = in.readUTF();
+			BufferedReader in = new BufferedReader(new InputStreamReader(inFromServer));
+			inMessage = in.readLine();
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
-			Log.v("NetMod", "Nothing received");
+			Log.v("NetMod.Recv", "Nothing received");
 		}
 		return inMessage;
 	}
