@@ -15,6 +15,8 @@
 #define STG_PARAM 2
 #define STG_VALID 3
 
+#define RESET_CONNECTION 42
+
 #define INIT_WALK 10
 #define INIT_REST 11
 

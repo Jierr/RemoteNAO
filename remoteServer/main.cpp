@@ -101,9 +101,9 @@ int main(int argc, char* argv[])
 	int taskID = 0;
 	int sserver = 0;
 	int sclient = 0;
-	char buf[255] = {0,};
+	char buf[1024] = {0,};
 	char last = 0;
-	unsigned int bytesRead = 0; 
+	int bytesRead = 0; 
 	unsigned int bytesSent = 0;
 	unsigned int len;
 	
@@ -143,66 +143,58 @@ int main(int argc, char* argv[])
 	const std::string msg = "Hello there, everything is initialized.";
 	boost::shared_ptr<char*> buffer(new char*(buf));
 	sserver = net->bindTcp(port);
-	while(last != '-')
+	while(bytesRead>=-1)
 	{
 		net->singleListen(sserver);
 		sclient = net->acceptClient(sserver);
-		strcpy(buf, "[Remote NAO] Willkommen!\r\n");
-		cout<< "Sende Daten\r\n";
-		//send(sclient, buf, strlen(buf), 0);
 		
-		bytesSent = 0;
-		len = strlen(buf);
-		do 
-		{
-			bytesSent += net->sendData(sclient, buffer, len, 0);
-		}
-		while (bytesSent < len);
+					/*
+					strcpy(buf, "[Remote NAO] Willkommen!\r\n");
+					cout<< "Sende Daten\r\n";
+					//send(sclient, buf, strlen(buf), 0);		
+					bytesSent = 0;
+					len = strlen(buf);
+					do 
+					{
+						bytesSent += net->sendData(sclient, buffer, len, 0);
+					}
+					while (bytesSent < len);		
+					cout<< "Sende Daten beendet\r\n";
+					*/
 		
-		cout<< "Sende Daten beendet\r\n";
 		try 
 		{
 			AL::ALTextToSpeechProxy tts(pip, pport);
-			tts.say(msg);
+			tts.say("Connected pew pew");
 		}		
 		catch(const AL::ALError& e)
 		{
 			cerr<< "EXCEPTION: " << e.what() << endl;
 		}
 		buf[0] = 0;
-		last = 0;
-		while((last != '#') && (last != '-'))
+		
+		//bytesRead = recv(sclient, buf, 1, 0);
+		cout<< "receive...\r\n";
+		bytesRead = 0;
+		do
 		{
-			//bytesRead = recv(sclient, buf, 1, 0);
-			cout<< "receive...\r\n";
-			bytesRead = 0;
-			do
-			{
-				bytesRead += net->recvData(sclient, buffer, 1, bytesRead);
-				buf[bytesRead] = 0;
-				/*if (bytesRead == 3)
-					proxyManager.call<int>("decode", string(buf));
-				else if (bytesRead > 3)*/
-				cout<< "receive done: [BUFFER] = " << string(buf) << endl;
-				bytesRead = proxyManager.call<int, string>("decode", string(buf));	
-			}
-			while (1 /*buf[bytesRead-1] != '\0'*/);
-			last = buf[bytesRead-2];
-						
-			buf[bytesRead-1] = 0;	
-			//proxyManager.callVoid<string>("decode", string(buf));
-					
-			try 
-			{
-				AL::ALTextToSpeechProxy tts(pip, pport);
-				const string str = string(buf);
-				tts.say(str);
-			}
-			catch(const AL::ALError& e)
-			{
-				cerr<< "EXCEPTION: " << e.what() << endl;
-			}			
+			bytesRead += net->recvData(sclient, buffer, 1023, bytesRead);
+			buf[bytesRead] = 0;
+			cout<< "receive done: [BUFFER] = " << string(buf) << endl;
+			bytesRead = proxyManager.call<int, string>("decode", string(buf));	
 		}
+		while (bytesRead>=0);
+					
+				
+		try 
+		{
+			AL::ALTextToSpeechProxy tts(pip, pport);
+			tts.say("pew pew Disconnected");
+		}
+		catch(const AL::ALError& e)
+		{
+			cerr<< "EXCEPTION: " << e.what() << endl;
+		}	
 		net->disconnect(sclient);
 	}
 	

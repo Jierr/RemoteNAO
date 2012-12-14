@@ -96,6 +96,12 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 			//return <ingnore params>
 			return false;
 		}
+		else if (fstr == "DIS")
+		{
+			ep.type = RESET_CONNECTION;
+			fstr = "";
+			return false;
+		}
 		else if (fstr == "MOV")
 			ep.type = CODE_MOV;
 		else if (fstr == "SPK")
@@ -104,7 +110,7 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 			ep.type = CODE_INVALID;	
 		fstr = "";	
 	}
-	//return <process params>
+	//return <parse for process params>
 	return true;
 }
 
@@ -209,6 +215,7 @@ int Manager::decode(const string& toParse)
 				//As long the code is unknown fetch more
 				if ((eventp.type != CODE_INVALID) && (eventp.type != CODE_UNKNOWN))
 				{	
+					//if !cont skipp the scann for parameters
 					if (!cont)			
 						stage = STG_VALID;
 					else 
@@ -243,14 +250,15 @@ int Manager::decode(const string& toParse)
 	{			
 		case STG_VALID:
 		{
-			cout<< "Decoded Function: " << (int&)eventp.type << ", " << eventp.sparam << endl;
+			cout<< "-------------->Decoded Function: " << (int&)eventp.type << ", " << eventp.sparam << endl;
 			vector<int> vtemp (eventp.iparams, eventp.iparams + sizeof(eventp.iparams)/sizeof(int));
+			int ttype = eventp.type;
 			mutex->lock();
 				mem.insertData("lastOp", eventp.type);
 				mem.insertData("msg", eventp.sparam);
 				mem.insertData("iparams", (vector<int>)vtemp);
-			mutex->unlock();
-						
+			mutex->unlock();	
+			
 			pos = 0;
 			stage = STG_FETCH;
 			paramCount = 0;
@@ -259,11 +267,14 @@ int Manager::decode(const string& toParse)
 			for (int p = 0; p < IPARAM_LEN; ++p)
 				eventp.iparams[p] = 0;
 			eventp.sparam = "";
+			if (ttype == RESET_CONNECTION)
+				return -1;
+			
 			break;
 		}
 		case STG_ERROR:
 		{
-			cout << "Error Invalid CODE!" << endl;
+			cout << "-------------->Error Invalid CODE!" << endl;
 			pos = 0;
 			stage = STG_FETCH;
 			paramCount = 0;
@@ -300,7 +311,7 @@ void Manager::runExecuter()
 	//xec->setPosture((int&)post);
 	
 
-	
+	exec->initWalk();	
 	while(1)
 	{
 		string msg = "";
@@ -328,6 +339,7 @@ void Manager::runExecuter()
 			case CODE_MOV:
 				exec->walk(vtemp[0]);
 				break;
+			case RESET_CONNECTION:
 			case CODE_INVALID:
 				//cout<< "Nothing to do" << endl;
 				break;

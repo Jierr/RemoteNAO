@@ -116,7 +116,7 @@ void Executer::initSecure()
         motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
 		
 		stiffnesses  = 0.0f; 
-        motion.stiffnessInterpolation("Body", 0.0, 1.0);
+        motion.stiffnessInterpolation("Body", 0.2, 1.0);
        // motion->setStiffnesses(snames, stiffnesses);
 	    //cout << motion.getSummary() << endl;
 		
@@ -140,22 +140,89 @@ void Executer::walk(const int& x)
 		
         motion.stiffnessInterpolation("Body", 1.0, 1.0);
 		motion.walkInit();
-		
 		switch (x)
 		{
 			case MOV_FORWARD:
+			{
+				vector<string> legs (2, "");
+				vector<float> footstep(3, 0.0);
+				footstep[0] = 0.2;
+				footstep[1] = 0.0;
+				footstep[2] = 0.0;
+				
+				AL::ALValue footsteps = AL::ALValue::array(footstep, footstep);
+				/*footsteps.arrayReserve(sizeof(vector<int>)*2);
+				footsteps.array< vector<int>, vector<int> >(footstep, footstep);
+				cout<< footsteps[0][0] << ", " << footsteps[0][1] << ", "<< footsteps[0][2] << ", " << endl
+					<< footsteps[1][0] << ", " << footsteps[1][1] << ", "<< footsteps[1][2] << endl;*/
+				vector<float> speed(2, 1.0); 				
 				cout << "------> Move Forward <------" << endl;
-				motion.walkTo(0,0,0);
+				legs[0] = "LLeg";
+				legs[1] = "RLeg";
+				//last argument determines if existing footsteps planned should 
+				//be cleared
+				motion.setFootStepsWithSpeed(legs, footsteps, speed, false); 
+				//motion.walkTo(0,0,0);
+				
 				break;
+			}
 			case MOV_BACKWARD:
+			{				
+				vector<string> legs (2, "");
+				vector<float> footstep(3, 0.0);
+				footstep[0] = -0.2;
+				footstep[1] = 0.0;
+				footstep[2] = 0.0;
+				
+				AL::ALValue footsteps = AL::ALValue::array(footstep, footstep);
+				vector<float> speed(2, 1.0); 				
 				cout << "------> Move Backward <------" << endl;
+				legs[0] = "LLeg";
+				legs[1] = "RLeg";
+				//last argument determines if existing footsteps planned should 
+				//be cleared
+				motion.setFootStepsWithSpeed(legs, footsteps, speed, false); 
+				
 				break;
-			case MOV_LEFT:
+			}
+			case MOV_LEFT:		
+			{		
+				vector<string> legs (2, "");
+				vector<float> footstep(3, 0.0);
+				footstep[0] = 0.2;
+				footstep[1] = 0.0;
+				footstep[2] = 0.3;
+				
+				AL::ALValue footsteps = AL::ALValue::array(footstep, footstep);
+				vector<float> speed(2, 1.0); 				
 				cout << "------> Move Left <------" << endl;
+				legs[0] = "LLeg";
+				legs[1] = "RLeg";
+				//last argument determines if existing footsteps planned should 
+				//be cleared
+				motion.setFootStepsWithSpeed(legs, footsteps, speed, false); 
+				
 				break;
+			}
 			case MOV_RIGHT:
+			{		
+				vector<string> legs (2, "");
+				vector<float> footstep(3, 0.0);
+				footstep[0] = 0.2;
+				footstep[1] = 0.0;
+				footstep[2] = -0.3;
+				
+				AL::ALValue footsteps = AL::ALValue::array(footstep, footstep);
+				vector<float> speed(2, 1.0); 				
 				cout << "------> Move Right <------" << endl;
+				legs[0] = "LLeg";
+				legs[1] = "RLeg";
+				//last argument determines if existing footsteps planned should 
+				//be cleared
+				motion.setFootStepsWithSpeed(legs, footsteps, speed, false); 
+				
 				break;
+			}
 			default:
 				break;
 		};
