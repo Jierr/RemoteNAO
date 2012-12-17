@@ -1,13 +1,28 @@
 package de.tuchemnitz.remoteclient;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import android.app.Activity;
-import android.app.AlertDialog;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
+
+class EventCallback
+{
+	Handler EvtHandler;
+	int EventType;
+	int InfoType;
+};
+
+class RobotInformation
+{
+	int BattState;
+	String SitState;
+};
 
 public class NetworkModule {
 
@@ -17,9 +32,25 @@ public class NetworkModule {
 	public static final char MOVE_DOWN	= 'B';
 	public static final char MOVE_LEFT 	= 'L';
 	public static final char MOVE_RIGHT	= 'R';
-	private static Activity RefActivity;
-	//private static Thread NetTData = null;
 	private static NetworkThread NetTData = null;
+	public static final int INFO_BATT = 0;
+	public static final int INFO_SIT = 1;
+	public static final int INFO_CONN = 2;
+	
+	private static ArrayList<EventCallback> EventList = new ArrayList<EventCallback>();
+	private static RobotInformation RoboInfo = new RobotInformation();
+	
+	public static void RegisterCallback(Handler EvtHandler, int EventType, int InfoType)
+	{
+		EventCallback NewCB = new EventCallback();
+		
+		NewCB.EvtHandler = EvtHandler;
+		NewCB.EventType = EventType;
+		NewCB.InfoType = InfoType;
+		EventList.add(NewCB);
+		
+		return;
+	}
 	
 	public static void SetIPAddress(String IP_Str)
 	{
@@ -35,7 +66,7 @@ public class NetworkModule {
 	
 	public static void Move(int Type, char Direction)
 	{
-		if (NetTData == null || NetTData.GetConnectionState() != 1)
+		if (NetTData == null || NetTData.GetConnectionState() != 2)
 			return;
 		
 		NetworkThread.CMDTYPE MoveType;
@@ -62,9 +93,19 @@ public class NetworkModule {
 		return;
 	}
 	
+	public static void Stop()
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != 2)
+			return;
+		
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.STOP, null);
+		
+		return;
+	}
+	
 	public static String SitToggle()
 	{
-		if (NetTData == null || NetTData.GetConnectionState() != 1)
+		if (NetTData == null || NetTData.GetConnectionState() != 2)
 			return "";
 		
 		NetTData.QueueCommand(NetworkThread.CMDTYPE.SIT, null);
@@ -74,7 +115,7 @@ public class NetworkModule {
 	
 	public static void Rest()
 	{
-		if (NetTData == null || NetTData.GetConnectionState() != 1)
+		if (NetTData == null || NetTData.GetConnectionState() != 2)
 			return;
 		
 		NetTData.QueueCommand(NetworkThread.CMDTYPE.REST, null);
@@ -84,7 +125,7 @@ public class NetworkModule {
 	
 	public static void Speak(String Text)
 	{
-		if (NetTData == null || NetTData.GetConnectionState() != 1)
+		if (NetTData == null || NetTData.GetConnectionState() != 2)
 			return;
 		
 		NetTData.QueueCommand(NetworkThread.CMDTYPE.SPEAK, Text + "_");
@@ -94,7 +135,7 @@ public class NetworkModule {
 	
 	public static void Dance(String Text)
 	{
-		if (NetTData == null || NetTData.GetConnectionState() != 1)
+		if (NetTData == null || NetTData.GetConnectionState() != 2)
 			return;
 		
 		NetTData.QueueCommand(NetworkThread.CMDTYPE.DANCE, Text);
@@ -102,24 +143,39 @@ public class NetworkModule {
 		return;
 	}
 	
-	public static int GetBatteryState()
+	public static void RequestBatteryState()
 	{
-		if (NetTData == null || NetTData.GetConnectionState() != 1)
-			return 0;
-		
-		return (int)(Math.random() * 0x100);
-	}
-	
-	public static void OpenConnection(Activity MainAct)
-	{
-		if (NetTData != null && NetTData.GetConnectionState() != -1)
+		if (NetTData == null || NetTData.GetConnectionState() != 2)
 			return;
 		
-		if (MainAct != null)
-			RefActivity = MainAct;
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.GETBATT, null);
 		
-		NetTData = new NetworkThread(IP_Addr, Port);
-		//NetTData = new Thread(NetTData);
+		return;
+	}
+	
+	public static Object GetInfoData(int Type)
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != 2)
+			return 0;
+				
+		switch(Type)
+		{
+		case INFO_BATT:
+			return (int)(Math.random() * 100);
+			//return RoboInfo.BattState;
+		case INFO_SIT:
+			return RoboInfo.SitState;
+		}
+		
+		return 0;
+	}
+	
+	public static void OpenConnection()
+	{
+		if (NetTData != null && NetTData.GetConnectionState() != 0)
+			return;
+		
+		NetTData = new NetworkThread(IP_Addr, Port, EventList, RoboInfo);
 		NetTData.start();
 		
 		return;
@@ -130,7 +186,7 @@ public class NetworkModule {
 		if (NetTData == null)
 			return;
 		
-		if (NetTData.GetConnectionState() == 1)
+		if (NetTData.GetConnectionState() == 2)
 			NetTData.StopThread();
 		
 		return;
@@ -139,7 +195,7 @@ public class NetworkModule {
 	public static int IsConnected()
 	{
 		if (NetTData == null)
-			return -1;
+			return 0;
 		
 		return NetTData.GetConnectionState();
 	}
@@ -160,16 +216,16 @@ public class NetworkModule {
 }
 
 
-//class NetworkThread implements Runnable
 class NetworkThread extends Thread
 {
 	public enum CMDTYPE
 	{
-		NETTEST, MOVE, MOVEARM, MOVEHEAD, SIT, REST, SPEAK, DANCE, GETBATT
+		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, REST, SPEAK, DANCE, GETBATT
 	};
 	private final String CMDTYPE_MOVE	= "MOV";
 	private final String CMDTYPE_MVARM	= "ARM";
 	private final String CMDTYPE_MVHEAD	= "HAD";
+	private final String CMDTYPE_STOP	= "STP";
 	private final String CMDTYPE_SIT	= "SIT";
 	private final String CMDTYPE_REST	= "RST";
 	private final String CMDTYPE_SPEAK 	= "SPK";
@@ -183,7 +239,10 @@ class NetworkThread extends Thread
 	private OutputStream outToServer;
 	private InputStream inFromServer;
 	private volatile boolean CloseConn = false;
-	private volatile int ConnectionState = -1;
+	private volatile int ConnectionState = 0;
+	
+	private static ArrayList<EventCallback> EventList;
+	private static RobotInformation RoboInfo;
 	
 	class CommandQueue
 	{
@@ -200,10 +259,15 @@ class NetworkThread extends Thread
 	};
 	Queue<CommandQueue> CmdQueue = new LinkedList<CommandQueue>();
 	
-	public NetworkThread(String DestIP, int DestPort)
+	public NetworkThread(String DestIP, int DestPort, ArrayList<EventCallback> CBEvtList,
+						RobotInformation RbInfo)
 	{
 		IP_Addr = DestIP;
 		Port = DestPort;
+		EventList = CBEvtList;
+		RoboInfo = RbInfo;
+		RoboInfo.BattState = 0;
+		RoboInfo.SitState = null;
 		
 		return;
 	}
@@ -214,15 +278,17 @@ class NetworkThread extends Thread
 		CommandQueue CurCmd;
 		String CmdStr;
 		
-		ConnectionState = 0;
+		ConnectionState = 1;
 		RetVal = OpenNet();
 		if (! RetVal)
 		{
-			ConnectionState = -1;
+			ConnectionState = 0;
+			ConnectionCallback(ConnectionState);
 			return;
 		}
 		
-		ConnectionState = 1;
+		ConnectionState = 2;
+		ConnectionCallback(ConnectionState);
 		while(! CloseConn)
 		{
 			synchronized(this)
@@ -258,6 +324,9 @@ class NetworkThread extends Thread
 				case MOVEHEAD:
 					CmdStr = CMDTYPE_MVHEAD;
 					break;
+				case STOP:
+					CmdStr = CMDTYPE_STOP;
+					break;
 				case SIT:
 					CmdStr = CMDTYPE_SIT;
 					break;
@@ -286,50 +355,88 @@ class NetworkThread extends Thread
 		}
 		
 		CloseNet();
-		ConnectionState = -1;
+		ConnectionState = 0;
+		ConnectionCallback(ConnectionState);
 		
 		return;
+	}
+	
+	private void ConnectionCallback(int RetState)
+	{
+		EventCallback DestCB;
+		
+		DestCB = GetCallback(NetworkModule.INFO_CONN);
+		if (DestCB == null)
+			return;
+		DestCB.EvtHandler.sendMessage(Message.obtain(null, DestCB.EventType, RetState, 0));
+		
+		return;
+	}
+	
+	private EventCallback GetCallback(int InfoType)
+	{
+		int CurEvt;
+		EventCallback TempEvt;
+		
+		for (CurEvt = 0; CurEvt < EventList.size(); CurEvt ++)
+		{
+			TempEvt = EventList.get(CurEvt);
+			if (TempEvt.InfoType == InfoType)
+				return TempEvt;
+		}
+		
+		return null;
 	}
 	
 	private void HandleAnswer(CommandQueue Command)
 	{
 		String ReceiveStr;
+		EventCallback DestCB;
+		int ArgInt = 0;
+		Object ArgObj = null;
 		
 		switch(Command.Type)
 		{
 		case SIT:
 			ReceiveStr = GetAnswer();
+			if (ReceiveStr == null)
+				return;
 			Log.v("NetMod.SIT", "received string: " + ReceiveStr);
-			if(ReceiveStr != null)
-			{
-				ReceiveStr = ReceiveStr.trim();
-				if( ReceiveStr.compareToIgnoreCase("SIT_STAND")==0)
-					ReceiveStr =  "STAND";
-				else if( ReceiveStr.compareToIgnoreCase("SIT_SIT")==0)
-					ReceiveStr =  "SIT";
-				else ReceiveStr =  "MIST";
-				//ReceiveStr = (ReceiveStr.split("_"))[1];
-			}
-			Log.v("NetMod.SIT", "returned string: " + ReceiveStr);
+			
+			ReceiveStr = ReceiveStr.trim();
+			if (ReceiveStr.toUpperCase().startsWith("SIT_"))
+				ReceiveStr = ReceiveStr.substring(4);
+			else
+				ReceiveStr = "MIST";
+			//ReceiveStr = (ReceiveStr.split("_"))[1];
+			RoboInfo.SitState = ReceiveStr;
+			
+			//Log.v("NetMod.SIT", "returned string: " + ReceiveStr);
+			DestCB = GetCallback(NetworkModule.INFO_SIT);
+			ArgObj = RoboInfo.SitState;
 			break;
 		case GETBATT:
 			ReceiveStr = GetAnswer();
-			if(ReceiveStr != null)
-			{
-				if(ReceiveStr.length()>=5)
-				{
-					char batv = ReceiveStr.charAt(4);
-					Log.v("NetMod.BAT", String.valueOf((int)batv));
-					//return (int) batv;
-					return;
-				}
-			}
+			if (ReceiveStr == null)
+				return;
+			
+			if (ReceiveStr.length() <= 4)
+				return;
+			
+			RoboInfo.BattState = (int)ReceiveStr.charAt(4);
+			
+			DestCB = GetCallback(NetworkModule.INFO_BATT);
+			ArgInt = RoboInfo.BattState;
+			Log.v("NetMod.BAT", String.valueOf(ArgInt));
 			break;
 		default:
 			return;
 		}
 		
-		// TODO: Send event to main
+		if (DestCB == null)
+			return;
+		DestCB.EvtHandler.sendMessage(Message.obtain(null, DestCB.EventType, ArgInt, 0, ArgObj));
+		
 		return;
 	}
 	
@@ -351,7 +458,7 @@ class NetworkThread extends Thread
 	
 	public boolean HasConnection()
 	{
-		return ConnectionState == 1 && ! Client.isClosed();
+		return ConnectionState == 2 && ! Client.isClosed();
 	}
 	
 	public boolean TestConnection()
@@ -388,7 +495,8 @@ class NetworkThread extends Thread
 		try
 		{
 			Log.v("NetMod", "Connecting to " + IP_Addr + " on port " + Port);
-			Client = new Socket(IP_Addr, Port);
+			Client = new Socket();
+			Client.connect(new InetSocketAddress(IP_Addr, Port), 3000);
 			Client.setSoTimeout(3000);
 			Log.v("NetMod", "Just connected to " + Client.getRemoteSocketAddress());
 			
@@ -437,7 +545,8 @@ class NetworkThread extends Thread
 		try
 		{
 			DataOutputStream out = new DataOutputStream(outToServer);
-			out.writeBytes("D" + TERMINATE_CHR);
+			out.writeBytes("DIS" + TERMINATE_CHR);
+			out.close();
 			
 			Client.close();
 			Log.v("NetMod", "Connection closed.");
@@ -462,9 +571,9 @@ class NetworkThread extends Thread
 
 	private void SendCommand(String CommandStr)
 	{
-		Log.v("NetMod.Send", "isConnected: " + (Client.isConnected() ? "true" : "false"));
-		Log.v("NetMod.Send", "isClosed: " + (Client.isClosed() ? "true" : "false"));
-		Log.v("NetMod.Send", "isBound: " + (Client.isBound() ? "true" : "false"));
+//		Log.v("NetMod.Send", "isConnected: " + (Client.isConnected() ? "true" : "false"));
+//		Log.v("NetMod.Send", "isClosed: " + (Client.isClosed() ? "true" : "false"));
+//		Log.v("NetMod.Send", "isBound: " + (Client.isBound() ? "true" : "false"));
 		int TryResend;
 		
 		TryResend = 2;
@@ -475,6 +584,8 @@ class NetworkThread extends Thread
 				DataOutputStream out = new DataOutputStream(outToServer);
 				
 				out.writeBytes(CommandStr + TERMINATE_CHR);
+				//outToServer.write(byte_array);
+				
 				TryResend = 0;
 			}
 			catch(IOException e)
@@ -486,10 +597,8 @@ class NetworkThread extends Thread
 				if (! OpenNet())
 				{
 					Log.v("NetMod", "Reconnect failed.");
-/*					new AlertDialog.Builder(RefActivity)
-						.setMessage("Connection lost.")
-						.setNeutralButton("bummer", null)
-						.show();*/
+					ConnectionCallback(-1);
+					CloseConn = true;
 					break;
 				}
 				TryResend --;
@@ -501,53 +610,32 @@ class NetworkThread extends Thread
 	
 	private String GetAnswer()
 	{
-		DataInputStream in = new DataInputStream(inFromServer);
-		byte Data[] = null;
+		String InStr;
+		byte Data[];
 		int DataLen;
 		
+		InStr = null;
 		try
 		{
-			DataLen = in.read(Data);
+			//Log.v("NetMod.Receive", "Waiting for data...");
+			Data = new byte[16];
+			DataLen = inFromServer.read(Data);
+			//Log.v("NetMod.Receive", "Received " + Integer.toString(DataLen) + " bytes");
 			if (DataLen > 0)
-				return new String(Data);
+				InStr = new String(Data).substring(0, DataLen);
+			//BufferedReader in = new BufferedReader(new InputStreamReader(inFromServer));
+			//inMessage = in.readLine();
+			
+			// Clear buffer
+			//Log.v("NetMod.Receive", "Remaining bytes: " + Integer.toString(inFromServer.available()));
+			while(inFromServer.available() > 0)
+				DataLen = inFromServer.read(Data);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
 		
-		/*while(in.available() > 0)
-			System.out.println("\t" + in.readLine());*/
-		
-		return "";
+		return InStr;
 	}
-	
-/*	private static String Receive()
-	{
-		if (Client == null || ! Client.isConnected())
-			return null;
-		
-		String inMessage = null;
-		try
-		{
-			BufferedReader in = new BufferedReader(new InputStreamReader(inFromServer));
-			inMessage = in.readLine();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			Log.v("NetMod.Recv", "Nothing received");
-		}
-		return inMessage;
-	}
-	*/
 }
-
-/*class Log
-{
-	public static void v(String name, String text)
-	{
-		System.out.println(name + "\t" + text);
-		return;
-	}
-}*/

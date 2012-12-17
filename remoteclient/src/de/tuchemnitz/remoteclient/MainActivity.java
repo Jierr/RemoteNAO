@@ -27,19 +27,104 @@ public class MainActivity extends Activity {
 
 	private Timer BattTimer = null;
 	private int bewegungsart = R.id.bewa_rbutton_LAUFEN;
+	private Dialog verbindungs_dialog = null;
+	private final int EVENT_BATT = 0;
+	private final int EVENT_SIT = 1;
+	private final int EVENT_CONN = 2;
+	
+	private Handler EvtHandler = new Handler()
+	{
+		@Override public void dispatchMessage(Message msg)
+		{
+		    //super.dispatchMessage(msg);
+		    
+		    switch(msg.what)
+		    {
+		    case EVENT_BATT:
+				final ImageView battery_view = (ImageView)findViewById(R.id.img_bat);
+				final int batt_pic;
+				
+			    if (msg.arg1 > 90)
+			    	batt_pic = R.drawable.bat100;
+			    else if (msg.arg1 <= 90 && msg.arg1 > 65)
+			    	batt_pic = R.drawable.bat75;
+			    else if (msg.arg1 <= 65 && msg.arg1 > 35)
+			    	batt_pic = R.drawable.bat50;
+			    else if (msg.arg1 <= 35 && msg.arg1 > 10)
+			    	batt_pic = R.drawable.bat25;
+			    else
+			    	batt_pic = R.drawable.bat0;
+			    battery_view.setImageDrawable(getResources().getDrawable(batt_pic));
+			    break;
+		    case EVENT_SIT:
+				final Button sit_text = (Button)findViewById(R.id.menu_button3);
+		    	final String SitStatus = (String)msg.obj;
+		    	
+		    	if (SitStatus.equals("STAND"))
+		    		sit_text.setText("Setzen");
+		    	else
+		    		sit_text.setText("Aufstehen");
+		    	break;
+		    case EVENT_CONN:
+		    	Log.v("MainAct.Event", "Connection Status: " + String.valueOf(msg.arg1));
+		    	if (msg.arg1 < 0)
+		    	{
+		    		switch(msg.arg1)
+		    		{
+		    		case -1:
+			    		new AlertDialog.Builder(MainActivity.this)
+							.setMessage("Verbindung verloren.")
+							.setNeutralButton("Mist", null)
+							.show();
+			    		break;
+		    		}
+		    	}
+		    	else
+		    	{
+			    	if (verbindungs_dialog == null)
+			    		return;
+			    	
+			    	final TextView text_verbindungsstatus = (TextView)verbindungs_dialog.findViewById(R.id.verbindungsstatus_wert);
+			    	
+			    	switch(msg.arg1)
+			    	{
+			    	case 0:
+			    		text_verbindungsstatus.setText("nicht verbunden");
+			        	text_verbindungsstatus.setTextColor(Color.RED);
+			        	break;
+			    	case 1:
+			    		text_verbindungsstatus.setText("verbinden ...");
+			        	text_verbindungsstatus.setTextColor(Color.YELLOW);
+			        	break;
+			    	case 2:
+			    		text_verbindungsstatus.setText("verbunden");
+			        	text_verbindungsstatus.setTextColor(Color.GREEN);
+			        	break;
+			    	}
+		    	}
+		    	break;
+		    }
+		    
+		    return;
+		}
+	};
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-    	//NetworkModule.SetIPAddress("134.109.146.139");
+    	NetworkModule.SetIPAddress("134.109.97.52");
         //NetworkModule.SetIPAddress("134.109.151.142");
-        NetworkModule.SetIPAddress("192.168.5.20");
+        //NetworkModule.SetIPAddress("192.168.5.20");
         menu_button5_event(null);
         
+        NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,	NetworkModule.INFO_BATT);
+        NetworkModule.RegisterCallback(EvtHandler,	EVENT_SIT,	NetworkModule.INFO_SIT);
+        NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,	NetworkModule.INFO_CONN);
+        
 		BattTimer = new Timer();
-		BattTimer.schedule(new BattTmrTask(), 1000, 20000);
+		BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
     }
 
     @Override
@@ -53,7 +138,7 @@ public class MainActivity extends Activity {
         // Do something in response to button
     	/*boolean RetVal;
     	
-    	RetVal = NetworkModule.OpenConnection(this);
+    	RetVal = NetworkModule.OpenConnection();
     	if (! RetVal)
     	{
 	    	new AlertDialog.Builder(this)
@@ -245,7 +330,7 @@ public class MainActivity extends Activity {
     
     public void menu_button5_event(View view) {
     	/* Dialogbox erstellen*/
-    	final Dialog verbindungs_dialog = new Dialog(MainActivity.this);
+    	verbindungs_dialog = new Dialog(MainActivity.this);
     	verbindungs_dialog.setContentView(R.layout.netzwerkverbindung);
     	verbindungs_dialog.setTitle("Netzwerkverbindung");
     	
@@ -254,15 +339,15 @@ public class MainActivity extends Activity {
     	
     	switch(NetworkModule.IsConnected())
     	{
-    	case -1:
+    	case 0:
     		text_verbindungsstatus.setText("nicht verbunden");
         	text_verbindungsstatus.setTextColor(Color.RED);
         	break;
-    	case 0:
+    	case 1:
     		text_verbindungsstatus.setText("verbinden ...");
         	text_verbindungsstatus.setTextColor(Color.YELLOW);
         	break;
-    	case 1:
+    	case 2:
     		text_verbindungsstatus.setText("verbunden");
         	text_verbindungsstatus.setTextColor(Color.GREEN);
         	break;
@@ -280,19 +365,12 @@ public class MainActivity extends Activity {
 				/*Text aus dem Texteingabefeld*/
 		    	String ip_word = textfeld_ipeingabe.getText().toString();
 		    	ip_word = ip_word.trim();
-		    	NetworkModule.SetIPAddress(ip_word);
-		    	NetworkModule.CloseConnection();
-		    	NetworkModule.OpenConnection(MainActivity.this);
+		    	
         		text_verbindungsstatus.setText("verbinden ...");
             	text_verbindungsstatus.setTextColor(Color.YELLOW);
-	        	/*if(NetworkModule.OpenConnection(MainActivity.this)){
-	        		text_verbindungsstatus.setText("verbunden");
-	            	text_verbindungsstatus.setTextColor(Color.GREEN);
-	        	}
-	        	else{
-	        		text_verbindungsstatus.setText("nicht verbunden");
-	            	text_verbindungsstatus.setTextColor(Color.RED);
-	        	}*/
+		    	NetworkModule.SetIPAddress(ip_word);
+		    	NetworkModule.CloseConnection();
+		    	NetworkModule.OpenConnection();
 			}
 		});
     	/* schließen */
@@ -300,6 +378,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				verbindungs_dialog.dismiss();
+				verbindungs_dialog = null;
 			}
 		});
     	
@@ -316,9 +395,7 @@ public class MainActivity extends Activity {
     
 	class BattTmrTask extends TimerTask
 	{
-		final ImageView battery_view = (ImageView)findViewById(R.id.img_bat);
-		
-		private Handler updateUI = new Handler(){
+		private Handler updateUI/* = new Handler(){
 			@Override
 			public void dispatchMessage(Message msg) {
 			    super.dispatchMessage(msg);
@@ -340,12 +417,18 @@ public class MainActivity extends Activity {
 			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat0));
 			    }
 			}
+		}*/;
+		
+		BattTmrTask(Handler EvtHandler)
+		{
+			updateUI = EvtHandler;
 			
-		};
+			return;
+		}
 		
 		public void run()  
 		{
-			if (NetworkModule.IsConnected() != 1)
+			/*if (NetworkModule.IsConnected() != 1)
 				return;
 			
 			int BattState;
@@ -353,7 +436,9 @@ public class MainActivity extends Activity {
 			//System.out.println("Make my day.");
 			//NetworkModule.Speak(MainActivity.NOTIFICATION_SERVICE);
 			BattState = NetworkModule.GetBatteryState();
-			updateUI.sendEmptyMessage(BattState);
+			updateUI.sendEmptyMessage(BattState);*/
+			
+			NetworkModule.RequestBatteryState();
 		}
 	}
 }
