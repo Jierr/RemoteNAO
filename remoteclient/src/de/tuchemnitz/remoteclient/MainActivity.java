@@ -76,101 +76,103 @@ public class MainActivity extends Activity {
      *********************************************/
     
     public void bew_button1_event(View view) {
-    	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
-    	{
-    		NetworkModule.Move(NetworkModule.MOVE_UP);
-        	Toast toast = Toast.makeText(MainActivity.this, "vorwärts", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
-    	}
-    	else if(bewegungsart == R.id.bewa_rbutton_ARME)
-    	{
-    		NetworkModule.MoveArm(NetworkModule.MOVE_UP);
-        	Toast toast = Toast.makeText(MainActivity.this, "Arm hoch", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
-    	}
-    	else
-    	{
-    		NetworkModule.MoveHead(NetworkModule.MOVE_UP);
-    		Toast toast = Toast.makeText(MainActivity.this, "Kopf hoch", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
-    	}
+    	int MoveType;
+    	String ToastStr;
     	
+    	switch(bewegungsart)
+    	{
+    	case R.id.bewa_rbutton_LAUFEN:
+    		MoveType = 0;	// MOVE
+    		ToastStr = "vorwärts";
+    		break;
+    	case R.id.bewa_rbutton_ARME:
+    		MoveType = 1;	// ARM
+    		ToastStr = "Arm hoch";
+    		break;
+    	default:
+    		MoveType = 2;	// HEAD
+    		ToastStr = "Kopf hoch";
+    		break;
+    	}
+		NetworkModule.Move(MoveType, NetworkModule.MOVE_UP);
+    	Toast toast = Toast.makeText(MainActivity.this, ToastStr, Toast.LENGTH_SHORT);
+    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+    	toast.show();
     }
     
     public void bew_button2_event(View view) {
+    	int MoveType;
+    	String ToastStr;
     	
-    	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
+    	switch(bewegungsart)
     	{
-    		NetworkModule.Move(NetworkModule.MOVE_LEFT);
-        	Toast toast = Toast.makeText(MainActivity.this, "links", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
+    	case R.id.bewa_rbutton_LAUFEN:
+    		MoveType = 0;	// MOVE
+    		ToastStr = "links";
+    		break;
+    	case R.id.bewa_rbutton_ARME:
+    		MoveType = 1;	// ARM
+    		ToastStr = "Arm links";
+    		break;
+    	default:
+    		MoveType = 2;	// HEAD
+    		ToastStr = "Kopf links";
+    		break;
     	}
-    	else if(bewegungsart == R.id.bewa_rbutton_ARME)
-    	{
-    		NetworkModule.MoveArm(NetworkModule.MOVE_LEFT);
-        	Toast toast = Toast.makeText(MainActivity.this, "Arm links", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
-    	}
-    	else
-    	{
-    		NetworkModule.MoveHead(NetworkModule.MOVE_LEFT);
-    		Toast toast = Toast.makeText(MainActivity.this, "Kopf links", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
-    	}
+		NetworkModule.Move(MoveType, NetworkModule.MOVE_LEFT);
+    	Toast toast = Toast.makeText(MainActivity.this, ToastStr, Toast.LENGTH_SHORT);
+    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+    	toast.show();
     }
     
     public void bew_button3_event(View view) {
-    	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
+    	int MoveType;
+    	String ToastStr;
+    	
+    	switch(bewegungsart)
     	{
-    		NetworkModule.Move(NetworkModule.MOVE_RIGHT);
-        	Toast toast = Toast.makeText(MainActivity.this, "rechts", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
+    	case R.id.bewa_rbutton_LAUFEN:
+    		MoveType = 0;	// MOVE
+    		ToastStr = "rechts";
+    		break;
+    	case R.id.bewa_rbutton_ARME:
+    		MoveType = 1;	// ARM
+    		ToastStr = "Arm rechts";
+    		break;
+    	default:
+    		MoveType = 2;	// HEAD
+    		ToastStr = "Kopf rechts";
+    		break;
     	}
-    	else if(bewegungsart == R.id.bewa_rbutton_ARME)
-    	{
-    		NetworkModule.MoveArm(NetworkModule.MOVE_RIGHT);
-        	Toast toast = Toast.makeText(MainActivity.this, "Arm rechts", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
-    	}
-    	else
-    	{
-    		NetworkModule.MoveHead(NetworkModule.MOVE_RIGHT);
-    		Toast toast = Toast.makeText(MainActivity.this, "Kopf rechts", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
-    	}
+		NetworkModule.Move(MoveType, NetworkModule.MOVE_RIGHT);
+    	Toast toast = Toast.makeText(MainActivity.this, ToastStr, Toast.LENGTH_SHORT);
+    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+    	toast.show();
     }
     
     public void bew_button4_event(View view) {
-    	if(bewegungsart == R.id.bewa_rbutton_LAUFEN)
+    	int MoveType;
+    	String ToastStr;
+    	
+    	switch(bewegungsart)
     	{
-    		NetworkModule.Move(NetworkModule.MOVE_DOWN);
-        	Toast toast = Toast.makeText(MainActivity.this, "rückwärts", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
+    	case R.id.bewa_rbutton_LAUFEN:
+    		MoveType = 0;	// MOVE
+    		ToastStr = "rückwärts";
+    		break;
+    	case R.id.bewa_rbutton_ARME:
+    		MoveType = 1;	// ARM
+    		ToastStr = "Arm runter";
+    		break;
+    	default:
+    		MoveType = 2;	// HEAD
+    		ToastStr = "Kopf runter";
+    		break;
     	}
-    	else if(bewegungsart == R.id.bewa_rbutton_ARME)
-    	{
-    		NetworkModule.MoveArm(NetworkModule.MOVE_DOWN);
-        	Toast toast = Toast.makeText(MainActivity.this, "Arm unten", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
-    	}
-    	else
-    	{
-    		NetworkModule.MoveHead(NetworkModule.MOVE_DOWN);
-    		Toast toast = Toast.makeText(MainActivity.this, "Kinn rann", Toast.LENGTH_SHORT);
-        	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-        	toast.show();
-    	}
+		NetworkModule.Move(MoveType, NetworkModule.MOVE_DOWN);
+    	Toast toast = Toast.makeText(MainActivity.this, ToastStr, Toast.LENGTH_SHORT);
+    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+    	toast.show();
     }
     
     /********************** Menu *************************
@@ -250,13 +252,20 @@ public class MainActivity extends Activity {
     	final TextView text_verbindungsstatus = (TextView)verbindungs_dialog.findViewById(R.id.verbindungsstatus_wert);
     	final EditText textfeld_ipeingabe = (EditText)verbindungs_dialog.findViewById(R.id.verbindungsip_eingabe);
     	
-    	if(NetworkModule.IsConnected()){
-    		text_verbindungsstatus.setText("verbunden");
-        	text_verbindungsstatus.setTextColor(Color.GREEN);
-    	}
-    	else{
+    	switch(NetworkModule.IsConnected())
+    	{
+    	case -1:
     		text_verbindungsstatus.setText("nicht verbunden");
         	text_verbindungsstatus.setTextColor(Color.RED);
+        	break;
+    	case 0:
+    		text_verbindungsstatus.setText("verbinden ...");
+        	text_verbindungsstatus.setTextColor(Color.YELLOW);
+        	break;
+    	case 1:
+    		text_verbindungsstatus.setText("verbunden");
+        	text_verbindungsstatus.setTextColor(Color.GREEN);
+        	break;
     	}
     	textfeld_ipeingabe.setText(NetworkModule.GetIPAddress());
     	
@@ -272,17 +281,18 @@ public class MainActivity extends Activity {
 		    	String ip_word = textfeld_ipeingabe.getText().toString();
 		    	ip_word = ip_word.trim();
 		    	NetworkModule.SetIPAddress(ip_word);
-		    	if(NetworkModule.IsConnected()){
-		    		NetworkModule.CloseConnection();
-		    	}
-	        	if(NetworkModule.OpenConnection(MainActivity.this)){
+		    	NetworkModule.CloseConnection();
+		    	NetworkModule.OpenConnection(MainActivity.this);
+        		text_verbindungsstatus.setText("verbinden ...");
+            	text_verbindungsstatus.setTextColor(Color.YELLOW);
+	        	/*if(NetworkModule.OpenConnection(MainActivity.this)){
 	        		text_verbindungsstatus.setText("verbunden");
 	            	text_verbindungsstatus.setTextColor(Color.GREEN);
 	        	}
 	        	else{
 	        		text_verbindungsstatus.setText("nicht verbunden");
 	            	text_verbindungsstatus.setTextColor(Color.RED);
-	        	}
+	        	}*/
 			}
 		});
     	/* schließen */
@@ -335,7 +345,7 @@ public class MainActivity extends Activity {
 		
 		public void run()  
 		{
-			if (! NetworkModule.IsConnected())
+			if (NetworkModule.IsConnected() != 1)
 				return;
 			
 			int BattState;
