@@ -114,10 +114,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-    	NetworkModule.SetIPAddress("134.109.97.52");
+    	//NetworkModule.SetIPAddress("134.109.97.52");
         //NetworkModule.SetIPAddress("134.109.151.142");
-        //NetworkModule.SetIPAddress("192.168.5.20");
-        menu_button5_event(null);
+        NetworkModule.SetIPAddress("192.168.5.20");
+        menu_button6_event(null);
         
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,	NetworkModule.INFO_BATT);
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_SIT,	NetworkModule.INFO_SIT);
@@ -260,6 +260,14 @@ public class MainActivity extends Activity {
     	toast.show();
     }
     
+    public void bew_button5_event(View view) {
+    	
+    	NetworkModule.Stop();
+    	Toast toast = Toast.makeText(MainActivity.this, "STOP", Toast.LENGTH_SHORT);
+    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+    	toast.show();
+    }
+    
     /********************** Menu *************************
      *****************************************************/
     public void menu_button1_event(View view) {
@@ -327,8 +335,22 @@ public class MainActivity extends Activity {
     		((Button)findViewById(R.id.menu_button3)).setText("Aufstehen");
     }
     
+    public void menu_button4_event(View view) {
+    	Toast toast = Toast.makeText(MainActivity.this, "Motoren entspannen", Toast.LENGTH_SHORT);
+    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+    	toast.show();
+    	NetworkModule.Rest();    	
+    }
     
     public void menu_button5_event(View view) {
+    	Toast toast = Toast.makeText(MainActivity.this, "Tanz", Toast.LENGTH_SHORT);
+    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+    	toast.show();
+    	NetworkModule.Dance("Rumba");
+    }
+    
+    
+    public void menu_button6_event(View view) {
     	/* Dialogbox erstellen*/
     	verbindungs_dialog = new Dialog(MainActivity.this);
     	verbindungs_dialog.setContentView(R.layout.netzwerkverbindung);
@@ -388,6 +410,13 @@ public class MainActivity extends Activity {
     }
     
     public void menu_button7_event(View view) {
+    	new AlertDialog.Builder(this)
+		.setMessage("Das ist eine App um den NAO zu steuern")
+		.setNeutralButton("Wer weiss?", null)
+		.show();
+    }
+    
+    public void menu_button8_event(View view) {
     	BattTimer.cancel();
     	NetworkModule.CloseConnection();
     	MainActivity.this.finish();

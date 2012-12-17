@@ -8,14 +8,16 @@
 	<string name="bew_button2_text">Left</string>
 	<string name="bew_button3_text">Right</string>
 	<string name="bew_button4_text">Down</string>
+	<string name="bew_button5_text">Stop</string>
 	
 	<string name="menu_button1_text">Auswahl\nder Bew-\nKategorie</string>
 	<string name="menu_button2_text">Sprach-\nausgabe</string>
 	<string name="menu_button3_text">Setzen/\nAufstehen</string>
-	<string name="menu_button4_text">Button4</string>
-	<string name="menu_button5_text">Netzwerk</string>
-	<string name="menu_button6_text">Button6</string>
-	<string name="menu_button7_text">Beenden</string>
+	<string name="menu_button4_text">Ausruhen</string>
+	<string name="menu_button5_text">Bewegungsmakro</string>
+	<string name="menu_button6_text">Netzwerk</string>
+	<string name="menu_button7_text">Hilfe</string>
+	<string name="menu_button8_text">Beenden</string>
 	
 	<string name="edit_sprachausgabe">Text eingeben</string>
 	<string name="sprachausgabe_text">Sprachausgabe</string>
@@ -27,9 +29,9 @@
 	<string name="verbindungsbutton_text">verbinden</string>
 	<string name="verbindungsbutton_close_text"> Schließen </string>
 	
-	<string name="bewegungsauswahl_radiobutton1_text"> Arme </string>
-	<string name="bewegungsauswahl_radiobutton2_text"> Beine </string>
-	<string name="bewegungsauswahl_radiobutton3_text"> Kopf </string>
+	<string name="bewegungsauswahl_radiobutton1_text"> Arme bewegen</string>
+	<string name="bewegungsauswahl_radiobutton2_text"> Laufen </string>
+	<string name="bewegungsauswahl_radiobutton3_text"> Kopf bewegen </string>
 	<string name="bewegungsauswahl_OKbutton_text">" OK "</string>
 
 </resources>
