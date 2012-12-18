@@ -6,5 +6,6 @@ remoteclient/bin
 remoteclient/gen
 remoteclient/libs
 remoteclient/project.properties
+remoteclient/.settings
 .directory
 */.directory
