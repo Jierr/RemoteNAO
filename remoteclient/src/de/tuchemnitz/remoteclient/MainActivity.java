@@ -85,12 +85,14 @@ public class MainActivity extends Activity {
 			    		return;
 			    	
 			    	final TextView text_verbindungsstatus = (TextView)verbindungs_dialog.findViewById(R.id.verbindungsstatus_wert);
+			    	final Button button_verbindenbutton = (Button) verbindungs_dialog.findViewById(R.id.verbindungsbutton);
 			    	
 			    	switch(msg.arg1)
 			    	{
 			    	case 0:
 			    		text_verbindungsstatus.setText("nicht verbunden");
 			        	text_verbindungsstatus.setTextColor(Color.RED);
+			        	button_verbindenbutton.setText("verbinden");
 			        	break;
 			    	case 1:
 			    		text_verbindungsstatus.setText("verbinden ...");
@@ -99,6 +101,7 @@ public class MainActivity extends Activity {
 			    	case 2:
 			    		text_verbindungsstatus.setText("verbunden");
 			        	text_verbindungsstatus.setTextColor(Color.GREEN);
+			        	button_verbindenbutton.setText("trennen");
 			        	break;
 			    	}
 		    	}
@@ -119,6 +122,7 @@ public class MainActivity extends Activity {
         //NetworkModule.SetIPAddress("192.168.5.20");
         menu_button6_event(null);
         
+        NetworkModule.RegisterCallback(null,		-1,			0);
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,	NetworkModule.INFO_BATT);
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_SIT,	NetworkModule.INFO_SIT);
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,	NetworkModule.INFO_CONN);
@@ -132,6 +136,15 @@ public class MainActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
+    }
+    
+    @Override
+    public void onDestroy(){
+    	
+    	BattTimer.cancel();
+    	NetworkModule.Rest();
+    	NetworkModule.CloseConnection();
+    	super.onDestroy();
     }
     
     /** Called when the user clicks the Send button */
@@ -354,6 +367,9 @@ public class MainActivity extends Activity {
     	
     	final TextView text_verbindungsstatus = (TextView)verbindungs_dialog.findViewById(R.id.verbindungsstatus_wert);
     	final EditText textfeld_ipeingabe = (EditText)verbindungs_dialog.findViewById(R.id.verbindungsip_eingabe);
+    	/*Buttons*/
+    	final Button dial_button_verbinden = (Button) verbindungs_dialog.findViewById(R.id.verbindungsbutton);
+    	final Button dial_button_close = (Button) verbindungs_dialog.findViewById(R.id.verbindungsbutton_close);
     	
     	switch(NetworkModule.IsConnected())
     	{
@@ -368,14 +384,13 @@ public class MainActivity extends Activity {
     	case 2:
     		text_verbindungsstatus.setText("verbunden");
         	text_verbindungsstatus.setTextColor(Color.GREEN);
+        	dial_button_verbinden.setText("trennen");
         	break;
     	}
     	textfeld_ipeingabe.setText(NetworkModule.GetIPAddress());
     	
     	
     	/* ----------- Funktionen der Button ------------- */
-    	Button dial_button_close = (Button) verbindungs_dialog.findViewById(R.id.verbindungsbutton_close);
-    	Button dial_button_verbinden = (Button) verbindungs_dialog.findViewById(R.id.verbindungsbutton);
     	/* Verbinden */
     	dial_button_verbinden.setOnClickListener(new OnClickListener() {
 			@Override
@@ -417,8 +432,10 @@ public class MainActivity extends Activity {
     }
     
     public void menu_button8_event(View view) {
-    	BattTimer.cancel();
-    	NetworkModule.CloseConnection();
+    	//jetzt in onDestroy
+    	//BattTimer.cancel();
+    	//NetworkModule.Rest();
+    	//NetworkModule.CloseConnection();
     	MainActivity.this.finish();
     }
     

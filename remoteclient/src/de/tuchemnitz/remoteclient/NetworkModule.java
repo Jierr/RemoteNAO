@@ -45,6 +45,12 @@ public class NetworkModule {
 	
 	public static void RegisterCallback(Handler EvtHandler, int EventType, int InfoType)
 	{
+		if (EventType == -1)
+		{
+			EventList.clear();
+			return;
+		}
+		
 		EventCallback NewCB = new EventCallback();
 		
 		NewCB.EvtHandler = EvtHandler;
