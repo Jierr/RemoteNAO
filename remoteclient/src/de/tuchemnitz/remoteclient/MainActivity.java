@@ -115,14 +115,15 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         
     	//NetworkModule.SetIPAddress("134.109.97.52");
-        //NetworkModule.SetIPAddress("134.109.151.142");
-        NetworkModule.SetIPAddress("192.168.5.20");
+        NetworkModule.SetIPAddress("134.109.151.142");
+        //NetworkModule.SetIPAddress("192.168.5.20");
         menu_button6_event(null);
         
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,	NetworkModule.INFO_BATT);
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_SIT,	NetworkModule.INFO_SIT);
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,	NetworkModule.INFO_CONN);
         
+        Log.v("MainAct", "Activity started.");
 		BattTimer = new Timer();
 		BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
     }
@@ -327,12 +328,7 @@ public class MainActivity extends Activity {
     }
     
     public void menu_button3_event(View view) {
-    	String sit_status = null;
-    	sit_status = NetworkModule.SitToggle();
-    	if (sit_status == "STAND")
-    		((Button)findViewById(R.id.menu_button3)).setText("Setzen");
-    	else
-    		((Button)findViewById(R.id.menu_button3)).setText("Aufstehen");
+    	NetworkModule.SitToggle();
     }
     
     public void menu_button4_event(View view) {
@@ -388,11 +384,15 @@ public class MainActivity extends Activity {
 		    	String ip_word = textfeld_ipeingabe.getText().toString();
 		    	ip_word = ip_word.trim();
 		    	
-        		text_verbindungsstatus.setText("verbinden ...");
-            	text_verbindungsstatus.setTextColor(Color.YELLOW);
-		    	NetworkModule.SetIPAddress(ip_word);
-		    	NetworkModule.CloseConnection();
-		    	NetworkModule.OpenConnection();
+            	if (NetworkModule.IsConnected() == NetworkModule.CONN_OPEN)
+            	{
+            		NetworkModule.CloseConnection();
+            	}
+            	else if (NetworkModule.IsConnected() == NetworkModule.CONN_CLOSED)
+            	{
+			    	NetworkModule.SetIPAddress(ip_word);
+			    	NetworkModule.OpenConnection();
+            	}
 			}
 		});
     	/* schließen */
