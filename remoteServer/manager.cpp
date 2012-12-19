@@ -58,6 +58,7 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	
 	//accessExec.exec = exec;
 	//accessExec.pexec = AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0);
+	accessExec.exec->initEventList(eventList);
 	accessExec.pexec.callVoid("executerRespond");
 	accessExec.exec->executerRespond();
 }
@@ -157,6 +158,7 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 		else if (fstr.compare("STP") == 0)
 		{
 			ep.type = CODE_STOP;
+			ep.iparams[0] = MOV_STOP;
 			fstr = "";
 			return false;
 		}
@@ -315,13 +317,15 @@ int Manager::decode(const string& toParse)
 			case STG_VALID:
 			{
 				cout<< "-------------->Decoded Function: " << (int&)eventp.type << ", " << eventp.sparam << endl;
-				vector<int> vtemp (eventp.iparams, eventp.iparams + sizeof(eventp.iparams)/sizeof(int));
 				int ttype = eventp.type;
+				/*
+				vector<int> vtemp (eventp.iparams, eventp.iparams + sizeof(eventp.iparams)/sizeof(int));
 				mutex->lock();
 					mem.insertData("lastOp", eventp.type);
 					mem.insertData("msg", eventp.sparam);
 					mem.insertData("iparams", (vector<int>)vtemp);
-				mutex->unlock();	
+				mutex->unlock();	*/
+				eventList->addEvent(eventp);
 			
 				pos = 0;
 				trace = pos;
@@ -375,23 +379,39 @@ void Manager::runExecuter()
 	//mem.insertData("robotPose", 3.0f);
 	//accessExec.exec->executerRespond();
 	AL::ALValue post;
+	int taskID = 0;
 	//xec->setPosture((int&)post);
 	
 
 	accessExec.exec->initWalk();	
+	accessExec.exec->setState(STATE_STANDING);
 	while(1)
 	{
+		qi::os::msleep(50);
+		Event event(eventList->getPending());
+		try
+		{
+			if (event.ep.type != CODE_INVALID)
+			{
+				taskID = accessExec.pexec.pCall<Event>("process", event);
+				eventList->setTask(event.id, taskID);
+			}
+		}
+		catch(const AL::ALError& e)
+		{
+			cout<< "Error: [Manager]<runExecuter>:" << endl << e.what() << endl;
+		}
+		/*
 		string msg = "";
 		vector<int> vtemp (2, 0);
-		qi::os::msleep(50);
 		mutex->lock();
 			lastOp = mem.getData("lastOp");
 			msg = (string&)mem.getData("msg");
 			vtemp =  mem.getData("iparams");
 			mem.insertData("lastOp", CODE_INVALID);
 		mutex->unlock();
-	
-		switch ((int&)lastOp)
+		
+		switch (event.ep.type)
 		{
 			case INIT_WALK:
 				accessExec.exec->initWalk();
@@ -404,10 +424,11 @@ void Manager::runExecuter()
 				accessExec.exec->speak(msg);
 				break;
 			case CODE_MOV:
-				accessExec.exec->walk(vtemp[0]);
+				accessExec.exec->walk(event);
 				break;
 			case CODE_STOP:
-				accessExec.exec->walk(MOV_STOP);
+				//event.ep.iparams[0] = MOV_STOP;
+				accessExec.exec->walk(event);
 				break;
 			case CODE_BAT:
 				accessExec.exec->sendBatteryStatus();
@@ -430,17 +451,9 @@ void Manager::runExecuter()
 				break;
 			}
 		
-		};
+		};*/
 	}
 }
-/*
-boost::weak_ptr<Manager> Manager::getManager()
-{
-	static boost::shared_ptr<Manager> pManager(this, null_deleter());
-	managerSingleton = pManager;
-	return managerSingleton;
-}
-*/
 
 
 
@@ -449,6 +462,7 @@ AcessExec::AcessExec(boost::shared_ptr<AL::ALBroker> broker)
  	pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0))
 {
 }
+
 AcessExec::~AcessExec()
 {
 }

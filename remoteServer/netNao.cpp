@@ -1,4 +1,5 @@
 #include "netNao.h"
+#include "gen.h"
 
 
 NetNao::NetNao(boost::shared_ptr<AL::ALBroker> broker, 
@@ -140,6 +141,12 @@ int NetNao::recvData(const int& sockClient, const boost::shared_ptr<char*>& buf,
 	else 
 		result = -1;	
 	//boost::shared_ptr<char> change(nbuf);
+	
+	if (result == 0)
+		return SOCK_CLOSED;
+	if (result == -1)
+		return SOCK_LOST;
+	
 	return result;
 	
 

@@ -25,11 +25,13 @@ class Event{
 	public:
 		const void* const id;
 		int classification;
+		int taskID;
 		event_params_t ep;
 		Event():id(this)
 		{
 			ep.type = CODE_INVALID;
 			next = 0;
+			taskID = 0;
 		}
 		Event(const Event& event)
 		:	id(event.id)
@@ -52,8 +54,11 @@ class EventList
 		~EventList();
 		bool isEmpty();
 		void addEvent(event_params_t ep);
+		void addFirst(event_params_t ep);
 		void removeEvent(const void* const iid);
 		void list();
+		void setClassf(const void* const iid, int classf);
+		void setTask(const void* const iid, const int& tid);
 		Event getFirst();
 		Event getPending();
 		Event getLast();		

@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
 	char buf[1024] = {0,};
 	char last = 0;
 	int bytesRead = 0; 
+	int recvd = 0;
 	unsigned int bytesSent = 0;
 	unsigned int len;
 	
@@ -143,7 +144,7 @@ int main(int argc, char* argv[])
 	const std::string msg = "Hello there, everything is initialized.";
 	boost::shared_ptr<char*> buffer(new char*(buf));
 	sserver = net->bindTcp(port);
-	while(bytesRead>=-1)
+	while(1)
 	{
 		net->singleListen(sserver);
 		sclient = net->acceptClient(sserver);
@@ -165,7 +166,7 @@ int main(int argc, char* argv[])
 		try 
 		{
 			AL::ALTextToSpeechProxy tts(pip, pport);
-			tts.say("Connected pew pew");
+			tts.say("Connected");
 		}		
 		catch(const AL::ALError& e)
 		{
@@ -178,18 +179,26 @@ int main(int argc, char* argv[])
 		bytesRead = 0;
 		do
 		{
-			bytesRead += net->recvData(sclient, buffer, 1023, bytesRead);
-			buf[bytesRead] = 0;
-			cout<< "receive done: [BUFFER] = " << string(buf) << endl;
-			bytesRead = proxyManager.call<int, string>("decode", string(buf));	
+			recvd = net->recvData(sclient, buffer, 1023, bytesRead);
+			if ((recvd == SOCK_CLOSED) || (recvd == SOCK_LOST))
+			{
+				proxyManager.call<int, string>("decode", string("DIS"));	
+			}
+			else
+			{
+				bytesRead+=recvd;
+				buf[bytesRead] = 0;
+				cout<< "receive done: [BUFFER] = " << string(buf) << endl;
+				bytesRead = proxyManager.call<int, string>("decode", string(buf));	
+			}
 		}
-		while (bytesRead>=0);
+		while ((recvd > 0) && (bytesRead>=0));
 					
 				
 		try 
 		{
 			AL::ALTextToSpeechProxy tts(pip, pport);
-			tts.say("pew pew Disconnected");
+			tts.say("Disconnected");
 		}
 		catch(const AL::ALError& e)
 		{

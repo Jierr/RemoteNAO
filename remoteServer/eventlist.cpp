@@ -29,6 +29,23 @@ bool EventList::isEmpty()
 	return (first == 0);
 }
 
+
+void EventList::addFirst(event_params_t ep)
+{
+	Event* scnd;
+	
+	mutex->lock();
+	scnd = first;
+	first = new Event;
+	first->next = scnd;
+	if (!scnd)
+		last = first;
+	first->ep = ep;
+	first->taskID = 0;
+	first->classification = EVT_PENDING;
+	mutex->unlock();
+}
+
 void EventList::addEvent(event_params_t ep)
 {
 	mutex->lock();
@@ -44,6 +61,7 @@ void EventList::addEvent(event_params_t ep)
 	}
 	last->classification = EVT_PENDING;
 	last->ep = ep;
+	last->taskID = 0;
 	last->next = 0;
 	mutex->unlock();
 }
@@ -63,7 +81,7 @@ void EventList::removeEvent(const void* const iid)
 	}
 	
 	//is found?
-	if(curr)
+	if(curr && !curr->taskID)
 	{
 		//curr != first
 		if(prev)
@@ -92,6 +110,38 @@ void EventList::list()
 		++n;
 		curr = curr->next;	
 	} 
+}
+
+
+void EventList::setClassf(const void* const iid, int classf)
+{
+	Event* curr;
+	mutex->lock();
+	curr = first;
+	while(curr && (curr->id != iid))
+	{
+		curr = curr->next;
+	}
+	if(curr)
+		curr->classification = classf;
+	
+	mutex->unlock();
+}
+
+
+void EventList::setTask(const void* const iid, const int& tid)
+{
+	Event* curr;
+	mutex->lock();	
+	curr = first;
+	while(curr && (curr->id != iid))
+	{
+		curr = curr->next;
+	}
+	if(curr)
+		curr->taskID = tid;
+	
+	mutex->unlock();
 }
 
 

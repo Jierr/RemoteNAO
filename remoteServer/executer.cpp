@@ -15,7 +15,9 @@
 using namespace std;
 	
 Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
-: AL::ALModule(broker, name)
+: 	AL::ALModule(broker, name),
+	mutex(AL::ALMutex::createALMutex()),
+	sync(AL::ALMutex::createALMutex())
 {
 	setModuleDescription("This Module manages the Data comming from the remoteServer module");
 	
@@ -43,6 +45,10 @@ Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	functionName("sendBatteryStatus", getName(), "Will send the Battery status, to the remote host(App),\n\
 												  which the Network module RMNetNao is connected to.");
 	BIND_METHOD(Executer::sendBatteryStatus);
+	
+	functionName("process", getName(), "Execute a given event");
+	addParam("event", "The event to be processed");
+	BIND_METHOD(Executer::process);
 }
 
 Executer::~Executer()
@@ -54,12 +60,179 @@ void Executer::init()
 
 }
 
+void Executer::initEventList(boost::shared_ptr<EventList> eL)
+{
+	eventList = eL;
+}
+
+
+void Executer::setState(state_t s)
+{
+	mutex->lock();
+	state = s;
+	mutex->unlock();
+}
+
+
+state_t Executer::getState()
+{
+	return state;
+}
+
+
+int Executer::processConflicts(const Event& event)
+{
+	mutex->lock();
+	event_params_t ep;
+	int classf = EVT_BUSY;
+	switch (event.ep.type)
+	{
+		case INIT_WALK:	
+			if (state != STATE_CROUCHING)
+			{
+				classf = EVT_DONE;
+			}		
+			break;
+		case INIT_REST:
+			if (state != STATE_STANDING)
+			{
+				classf = EVT_DONE;
+			}		
+			break;
+		case CODE_SPK:
+			break;
+		case CODE_MOV:
+			if (state == STATE_CROUCHING)
+			{
+				ep.type = INIT_WALK;
+				eventList->addFirst(ep);
+				classf = EVT_PENDING;
+			}
+			else if (state == STATE_WALKING)
+			{
+				ep.type = CODE_STOP;
+				ep.iparams[0] = MOV_STOP;
+				eventList->addFirst(ep);
+				classf = EVT_PENDING;
+			}
+			else if ((state == STATE_MOVING) 	||
+					 (state == STATE_STOPPING)		)
+			{
+				classf = EVT_PENDING;
+			}
+			else if (state != STATE_STANDING)
+			{
+				classf = EVT_DONE;
+			}
+			break;
+		case CODE_STOP:
+			if (state != STATE_WALKING)
+				classf = EVT_DONE;
+			break;
+		case CODE_BAT:
+			break;
+		case RESET_CONNECTION:
+			if (state == STATE_WALKING)
+			{
+				cout<< "DIS: first stop Movement" << endl;
+				ep.type = CODE_STOP;
+				ep.iparams[0] = MOV_STOP;
+				eventList->addFirst(ep);
+				classf = EVT_PENDING;
+			}			
+			else if (state == STATE_STANDING)
+			{
+				cout<< "DIS: Now Rest" << endl;
+				ep.type = INIT_REST;
+				eventList->addFirst(ep);
+				classf = EVT_PENDING;
+			}
+			else if ((state == STATE_STOPPING) || (state == STATE_MOVING))
+				classf = EVT_PENDING;
+			break;
+		case CODE_INVALID:
+		default:
+				classf = EVT_DONE;
+			//cout<< "Nothing to do" << endl;
+			break;		
+	};
+	mutex->unlock();
+	return classf;
+}
+
+void Executer::process(const Event& event)
+{
+	//cout<<"----->Process Event" << endl;
+	int classf;	
+	
+	classf = processConflicts(event);
+	eventList->setClassf(event.id, classf);
+	if (classf == EVT_BUSY)
+	{
+		switch (event.ep.type)
+		{
+			case INIT_WALK:
+				setState(STATE_MOVING);
+				initWalk();
+				setState(STATE_STANDING);
+				//cout << "Done initWalk()" << endl;
+				break;
+			case INIT_REST:
+				setState(STATE_MOVING);
+				initSecure();
+				setState(STATE_CROUCHING);
+				break;
+			case CODE_SPK:
+				speak(event.ep.sparam);
+				break;
+			case CODE_MOV:
+				setState(STATE_WALKING);
+				walk(event);
+				sync->lock();
+				setState(STATE_STANDING);
+				sync->unlock();
+				break;
+			case CODE_STOP:
+				//event.ep.iparams[0] = MOV_STOP;
+				sync->lock();
+				setState(STATE_STOPPING);
+				walk(event);
+				setState(STATE_STANDING);
+				sync->unlock();
+				cout<< "STP: NOW STANDING" << endl;
+				break;
+			case CODE_BAT:
+				sendBatteryStatus();
+				break;
+			case RESET_CONNECTION:
+				setState(STATE_CROUCHING);
+				break;
+			case CODE_INVALID:
+				//cout<< "Nothing to do" << endl;
+				break;
+			default:
+			{
+				try
+				{
+					AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+					tts.say("Unknown command!");
+				}	
+				catch(const AL::ALError& e)
+				{
+					cout<< "Error [Executer]<process(event)>: " << endl << e.what() << endl;
+				}
+				break;
+			}
+		};
+
+		eventList->setClassf(event.id, EVT_DONE);	
+	}
+}
+
 void Executer::executerRespond()
 {
 	AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 			tts.say(string("Executer"));
-	
-	
 }
 
 void Executer::initWalk()
@@ -93,12 +266,13 @@ void Executer::initWalk()
 
 
 void Executer::initSecure()
-{	try
+{	
+	try
 	{
 		AL::ALValue roboConfig;
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 		AL::ALMotionProxy motion(MB_IP, MB_PORT);
-		tts.say("init secure!");
+		//tts.say("init secure!");
 		
 		
 		//motion.rest();
@@ -106,15 +280,16 @@ void Executer::initSecure()
 		
 		
 		//boost::shared_ptr<AL::ALMotionProxy> motion = getParentBroker()->getMotionProxy();
-		roboConfig = motion.getRobotConfig();
-		tts.say(roboConfig[1][0]);
+		//roboConfig = motion.getRobotConfig();
+		//tts.say(roboConfig[1][0]);
+		//cout << roboConfig.toString() << endl;
 		float stiffnesses  = 1.0f; 
 		string snames = "Body";
         motion.stiffnessInterpolation("Body", 1.0, 1.0);
 		
 		//interpolate to full stiffness in 0.5 seconds
-       // motion.setStiffnesses(snames, stiffnesses);
-		motion.walkInit(); 
+        //motion.setStiffnesses(snames, stiffnesses);
+		//motion.walkInit(); 
 		//qi::os::sleep(5);
         AL::ALValue names = "Body";
         float ftargetAngles[] = {
@@ -153,16 +328,18 @@ void Executer::initSecure()
 	}
 }
 
-void Executer::walk(const int& x)
+void Executer::walk(const Event& event)
 {
 	try
 	{
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 		AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		int mode = event.ep.iparams[0];
 		
         motion.stiffnessInterpolation("Body", 1.0, 1.0);
-		motion.walkInit();
-		switch (x)
+		//motion.walkInit();
+		
+		switch (mode)
 		{
 			case MOV_FORWARD:
 			{
@@ -269,7 +446,8 @@ void Executer::walk(const int& x)
 			case MOV_STOP:
 			default:
 			{
-				motion.stopWalk();
+				if(motion.walkIsActive())
+					motion.stopWalk();
 				vector<string> legs (2, "");
 				vector<float> footstep(3, 0.0);
 				footstep[0] = 0.0;
@@ -287,15 +465,19 @@ void Executer::walk(const int& x)
 				//motion.wbFootState("Fixed", "Legs");
 				
 				cout << "------> Move STOP <------" << endl;
-				motion.stopWalk();
+				//motion.stopWalk();
 				break;
 			}
 		};
 		
+		while (motion.walkIsActive())			
+			qi::os::msleep(50);
+		cout << "walking done!" << endl;
+		
 	}
 	catch(const AL::ALError& e)
 	{
-		cout << "Error walk: " << e.what() << endl;
+		cout << "Error [Executer]<walk>:" << endl << e.what() << endl;
 	}
 }
 
@@ -359,7 +541,8 @@ void Executer::setPosture(const int& pos)
 void Executer::sendBatteryStatus()
 {
 	int sclient;
-	string buf = "BAT_000";
+	string buf = "BAT_";
+	buf+= 50;
 	int sent= 0;
 	try
 	{

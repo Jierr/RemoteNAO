@@ -9,6 +9,9 @@
 #define RM_PORT "32768"
 #define RAD (2*3.1415926535897932384626/360.0)
 
+#define SOCK_CLOSED -2
+#define SOCK_LOST	-3
+
 
 #define IPARAM_LEN 2
 
@@ -40,6 +43,18 @@
 #define EVT_BUSY 2
 #define EVT_DONE 3
 #define EVT_CONFLICTED 4
+
+
+enum state_t{
+	STATE_UNKNOWN = 0,
+	STATE_CROUCHING,
+	STATE_STANDING,
+	STATE_SITTING,
+	STATE_WALKING,
+	STATE_STOPPING,
+	STATE_MOVING,
+	STATE_REFUSING
+};
 
 //with all automated collision avoiding this angle will be reduced
 //to approx 23° perr 2 steps
