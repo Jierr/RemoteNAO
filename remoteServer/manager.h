@@ -6,20 +6,31 @@
 #include <alvalue/alvalue.h>
 #include <althread/almutex.h>
 #include <alproxies/almemoryproxy.h>
+#include <alcommon/alproxy.h>
 //#include <boost/enable_shared_from_this.hpp>
 #include <string>
+
+
 #include "decoder.h"
 #include "executer.h"
 #include "gen.h"
+#include "eventlist.h"
+
 
 using namespace std;
 
 
-typedef struct{
-	int type;
-	int iparams[IPARAM_LEN];
-	string sparam;
-} event_params_t;
+
+
+class AcessExec{
+	
+	public:	
+		boost::shared_ptr<Executer> exec;
+		AL::ALProxy pexec;
+	
+		AcessExec(boost::shared_ptr<AL::ALBroker> broker);
+		~AcessExec();
+};
 
 class Manager:public AL::ALModule
 {
@@ -31,9 +42,9 @@ class Manager:public AL::ALModule
 		};*/
 		AL::ALMemoryProxy mem;
 		AL::ALValue lastOp;
-		boost::shared_ptr<Decoder> dec;
-		boost::shared_ptr<Executer> exec;
 		boost::shared_ptr<AL::ALMutex> mutex;
+		AcessExec accessExec;
+		boost::shared_ptr<EventList> eventList;
 		
 		bool fetch(const string& toParse, int& pos, event_params_t& ep);
 		bool getParams(const string& toParse, int& pos, event_params_t& ep, int& paramCount);

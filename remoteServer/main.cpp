@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
 	unsigned int len;
 	
 	// connect to local module RMManager
-	AL::ALProxy proxyManager = AL::ALProxy(string("RMManager"), pip, MB_PORT);
+	AL::ALProxy proxyManager = AL::ALProxy(broker, string("RMManager")/*, pip, MB_PORT*/);
 	
 	taskID = proxyManager.pCall(string("localRespond")); //callVoid("localRespond");
 	cout<<"ID of Thread = " << taskID << endl;

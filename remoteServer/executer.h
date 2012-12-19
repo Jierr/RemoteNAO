@@ -23,6 +23,7 @@ class Executer:public AL::ALModule
 		void initSecure();
 		void walk(const int& x);
 		void speak(const string& msg);
+		void sendBatteryStatus();
 };
 
 #endif

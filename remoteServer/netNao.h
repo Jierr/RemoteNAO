@@ -3,6 +3,8 @@
 
 #include <alcommon/almodule.h>
 #include <alcommon/albroker.h>
+#include <alvalue/alvalue.h>
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +18,9 @@ using namespace std;
 
 class NetNao : public AL::ALModule
 {
+	private:
+		int sclient_tcp;
+		int sserver_tcp;
 	public:
 		//Load the Module in the broker with its correspending name
 		//just extends ALModule
@@ -28,13 +33,15 @@ class NetNao : public AL::ALModule
 		int bindTcp(const string& port);	
 		void singleListen(const int& sockServer);
 		int acceptClient(const int& sockServer);
-		int sendData(const int& sockClient, const boost::shared_ptr<char*>& buf, 
-					 const unsigned int& len, const unsigned int& indexStart);
+		int sendString(const int& sockClient, const AL::ALValue& buf, 
+					 const int& len, const int& indexStart);
 		int recvData(const int& sockClient, const boost::shared_ptr<char*>& buf, 
 					 const unsigned int& len, const unsigned int& indexStart);
 		
 		void disconnect(const int& sockClient);
 		void unbind(const int& sockServer);
+		int getClient_tcp();
+		int getServer_tcp();
 		
 };
 

@@ -5,18 +5,23 @@
 #include <althread/alcriticalsection.h>
 #include <alproxies/almemoryproxy.h>
 #include <alproxies/altexttospeechproxy.h>
+#include <alcommon/alproxy.h>
 #include <qi/os.hpp>
 
 #include "manager.h"
 #include "decoder.h"
 #include "executer.h"
 #include "gen.h"
+#include "eventlist.h"
 
 
 using namespace std;
 	
 Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
-: AL::ALModule(broker, name), mutex(AL::ALMutex::createALMutex())
+:	AL::ALModule(broker, name), 
+	mutex(AL::ALMutex::createALMutex()),
+	accessExec(broker),
+	eventList(new EventList)
 {
 	setModuleDescription("This Module manages the Data comming from the remoteServer module");
 	
@@ -48,18 +53,65 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	cout<< "lastOp Constructor: " << (int&)lastOp << endl;
 	
 	cout<< "Constructor!" << endl;
-	dec = AL::ALModule::createModule<Decoder>(broker, "RMDecoder");
-	exec = AL::ALModule::createModule<Executer>(broker, "RMExecuter");
+	//dec = AL::ALModule::createModule<Decoder>(broker, "RMDecoder");
+	//exec = AL::ALModule::createModule<Executer>(broker, "RMExecuter");
+	
+	//accessExec.exec = exec;
+	//accessExec.pexec = AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0);
+	accessExec.pexec.callVoid("executerRespond");
+	accessExec.exec->executerRespond();
 }
 
 Manager::~Manager()
 {
-	exec->exit();
-	dec->exit();
+	accessExec.exec->exit();
 }
 
 void Manager::init()
 {
+	/*event_params_t ep;
+	Event* tmp;
+	
+	cout<< "Initialisierung:" << endl;
+	for (int n = 0; n < 10; ++n)
+	{
+		ep.type = n;
+		eventList->addEvent(ep);
+	}
+	if (!eventList->isEmpty())
+		eventList->list();
+	
+	
+	cout<< "Lösche First:" << endl;
+	tmp = new Event(eventList->getFirst());
+	eventList->removeEvent(tmp->id);
+	delete tmp;
+	
+	if (!eventList->isEmpty())
+		eventList->list();	
+
+	
+	cout<< "Lösche Last" << endl;	
+	tmp = new Event(eventList->getLast());
+	eventList->removeEvent(tmp->id);
+	delete tmp;
+	
+	if (!eventList->isEmpty())
+		eventList->list();
+		
+	for (int i = 0; i< 8; ++i)
+	{
+		cout<< "Lösche PENDING------------------" << endl;	
+		tmp = new Event(eventList->getPending());
+		eventList->removeEvent(tmp->id);
+		delete tmp;
+	
+		if (!eventList->isEmpty())
+			eventList->list();
+	}
+	*/
+	
+	
 }
 
 void Manager::localRespond()
@@ -82,29 +134,42 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 	
 	if (pos == 3)
 	{
-		if (fstr == "INI")
+		if (fstr.compare("INI") == 0)
 		{
 			ep.type = INIT_WALK;
 			fstr = "";
 			//return <ingnore params>
 			return false;
 		}
-		else if (fstr == "RST")
+		else if (fstr.compare("RST") == 0)
 		{
 			ep.type = INIT_REST;
 			fstr = "";
 			//return <ingnore params>
 			return false;
 		}
-		else if (fstr == "DIS")
+		else if (fstr.compare("DIS") == 0)
 		{
 			ep.type = RESET_CONNECTION;
 			fstr = "";
 			return false;
+		}		
+		else if (fstr.compare("STP") == 0)
+		{
+			ep.type = CODE_STOP;
+			fstr = "";
+			return false;
 		}
-		else if (fstr == "MOV")
+		else if (fstr.compare("BAT") == 0)
+		{
+			ep.type = CODE_BAT;
+			fstr = "";
+			//return <ingnore params>
+			return false;
+		}
+		else if (fstr.compare("MOV") == 0)
 			ep.type = CODE_MOV;
-		else if (fstr == "SPK")
+		else if (fstr.compare("SPK") == 0)
 			ep.type = CODE_SPK;
 		else 
 			ep.type = CODE_INVALID;	
@@ -120,14 +185,6 @@ bool Manager::getParams(const string& toParse, int& pos, event_params_t& ep, int
 {
 	switch (ep.type)
 	{
-		case INIT_WALK:
-			//do not continue looking for more params
-			return false;
-			break;
-		case INIT_REST:
-			//do not continue looking for more params
-			return false;
-			break;
 		case CODE_SPK:
 		{
 			cout<< "getParams:" << toParse[pos] << endl;
@@ -140,7 +197,10 @@ bool Manager::getParams(const string& toParse, int& pos, event_params_t& ep, int
 			{
 				++paramCount;
 				if (paramCount >= 2)
+				{
+					++pos;
 					return false;
+				}
 			}
 			else 
 			{
@@ -197,6 +257,7 @@ int Manager::decode(const string& toParse)
 	static int stage = STG_FETCH;
 	static int paramCount = 0;
 	static int pos = 0;
+	static int trace = 0;
 	static event_params_t eventp = {CODE_UNKNOWN, {0,0}, ""};
 	cout<< "In DECODE ====================" << endl
 		<< "code-argument[" << toParse.length() << "] = " << toParse << endl;
@@ -206,7 +267,7 @@ int Manager::decode(const string& toParse)
 	//needs to resume when not fully staged yet
 	while ((pos < toParse.length()) && 
 		   (stage != STG_VALID)     && 
-		   (stage != STG_ERROR)         )
+		   (stage != STG_ERROR)        )
 	{
 		switch (stage)
 		{
@@ -243,53 +304,59 @@ int Manager::decode(const string& toParse)
 					stage = STG_ERROR;
 					break;
 		};
+		
+
+
 	}	
-	
-	cout<< "STAGE: " << stage << ", type: " << eventp.type << ", sparam: " << eventp.sparam << endl;
-	switch (stage)
-	{			
-		case STG_VALID:
-		{
-			cout<< "-------------->Decoded Function: " << (int&)eventp.type << ", " << eventp.sparam << endl;
-			vector<int> vtemp (eventp.iparams, eventp.iparams + sizeof(eventp.iparams)/sizeof(int));
-			int ttype = eventp.type;
-			mutex->lock();
-				mem.insertData("lastOp", eventp.type);
-				mem.insertData("msg", eventp.sparam);
-				mem.insertData("iparams", (vector<int>)vtemp);
-			mutex->unlock();	
+		//cout<< "POS: " << pos << ", Trace: " << trace << endl;	
+		cout<< "STAGE: " << stage << ", type: " << eventp.type << ", sparam: " << eventp.sparam << endl;
+		switch (stage)
+		{			
+			case STG_VALID:
+			{
+				cout<< "-------------->Decoded Function: " << (int&)eventp.type << ", " << eventp.sparam << endl;
+				vector<int> vtemp (eventp.iparams, eventp.iparams + sizeof(eventp.iparams)/sizeof(int));
+				int ttype = eventp.type;
+				mutex->lock();
+					mem.insertData("lastOp", eventp.type);
+					mem.insertData("msg", eventp.sparam);
+					mem.insertData("iparams", (vector<int>)vtemp);
+				mutex->unlock();	
 			
-			pos = 0;
-			stage = STG_FETCH;
-			paramCount = 0;
-			cont = false;
-			eventp.type = CODE_UNKNOWN;
-			for (int p = 0; p < IPARAM_LEN; ++p)
-				eventp.iparams[p] = 0;
-			eventp.sparam = "";
-			if (ttype == RESET_CONNECTION)
-				return -1;
+				pos = 0;
+				trace = pos;
+				stage = STG_FETCH;
+				paramCount = 0;
+				cont = false;
+				eventp.type = CODE_UNKNOWN;
+				for (int p = 0; p < IPARAM_LEN; ++p)
+					eventp.iparams[p] = 0;
+				eventp.sparam = "";
+				if (ttype == RESET_CONNECTION)
+					return -1;
 			
-			break;
-		}
-		case STG_ERROR:
-		{
-			cout << "-------------->Error Invalid CODE!" << endl;
-			pos = 0;
-			stage = STG_FETCH;
-			paramCount = 0;
-			cont = false;
-			eventp.type = CODE_UNKNOWN;
-			for (int p = 0; p < IPARAM_LEN; ++p)
-				eventp.iparams[p] = 0;
-			eventp.sparam = "";
-			break;
-		}
-		default:
-			break;	
-	};
+				break;
+			}
+			case STG_ERROR:
+			{
+				cout << "-------------->Error Invalid CODE!" << endl;
+				pos = 0;
+				++trace;
+				stage = STG_FETCH;
+				paramCount = 0;
+				cont = false;
+				eventp.type = CODE_UNKNOWN;
+				for (int p = 0; p < IPARAM_LEN; ++p)
+					eventp.iparams[p] = 0;
+				eventp.sparam = "";
+				break;
+			}
+			default:
+				break;	
+		};
+
 	cout<< "End DECODE ===================" << endl;
-	
+
 	return pos;
 
 	//lastOp = code;
@@ -306,12 +373,12 @@ void Manager::runExecuter()
 	cout<< "ROBOT POSE: " << posVal.toString() << endl;
 	//mem.insertData("robotPose", 5.0f);
 	//mem.insertData("robotPose", 3.0f);
-	//exec->executerRespond();
+	//accessExec.exec->executerRespond();
 	AL::ALValue post;
 	//xec->setPosture((int&)post);
 	
 
-	exec->initWalk();	
+	accessExec.exec->initWalk();	
 	while(1)
 	{
 		string msg = "";
@@ -327,17 +394,23 @@ void Manager::runExecuter()
 		switch ((int&)lastOp)
 		{
 			case INIT_WALK:
-				exec->initWalk();
+				accessExec.exec->initWalk();
 				//cout << "Done initWalk()" << endl;
 				break;
 			case INIT_REST:
-				exec->initSecure();
+				accessExec.exec->initSecure();
 				break;
 			case CODE_SPK:
-				exec->speak(msg);
+				accessExec.exec->speak(msg);
 				break;
 			case CODE_MOV:
-				exec->walk(vtemp[0]);
+				accessExec.exec->walk(vtemp[0]);
+				break;
+			case CODE_STOP:
+				accessExec.exec->walk(MOV_STOP);
+				break;
+			case CODE_BAT:
+				accessExec.exec->sendBatteryStatus();
 				break;
 			case RESET_CONNECTION:
 			case CODE_INVALID:
@@ -368,5 +441,16 @@ boost::weak_ptr<Manager> Manager::getManager()
 	return managerSingleton;
 }
 */
+
+
+
+AcessExec::AcessExec(boost::shared_ptr<AL::ALBroker> broker)
+:	exec(AL::ALModule::createModule<Executer>(broker, "RMExecuter")), 
+ 	pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0))
+{
+}
+AcessExec::~AcessExec()
+{
+}
 	
 

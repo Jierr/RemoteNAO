@@ -15,7 +15,9 @@ set(_srcs2
 	decoder.h
 	decoder.cpp
 	executer.h
-	executer.cpp)  
+	executer.cpp
+	eventlist.h
+	eventlist.cpp)  
 	  
 #set(_srcs3
 #	decoderModule.cpp

@@ -1,6 +1,7 @@
 PROJECT = .
 SDK	=/home/jierr/development/naoqi-sdk-1.12.3-linux64
-HOST	= 10.42.0.55#169.254.130.18
+HOST	=134.109.151.142#10.42.0.55#169.254.130.18
+PORT	=32768
 .PHONY: clean aatom  catom matom host edit
 
 host:
@@ -24,6 +25,9 @@ clean:
 scp:
 	scp ./build-cross-atom-release/sdk/bin/remoteServer nao@$(HOST):rServer
 	scp -r ./build-cross-atom-release/sdk/lib/ nao@$(HOST):RMlib
+
+telnet:
+	telnet $(HOST) $(PORT)
 
 edit:
 	gedit *.cpp *.h &
