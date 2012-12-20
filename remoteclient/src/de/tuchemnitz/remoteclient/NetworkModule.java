@@ -428,6 +428,8 @@ class NetworkThread extends Thread
 		Log.v("NetMod.HandleRecv", "Received: " + ReceiveStr);
 		CmdStr = ReceiveStr.substring(0, 3);
 		ReceiveStr = ReceiveStr.substring(4);
+		if (ReceiveStr.length() == 0)
+			return;
 		
 		if (CmdStr.equals(CMDTYPE_SIT))
 		{
@@ -443,7 +445,7 @@ class NetworkThread extends Thread
 			
 			DestCB = GetCallback(NetworkModule.INFO_BATT);
 			ArgInt = RoboInfo.BattState;
-			Log.v("NetMod.BAT", String.valueOf(ArgInt));
+			Log.v("NetMod.BAT", Integer.toHexString(ArgInt));
 		}
 		else
 		{
@@ -639,8 +641,23 @@ class NetworkThread extends Thread
 			Data = new byte[16];
 			DataLen = inFromServer.read(Data);
 			Log.v("NetMod.Receive", "Received " + Integer.toString(DataLen) + " bytes");
+//			String DebugStr = "";
+//			for (int i=0; i < DataLen; i ++)
+//				DebugStr += Integer.toHexString(Data[i]) + " ";
+//			DebugStr += "[" + Integer.toHexString(Data[DataLen]) + "]";
+//			Log.v("NetMod.Receive", DebugStr);
 			if (DataLen > 0)
-				InStr = new String(Data).substring(0, DataLen);
+			{
+				//InStr = new String(Data).substring(0, DataLen);
+				char ChrArr[] = new char[DataLen]; 
+				for (int i = 0; i < DataLen; i ++)
+					ChrArr[i] = (char)Data[i];
+				InStr = new String(ChrArr);
+			//	String DebugStr = "";
+			//	for (int i=0; i < InStr.length(); i ++)
+			//		DebugStr += Integer.toHexString(InStr.charAt(i)) + " ";
+			//	Log.v("NetMod.Receive", DebugStr);
+			}
 			//BufferedReader in = new BufferedReader(new InputStreamReader(inFromServer));
 			//inMessage = in.readLine();
 			
