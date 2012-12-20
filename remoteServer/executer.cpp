@@ -4,6 +4,7 @@
 #include <alproxies/alrobotposeproxy.h>
 #include <alproxies/almotionproxy.h>
 #include <alproxies/almemoryproxy.h>
+#include <alproxies/albatteryproxy.h>
 #include <alcommon/alproxy.h>
 #include <alvalue/alvalue.h>
 #include <qi/os.hpp>
@@ -52,8 +53,17 @@ Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	addParam("event", "The event to be processed");
 	BIND_METHOD(Executer::process);
 	
-	functionName("setBat", getName(), "Callback");
-	BIND_METHOD(Executer::setBat);
+	functionName("callback", getName(), "Callback");
+	/*addParam("eventName", "The event to be processed");
+	addParam("percentage", "The event to be processed");
+	addParam("subscriberIdentifier", "The event to be processed");*/
+	BIND_METHOD(Executer::callback);
+	
+	functionName("cbPoseChanged", getName(), "callback");
+	addParam("eventName", "The event to be processed");
+	addParam("postureName", "The name of posture");
+	addParam("subscriberIdentifier", "ID");
+	BIND_METHOD(Executer::cbPoseChanged);
 }
 
 Executer::~Executer()
@@ -63,8 +73,13 @@ Executer::~Executer()
 void Executer::init()
 {
 	mem = AL::ALMemoryProxy(getParentBroker());
-	mem.subscribeToEvent("BatteryLevelChanged", "RMExecuter",
-                                  "setBat");
+	mem.subscribeToEvent("BatteryLevelChanged", "RMExecuter", "callback");
+	mem.subscribeToEvent("BodyStiffnessChanged", "RMExecuter", "callback");
+	mpose = (string&)mem.getData("robotPoseChanged");
+	mem.subscribeToEvent("robotPoseChanged", "RMExecuter", "cbPoseChanged");
+	
+	
+	
 }
 
 void Executer::initEventList(boost::shared_ptr<EventList> eL)
@@ -180,6 +195,7 @@ void Executer::process(const Event& event)
 {
 	//cout<<"----->Process Event" << endl;
 	int classf;	
+
 	
 	classf = processConflicts(event);
 	eventList->setClassf(event.id, classf);
@@ -630,25 +646,56 @@ void Executer::setPosture(const int& pos)
 
 }
 
-void Executer::setBat()
-{
-	AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-	tts.say("Battery");
-	cout<< "Battery Level changed!" << endl;
-	bat = (int&)mem.getData("BatteryLevelChanged");
-}
+
 
 void Executer::sendBatteryStatus()
 {
 	int sclient;
 	string buf = "BAT_";
 	int value = 0;
+	bool balue = false;
 	int sent= 0;
 	try
 	{
+		AL::ALBatteryProxy pbat = AL::ALBatteryProxy();
 		//BatteryLevelChanged
-		cout << "Batterylevel: " << (char)bat << endl;
-		buf+=(char)(int&)mem.getData("BatteryLevelChanged");
+		vector<string> events;
+		vector<string> subs;
+		events = mem.getDataList("Battery");
+		cout << "Available Events: " << events.size() << endl;
+		for (int i = 0; i < events.size(); ++i)
+			cout << events[i] <<  endl;
+			
+		subs = mem.getSubscribers("BatteryLevelChanged");
+		cout << "Available Subscribers: " << subs.size() << endl;
+		for (int i = 0; i < subs.size(); ++i)
+			cout << subs[i] << " with type: " << mem.getType("BatteryLevelChanged") << endl;
+			
+		//mem.raiseEvent("BatteryLevelChanged", 5);
+			
+		cout << "bat: " << (int)(char)bat << endl;
+		//mem.insertData("BatteryLevelChanged", 90);
+		value=(int&)mem.getData("BatteryLevelChanged");
+		cout << "value: " << value << ":" << mem.getData("BatteryLevelChanged").toString() /*(int)buf[4]/*(int)(char)bat*/ << endl;
+		
+		value=(int&)mem.getData("Device/SubDeviceList/Battery/Current/Sensor/Value");
+		cout << "value[Device/SubDeviceList/Battery/Current/Sensor/Value]: " << value/*(int)buf[4]/*(int)(char)bat*/ << endl;
+		
+		
+		value=(int&)mem.getData("Device/SubDeviceList/Battery/Charge/Sensor/Status");
+		cout << "value[Device/SubDeviceList/Battery/Charge/Sensor/Status]: " << value/*(int)buf[4]/*(int)(char)bat*/ << endl;
+		
+		
+		value=(int&)mem.getData("Device/SubDeviceList/Battery/Charge/Sensor/CellVoltageMin");
+		cout << "value[Device/SubDeviceList/Battery/Charge/Sensor/CellVoltageMin]: " << value/*(int)buf[4]/*(int)(char)bat*/ << endl;
+		
+		
+		balue=(bool&)mem.getData("BatteryDisChargingFlagChanged");
+		cout << "balue[BatteryDisChargingFlagChanged]: " << balue/*(int)buf[4]/*(int)(char)bat*/ << endl;
+		balue=(bool&)mem.getData("BatteryFullChargedFlagChanged");
+		cout << "balue[BatteryFullChargedFlagChanged]: " << balue/*(int)buf[4]/*(int)(char)bat*/ << endl;
+		balue=(bool&)mem.getData("BatteryDisChargingFlagChanged");
+		cout << "balue[BatteryDisChargingFlagChanged]: " << balue/*(int)buf[4]/*(int)(char)bat*/ << endl;
 		
 		AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), CB_IP, CB_PORT);
 		sclient = pNetNao.call<int>("getClient_tcp"); 
@@ -661,6 +708,29 @@ void Executer::sendBatteryStatus()
 	catch (const AL::ALError& e)
 	{
 		cout<< "ERROR [Executer]<sendBatteryStatus>:" << endl << e.what() << endl;
+	}
+}
+
+void Executer::callback()
+{
+	AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+	tts.say("Battery");
+	cout<< "Battery Level changed! --> Percentage:" << endl;
+	bat = (int&)mem.getData("BatteryLevelChanged");
+}
+
+void Executer::cbPoseChanged(const string& eventName, const string& postureName, const string& subscriberIdentifier)
+{
+	mpose = (string&)mem.getData("robotPoseChanged");
+	cout<< ">>>POSTURE CHANGED<<<>" << "[" << postureName << "]:" << mpose << endl;
+	try
+	{
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+				tts.say(string("New Pose"));
+	}
+	catch (const AL::ALError& e)
+	{
+		cout<< "Error Callback:" << e.what() << endl;
 	}
 }
 

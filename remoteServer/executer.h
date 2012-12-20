@@ -17,6 +17,7 @@ class Executer:public AL::ALModule
 		boost::shared_ptr<AL::ALMutex> sync;
 		boost::shared_ptr<EventList> eventList;
 		state_t state;
+		string mpose;
 		int bat;
 		AL::ALMemoryProxy mem;
 	public:
@@ -35,7 +36,8 @@ class Executer:public AL::ALModule
 		void initWalk();
 		void initSecure();
 		void walk(const Event& event);
-		void setBat();
+		void callback();
+		void cbPoseChanged(const string& eventName, const string& postureName, const string& subscriberIdentifier);
 		void speak(const string& msg);
 		void moveHead(const Event& event);
 		void sendBatteryStatus();

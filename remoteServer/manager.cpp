@@ -7,6 +7,7 @@
 #include <alproxies/altexttospeechproxy.h>
 #include <alcommon/alproxy.h>
 #include <qi/os.hpp>
+#include <alproxies/alrobotposeproxy.h>
 
 #include "manager.h"
 #include "decoder.h"
@@ -39,17 +40,17 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	mem = AL::ALMemoryProxy(broker);
 	//mem.setDescription(string("lastOp"), string("Last Operation"));	
 	
-	mem.insertData("lastOp", CODE_INVALID);
-	mem.insertData("msg", string("")); 
+	//mem.insertData("lastOp", CODE_INVALID);
+	//mem.insertData("msg", string("")); 
 	
 	vector<int> vtemp (2, 0);
 	vector<int> vtemp2 (2, 1);
-	mem.insertData("iparams", (vector<int>)vtemp);
-	vtemp2 = mem.getData("iparams");
+	//mem.insertData("iparams", (vector<int>)vtemp);
+	//vtemp2 = mem.getData("iparams");
 	cout << "vtemp2[0] = " << vtemp2[0] << endl;
 	cout << "vtemp2[1] = " << vtemp2[1] << endl;
 	
-	lastOp = mem.getData("lastOp");
+	//lastOp = mem.getData("lastOp");
 	cout<< "lastOp Constructor: " << (int&)lastOp << endl;
 	
 	cout<< "Constructor!" << endl;
@@ -401,16 +402,16 @@ int Manager::decode(const string& toParse)
 
 void Manager::runExecuter()
 {
-	AL::ALValue posVal = mem.getData("robotPose");
-	cout<< "ROBOT POSE: " << posVal.toString() << endl;
+	//AL::ALValue posVal = mem.getData("robotPose");
+	//cout<< "ROBOT POSE: " << posVal.toString() << endl;
 	//mem.insertData("robotPoseChanged", string("Sit"));
 	//mem.insertData("robotPose", 2);
-	posVal = mem.getData("robotPose");
-	cout<< "ROBOT POSE: " << posVal.toString() << endl;
+	//posVal = mem.getData("robotPose");
+	//cout<< "ROBOT POSE: " << posVal.toString() << endl;
 	//mem.insertData("robotPose", 5.0f);
 	//mem.insertData("robotPose", 3.0f);
 	//accessExec.exec->executerRespond();
-	AL::ALValue post;
+	//AL::ALValue post;
 	int taskID = 0;
 	//xec->setPosture((int&)post);
 	
@@ -419,6 +420,10 @@ void Manager::runExecuter()
 	accessExec.exec->setState(STATE_STANDING);
 	while(1)
 	{
+		
+		/*AL::ALRobotPoseProxy rr = AL::ALRobotPoseProxy(MB_IP, MB_PORT);
+		int pose = (int)((float&)mem.getData("robotPose"));
+		cout << "Posture: " << (rr.getPoseNames()[pose]) << endl;*/
 		qi::os::msleep(50);
 		//eventList->removeDone();
 		//cout<< "removeDone" << endl;
