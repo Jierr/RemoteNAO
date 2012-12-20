@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <RadioGroup
+        android:id="@+id/bew_radioGroup1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true">
+
+        <RadioButton
+            android:id="@+id/bewa_rbutton_ARME"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bewegungsauswahl_radiobutton1_text" />
+
+        <RadioButton
+            android:id="@+id/bewa_rbutton_LAUFEN"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bewegungsauswahl_radiobutton2_text" />
+
+        <RadioButton
+            android:id="@+id/bewa_rbutton_KOPF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bewegungsauswahl_radiobutton3_text" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/bewa_OKbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bew_radioGroup1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:minHeight="24dp"
+        android:text="@string/bewegungsauswahl_OKbutton_text" />
+
+</RelativeLayout>

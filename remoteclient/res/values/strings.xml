@@ -4,9 +4,34 @@
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     
-	<string name="bew_button1">Up</string>
-	<string name="bew_button2">Left</string>
-	<string name="bew_button3">Right</string>
-	<string name="bew_button4">Down</string>
+	<string name="bew_button1_text">Up</string>
+	<string name="bew_button2_text">Left</string>
+	<string name="bew_button3_text">Right</string>
+	<string name="bew_button4_text">Down</string>
+	<string name="bew_button5_text">Stop</string>
+	
+	<string name="menu_button1_text">Auswahl\nder Bew-\nKategorie</string>
+	<string name="menu_button2_text">Sprach-\nausgabe</string>
+	<string name="menu_button3_text">Setzen/\nAufstehen</string>
+	<string name="menu_button4_text">Ausruhen</string>
+	<string name="menu_button5_text">Bewegungsmakro</string>
+	<string name="menu_button6_text">Netzwerk</string>
+	<string name="menu_button7_text">Hilfe</string>
+	<string name="menu_button8_text">Beenden</string>
+	
+	<string name="edit_sprachausgabe">Text eingeben</string>
+	<string name="sprachausgabe_text">Sprachausgabe</string>
+	
+	<string name="verbindungsstatus_text">Verbindungsstatus : </string>
+	<string name="verbindungsstatus_wert_text">nicht verbunden</string>
+	<string name="verbindungsip_text">IP-Adresse : </string>
+	<string name="verbindungsip_eingabe">0.0.0.0</string>
+	<string name="verbindungsbutton_text">verbinden</string>
+	<string name="verbindungsbutton_close_text"> Schließen </string>
+	
+	<string name="bewegungsauswahl_radiobutton1_text"> Arme bewegen</string>
+	<string name="bewegungsauswahl_radiobutton2_text"> Laufen </string>
+	<string name="bewegungsauswahl_radiobutton3_text"> Kopf bewegen </string>
+	<string name="bewegungsauswahl_OKbutton_text">" OK "</string>
 
 </resources>
