@@ -98,6 +98,42 @@ void EventList::removeEvent(const void* const iid)
 	mutex->unlock();
 }
 
+void EventList::removeDone()
+{
+	Event* curr;
+	Event* prev;
+	mutex->lock();
+	
+	prev = 0;
+	curr = first;
+	
+	while(curr)
+	{
+		if (curr->classification == EVT_DONE)
+		{
+			if(prev)
+			{
+				prev->next = curr->next;
+				delete curr;
+			}
+			else
+			{
+				first = curr->next;
+				delete curr;
+			}
+		}
+		prev = curr;
+		curr = curr->next;
+	}
+	
+	
+	mutex->unlock();
+}
+
+void EventList::removeAll()
+{
+}
+
 
 void EventList::list()
 {

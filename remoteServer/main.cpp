@@ -111,14 +111,14 @@ int main(int argc, char* argv[])
 	// connect to local module RMManager
 	AL::ALProxy proxyManager = AL::ALProxy(broker, string("RMManager")/*, pip, MB_PORT*/);
 	
-	taskID = proxyManager.pCall(string("localRespond")); //callVoid("localRespond");
+	/*taskID = proxyManager.pCall(string("localRespond")); //callVoid("localRespond");
 	cout<<"ID of Thread = " << taskID << endl;
 	if (!proxyManager.wait(taskID, 0))
 		cout<< "localRespond wurde abgeschlossen" << endl;
 	else
 		cout<< "localRespond timed out!" << endl;
 
-
+	*/
 		
 				
 	taskID = proxyManager.pCall(string("runExecuter")); //callVoid("runExecuter");
@@ -194,17 +194,32 @@ int main(int argc, char* argv[])
 		}
 		while ((recvd > 0) && (bytesRead>=0));
 					
-				
-		try 
-		{
-			AL::ALTextToSpeechProxy tts(pip, pport);
-			tts.say("Disconnected");
+			
+		if (recvd > 0)
+		{		
+			try 
+			{
+				AL::ALTextToSpeechProxy tts(pip, pport);
+				tts.say("Disconnected");
+			}
+			catch(const AL::ALError& e)
+			{
+				cerr<< "EXCEPTION: " << e.what() << endl;
+			}	
+			net->disconnect(sclient);
 		}
-		catch(const AL::ALError& e)
+		else 
 		{
-			cerr<< "EXCEPTION: " << e.what() << endl;
-		}	
-		net->disconnect(sclient);
+			try 
+			{
+				AL::ALTextToSpeechProxy tts(pip, pport);
+				tts.say("Connection lost");
+			}
+			catch(const AL::ALError& e)
+			{
+				cerr<< "EXCEPTION: " << e.what() << endl;
+			}				
+		}
 	}
 	
 	

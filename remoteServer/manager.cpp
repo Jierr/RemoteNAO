@@ -59,8 +59,7 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	//accessExec.exec = exec;
 	//accessExec.pexec = AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0);
 	accessExec.exec->initEventList(eventList);
-	accessExec.pexec.callVoid("executerRespond");
-	accessExec.exec->executerRespond();
+	//accessExec.exec->executerRespond();
 }
 
 Manager::~Manager()
@@ -173,6 +172,8 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 			ep.type = CODE_MOV;
 		else if (fstr.compare("SPK") == 0)
 			ep.type = CODE_SPK;
+		else if (fstr.compare("HAD") == 0)
+			ep.type = CODE_HEAD;
 		else 
 			ep.type = CODE_INVALID;	
 		fstr = "";	
@@ -213,6 +214,37 @@ bool Manager::getParams(const string& toParse, int& pos, event_params_t& ep, int
 			break;
 		}
 		case CODE_MOV:	
+			if (paramCount == 1)
+			{
+				switch (toParse[pos])
+				{
+					case 'F':
+						ep.iparams[0] = MOV_FORWARD;
+						break;
+					case 'B':
+						ep.iparams[0] = MOV_BACKWARD;
+						break;
+					case 'L':
+						ep.iparams[0] = MOV_LEFT;
+						break;
+					case 'R':
+						ep.iparams[0] = MOV_RIGHT;
+						break;
+					default:
+						ep.type = CODE_INVALID;
+						break;
+				};
+				++pos;
+				return false;
+			}
+			
+			if (toParse[pos] == '_')
+			{
+				++paramCount;
+				++pos;
+			}			
+			break;
+		case CODE_HEAD:
 			if (paramCount == 1)
 			{
 				switch (toParse[pos])
@@ -388,14 +420,13 @@ void Manager::runExecuter()
 	while(1)
 	{
 		qi::os::msleep(50);
+		//eventList->removeDone();
+		//cout<< "removeDone" << endl;
 		Event event(eventList->getPending());
 		try
 		{
-			if (event.ep.type != CODE_INVALID)
-			{
-				taskID = accessExec.pexec.pCall<Event>("process", event);
-				eventList->setTask(event.id, taskID);
-			}
+			taskID = accessExec.pexec.pCall<Event>("process", event);
+			//eventList->setTask(event.id, taskID);
 		}
 		catch(const AL::ALError& e)
 		{

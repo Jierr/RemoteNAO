@@ -32,12 +32,15 @@ class Event{
 			ep.type = CODE_INVALID;
 			next = 0;
 			taskID = 0;
+			classification = EVT_PENDING;
 		}
 		Event(const Event& event)
 		:	id(event.id)
 		{
 			ep = event.ep;
 			next = event.next;
+			taskID = event.taskID;
+			classification = event.classification;
 		}
 		~Event(){}
 };
@@ -56,6 +59,8 @@ class EventList
 		void addEvent(event_params_t ep);
 		void addFirst(event_params_t ep);
 		void removeEvent(const void* const iid);
+		void removeDone();
+		void removeAll();
 		void list();
 		void setClassf(const void* const iid, int classf);
 		void setTask(const void* const iid, const int& tid);

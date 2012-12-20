@@ -3,6 +3,7 @@
 #include <alproxies/altexttospeechproxy.h>
 #include <alproxies/alrobotposeproxy.h>
 #include <alproxies/almotionproxy.h>
+#include <alproxies/almemoryproxy.h>
 #include <alcommon/alproxy.h>
 #include <alvalue/alvalue.h>
 #include <qi/os.hpp>
@@ -17,7 +18,8 @@ using namespace std;
 Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 : 	AL::ALModule(broker, name),
 	mutex(AL::ALMutex::createALMutex()),
-	sync(AL::ALMutex::createALMutex())
+	sync(AL::ALMutex::createALMutex()),
+	bat(0)
 {
 	setModuleDescription("This Module manages the Data comming from the remoteServer module");
 	
@@ -49,6 +51,9 @@ Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	functionName("process", getName(), "Execute a given event");
 	addParam("event", "The event to be processed");
 	BIND_METHOD(Executer::process);
+	
+	functionName("setBat", getName(), "Callback");
+	BIND_METHOD(Executer::setBat);
 }
 
 Executer::~Executer()
@@ -57,7 +62,9 @@ Executer::~Executer()
 
 void Executer::init()
 {
-
+	mem = AL::ALMemoryProxy(getParentBroker());
+	mem.subscribeToEvent("BatteryLevelChanged", "RMExecuter",
+                                  "setBat");
 }
 
 void Executer::initEventList(boost::shared_ptr<EventList> eL)
@@ -85,16 +92,19 @@ int Executer::processConflicts(const Event& event)
 	mutex->lock();
 	event_params_t ep;
 	int classf = EVT_BUSY;
+	
+	state_t stateAbs = state & STATE_ABSOLUT;
+	state_t statePar = state & STATE_PARALLEL;
 	switch (event.ep.type)
 	{
 		case INIT_WALK:	
-			if (state != STATE_CROUCHING)
+			if (stateAbs != STATE_CROUCHING)
 			{
 				classf = EVT_DONE;
 			}		
 			break;
 		case INIT_REST:
-			if (state != STATE_STANDING)
+			if (stateAbs != STATE_STANDING)
 			{
 				classf = EVT_DONE;
 			}		
@@ -102,37 +112,43 @@ int Executer::processConflicts(const Event& event)
 		case CODE_SPK:
 			break;
 		case CODE_MOV:
-			if (state == STATE_CROUCHING)
+			if (stateAbs == STATE_CROUCHING)
 			{
 				ep.type = INIT_WALK;
 				eventList->addFirst(ep);
 				classf = EVT_PENDING;
 			}
-			else if (state == STATE_WALKING)
+			else if (stateAbs == STATE_WALKING)
 			{
 				ep.type = CODE_STOP;
 				ep.iparams[0] = MOV_STOP;
 				eventList->addFirst(ep);
 				classf = EVT_PENDING;
 			}
-			else if ((state == STATE_MOVING) 	||
-					 (state == STATE_STOPPING)		)
+			else if ((stateAbs == STATE_MOVING) 	||
+					 (stateAbs == STATE_STOPPING)		)
 			{
 				classf = EVT_PENDING;
 			}
-			else if (state != STATE_STANDING)
+			else if (stateAbs != STATE_STANDING)
 			{
 				classf = EVT_DONE;
 			}
 			break;
+		case CODE_HEAD:
+			if (statePar & STATE_HEADMOVE)
+				classf = EVT_PENDING;
+			if (stateAbs == STATE_UNKNOWN)
+				classf = EVT_DONE;
+			break;
 		case CODE_STOP:
-			if (state != STATE_WALKING)
+			if (stateAbs != STATE_WALKING)
 				classf = EVT_DONE;
 			break;
 		case CODE_BAT:
 			break;
 		case RESET_CONNECTION:
-			if (state == STATE_WALKING)
+			if (stateAbs == STATE_WALKING)
 			{
 				cout<< "DIS: first stop Movement" << endl;
 				ep.type = CODE_STOP;
@@ -140,14 +156,14 @@ int Executer::processConflicts(const Event& event)
 				eventList->addFirst(ep);
 				classf = EVT_PENDING;
 			}			
-			else if (state == STATE_STANDING)
+			else if (stateAbs == STATE_STANDING)
 			{
 				cout<< "DIS: Now Rest" << endl;
 				ep.type = INIT_REST;
 				eventList->addFirst(ep);
 				classf = EVT_PENDING;
 			}
-			else if ((state == STATE_STOPPING) || (state == STATE_MOVING))
+			else if ((stateAbs == STATE_STOPPING) || (stateAbs == STATE_MOVING))
 				classf = EVT_PENDING;
 			break;
 		case CODE_INVALID:
@@ -191,6 +207,11 @@ void Executer::process(const Event& event)
 				sync->lock();
 				setState(STATE_STANDING);
 				sync->unlock();
+				break;
+			case CODE_HEAD:
+				setState(getState() | STATE_HEADMOVE);
+				moveHead(event);
+				setState(getState() & ~STATE_HEADMOVE);
 				break;
 			case CODE_STOP:
 				//event.ep.iparams[0] = MOV_STOP;
@@ -357,7 +378,7 @@ void Executer::walk(const Event& event)
 				footsteps.array< vector<int>, vector<int> >(footstep, footstep);
 				cout<< footsteps[0][0] << ", " << footsteps[0][1] << ", "<< footsteps[0][2] << ", " << endl
 					<< footsteps[1][0] << ", " << footsteps[1][1] << ", "<< footsteps[1][2] << endl;*/
-				vector<float> speed(50, 1.0); 				
+				vector<float> speed(50, 0.6); 				
 				cout << "------> Move Forward <------" << endl;
 				for (int i = 0; i < 50; i+=2)
 					legs[i] = "LLeg";
@@ -382,7 +403,7 @@ void Executer::walk(const Event& event)
 				//footsteps.arraySetSize(50);
 				for (int i=0; i<50; ++i)
 					footsteps.arrayPush(footstep);
-				vector<float> speed(50, 1.0); 	
+				vector<float> speed(50, 0.6); 	
 				cout << "footsteps: " << footsteps.getSize() << endl;			
 				cout << "------> Move Backward <------" << endl;
 				for (int i = 0; i < 50; i+=2)
@@ -481,6 +502,77 @@ void Executer::walk(const Event& event)
 	}
 }
 
+void Executer::moveHead(const Event& event)
+{
+	try
+	{
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		int mode = event.ep.iparams[0];
+		AL::ALValue jointNames;		
+		AL::ALValue stiffList;		
+		AL::ALValue stiffTime;
+        AL::ALValue angleList;
+        AL::ALValue angleTime;
+		
+		switch(mode)
+		{
+			case MOV_FORWARD: 
+				cout<< ">>>MOVE HEAD RIGHT<<<" << endl;       
+				jointNames.arrayPush("HeadPitch");
+				stiffList.arrayPush(1.0);
+				stiffTime.arrayPush(1.0);	
+				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
+				angleList.arrayPush(HEAD_PITCH);
+				angleTime.arrayPush(0.5);			
+    			motion.angleInterpolation(jointNames, angleList, angleTime, false);
+    			stiffList[0] = 0.0;
+				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
+				break;
+			case MOV_BACKWARD:
+				cout<< ">>>MOVE HEAD RIGHT<<<" << endl;       
+				jointNames.arrayPush("HeadPitch");
+				stiffList.arrayPush(1.0);
+				stiffTime.arrayPush(1.0);	
+				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
+				angleList.arrayPush(-HEAD_PITCH);
+				angleTime.arrayPush(0.5);			
+    			motion.angleInterpolation(jointNames, angleList, angleTime, false);
+    			stiffList[0] = 0.0;
+				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
+				break;
+			case MOV_LEFT:
+				cout<< ">>>MOVE HEAD LEFT<<<" << endl;       
+				jointNames.arrayPush("HeadYaw");
+				stiffList.arrayPush(1.0);
+				stiffTime.arrayPush(1.0);	
+				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
+				angleList.arrayPush(HEAD_YAW);
+				angleTime.arrayPush(0.5);			
+    			motion.angleInterpolation(jointNames, angleList, angleTime, false);
+    			stiffList[0] = 0.0;
+				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
+				break;
+			case MOV_RIGHT:
+				cout<< ">>>MOVE HEAD RIGHT<<<" << endl;       
+				jointNames.arrayPush("HeadYaw");
+				stiffList.arrayPush(1.0);
+				stiffTime.arrayPush(1.0);	
+				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
+				angleList.arrayPush(-HEAD_YAW);
+				angleTime.arrayPush(0.5);			
+    			motion.angleInterpolation(jointNames, angleList, angleTime, false);
+    			stiffList[0] = 0.0;
+				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
+				break;
+		}
+    }
+	catch(const AL::ALError& e)
+	{
+		cout << "Error [Executer]<moveHead>:" << endl << e.what() << endl;
+	}
+}
+
 void Executer::speak(const string& msg)
 {
 	cout << "In SPEAK:" << msg << endl;
@@ -511,7 +603,7 @@ void Executer::setPosture(const int& pos)
 	
 	//AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 	//tts.say(rr.getPoseNames().toString());
-	
+
 /*	if (pos == 0)
 		return;
 	try
@@ -538,14 +630,26 @@ void Executer::setPosture(const int& pos)
 
 }
 
+void Executer::setBat()
+{
+	AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+	tts.say("Battery");
+	cout<< "Battery Level changed!" << endl;
+	bat = (int&)mem.getData("BatteryLevelChanged");
+}
+
 void Executer::sendBatteryStatus()
 {
 	int sclient;
 	string buf = "BAT_";
-	buf+= 50;
+	int value = 0;
 	int sent= 0;
 	try
 	{
+		//BatteryLevelChanged
+		cout << "Batterylevel: " << (char)bat << endl;
+		buf+=(char)(int&)mem.getData("BatteryLevelChanged");
+		
 		AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), CB_IP, CB_PORT);
 		sclient = pNetNao.call<int>("getClient_tcp"); 
 		

@@ -32,6 +32,7 @@
 #define CODE_STOP 21
 #define CODE_SPK 22
 #define CODE_BAT 23
+#define CODE_HEAD 24
 
 #define MOV_STOP -1
 #define MOV_FORWARD 1
@@ -44,15 +45,21 @@
 #define EVT_DONE 3
 #define EVT_CONFLICTED 4
 
+typedef int state_t;
 
-enum state_t{
-	STATE_UNKNOWN = 0,
-	STATE_CROUCHING,
-	STATE_STANDING,
-	STATE_SITTING,
-	STATE_WALKING,
-	STATE_STOPPING,
-	STATE_MOVING,
+enum {
+	STATE_ABSOLUT = 0x00FF,
+	STATE_UNKNOWN = 0x0040,
+	STATE_CROUCHING = 0x0001,
+	STATE_STANDING = 0x0002,
+	STATE_SITTING = 0x0004,
+	STATE_WALKING = 0x0008,
+	STATE_STOPPING = 0x0010,
+	STATE_MOVING = 0x0020,
+	//parallel states
+	STATE_PARALLEL = 0xFF00,
+	STATE_HEADMOVE = 0x8000,
+	STATE_SPEAKING = 0x4000,
 	STATE_REFUSING
 };
 
@@ -61,6 +68,9 @@ enum state_t{
 #define TURN_ANGLE 18
 //therefor 30 steps are neede total to turn 360
 #define TURN_STEPS 2*15
+
+#define HEAD_YAW 0.6
+#define HEAD_PITCH 0.3
 
 
 
