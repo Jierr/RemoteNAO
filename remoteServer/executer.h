@@ -40,6 +40,7 @@ class Executer:public AL::ALModule
 		void cbPoseChanged(const string& eventName, const string& postureName, const string& subscriberIdentifier);
 		void speak(const string& msg);
 		void moveHead(const Event& event);
+		void joints();
 		void sendBatteryStatus();
 };
 

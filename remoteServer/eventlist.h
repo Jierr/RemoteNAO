@@ -49,6 +49,7 @@ class EventList
 {
 	private:
 		boost::shared_ptr<AL::ALMutex> mutex;
+		int order;
 		Event* first;
 		Event* last;
 		
@@ -56,6 +57,7 @@ class EventList
 		EventList();
 		~EventList();
 		bool isEmpty();
+		void setOrder(int ord);
 		void addEvent(event_params_t ep);
 		void addFirst(event_params_t ep);
 		void removeEvent(const void* const iid);

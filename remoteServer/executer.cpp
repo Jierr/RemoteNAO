@@ -9,6 +9,8 @@
 #include <alvalue/alvalue.h>
 #include <qi/os.hpp>
 #include <almath/tools/almath.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 
 #include "executer.h"
@@ -74,11 +76,9 @@ void Executer::init()
 {
 	mem = AL::ALMemoryProxy(getParentBroker());
 	mem.subscribeToEvent("BatteryLevelChanged", "RMExecuter", "callback");
-	mem.subscribeToEvent("BodyStiffnessChanged", "RMExecuter", "callback");
+	//mem.subscribeToEvent("BodyStiffnessChanged", "RMExecuter", "callback");
 	mpose = (string&)mem.getData("robotPoseChanged");
 	mem.subscribeToEvent("robotPoseChanged", "RMExecuter", "cbPoseChanged");
-	
-	
 	
 }
 
@@ -108,6 +108,7 @@ int Executer::processConflicts(const Event& event)
 	event_params_t ep;
 	int classf = EVT_BUSY;
 	
+	eventList->setOrder(ORD_STRICT);
 	state_t stateAbs = state & STATE_ABSOLUT;
 	state_t statePar = state & STATE_PARALLEL;
 	switch (event.ep.type)
@@ -131,19 +132,20 @@ int Executer::processConflicts(const Event& event)
 			{
 				ep.type = INIT_WALK;
 				eventList->addFirst(ep);
-				classf = EVT_PENDING;
+				classf = EVT_PENDINGABS;
 			}
 			else if (stateAbs == STATE_WALKING)
 			{
 				ep.type = CODE_STOP;
 				ep.iparams[0] = MOV_STOP;
 				eventList->addFirst(ep);
-				classf = EVT_PENDING;
+				classf = EVT_PENDINGABS;
 			}
 			else if ((stateAbs == STATE_MOVING) 	||
 					 (stateAbs == STATE_STOPPING)		)
 			{
-				classf = EVT_PENDING;
+				classf = EVT_PENDINGABS;
+				eventList->setOrder(ORD_PAR);
 			}
 			else if (stateAbs != STATE_STANDING)
 			{
@@ -152,7 +154,10 @@ int Executer::processConflicts(const Event& event)
 			break;
 		case CODE_HEAD:
 			if (statePar & STATE_HEADMOVE)
-				classf = EVT_PENDING;
+			{
+				classf = EVT_PENDINGPAR;
+				eventList->setOrder(ORD_PAR);
+			}
 			if (stateAbs == STATE_UNKNOWN)
 				classf = EVT_DONE;
 			break;
@@ -163,23 +168,24 @@ int Executer::processConflicts(const Event& event)
 		case CODE_BAT:
 			break;
 		case RESET_CONNECTION:
+			eventList->list();
 			if (stateAbs == STATE_WALKING)
 			{
 				cout<< "DIS: first stop Movement" << endl;
 				ep.type = CODE_STOP;
 				ep.iparams[0] = MOV_STOP;
 				eventList->addFirst(ep);
-				classf = EVT_PENDING;
+				classf = EVT_PENDINGABS;
 			}			
 			else if (stateAbs == STATE_STANDING)
 			{
 				cout<< "DIS: Now Rest" << endl;
 				ep.type = INIT_REST;
 				eventList->addFirst(ep);
-				classf = EVT_PENDING;
+				classf = EVT_PENDINGABS;
 			}
 			else if ((stateAbs == STATE_STOPPING) || (stateAbs == STATE_MOVING))
-				classf = EVT_PENDING;
+				classf = EVT_PENDINGABS;
 			break;
 		case CODE_INVALID:
 		default:
@@ -239,7 +245,8 @@ void Executer::process(const Event& event)
 				cout<< "STP: NOW STANDING" << endl;
 				break;
 			case CODE_BAT:
-				sendBatteryStatus();
+				//sendBatteryStatus();
+				joints();
 				break;
 			case RESET_CONNECTION:
 				setState(STATE_CROUCHING);
@@ -299,6 +306,36 @@ void Executer::initWalk()
 	{
 		cout<< "Error initWalk: " << e.what() << endl; 
 	}
+}
+
+
+void Executer::joints()
+{
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		
+		float stiffnesses  = 1.0f; 
+		string snames = "Body";
+        motion.stiffnessInterpolation("Body", 1.0, 1.0);
+        
+        AL::ALValue names = "Body";
+        float ftargetAngles[] = {
+        						 	 0.5, 0.2,
+		    						 0.0, 90.0, -0.0, -90.0, 0.0, 0.0, //80.0
+		    						 -0.0, 0.0, -10.0/2 + 0.0, 10.0, -10.0/2, -0.0,
+		    						 -0.0, -0.0, -10.0/2 + 0.0, 10.0, -10.0/2, 0.0,
+		    						 0.0, -90.0, +90.0, +0.0, 0.0, 0.0 //80.0
+        						};
+        						
+        //shoulderPitch == 0.0
+       // cout<< "sizeof(ftargetAngles) = " << sizeof(ftargetAngles) << endl;
+        for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+        	ftargetAngles[i]*= RAD;
+
+       	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+        AL::ALValue targetAngles(vtargetAngles);
+        float maxSpeedFraction = 0.2;
+        motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
 }
 
 
@@ -713,8 +750,11 @@ void Executer::sendBatteryStatus()
 
 void Executer::callback()
 {
+	char str [255];
+	bat = (int&)mem.getData("BatteryLevelChanged");
 	AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-	tts.say("Battery");
+	sprintf(str, "%d", bat);
+	tts.say(string("Battery") + string(str));
 	cout<< "Battery Level changed! --> Percentage:" << endl;
 	bat = (int&)mem.getData("BatteryLevelChanged");
 }
@@ -726,7 +766,7 @@ void Executer::cbPoseChanged(const string& eventName, const string& postureName,
 	try
 	{
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-				tts.say(string("New Pose"));
+				tts.say((mpose));
 	}
 	catch (const AL::ALError& e)
 	{

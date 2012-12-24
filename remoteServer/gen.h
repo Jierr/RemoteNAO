@@ -21,18 +21,19 @@
 #define STG_PARAM 2
 #define STG_VALID 3
 
-#define RESET_CONNECTION 42
-
-#define INIT_WALK 10
-#define INIT_REST 11
 
 #define CODE_UNKNOWN 0
 #define CODE_INVALID -1
+#define CODE_ABSOLUT 10
+#define INIT_WALK 10
+#define INIT_REST 11
 #define CODE_MOV 20
 #define CODE_STOP 21
-#define CODE_SPK 22
-#define CODE_BAT 23
-#define CODE_HEAD 24
+#define RESET_CONNECTION 42
+#define CODE_PARALLEL 1000
+#define CODE_SPK 1001
+#define CODE_BAT 1002
+#define CODE_HEAD 1003
 
 #define MOV_STOP -1
 #define MOV_FORWARD 1
@@ -41,9 +42,11 @@
 #define MOV_RIGHT 4
 
 #define EVT_PENDING 1
-#define EVT_BUSY 2
-#define EVT_DONE 3
-#define EVT_CONFLICTED 4
+#define EVT_PENDINGABS 2
+#define EVT_PENDINGPAR 3
+#define EVT_BUSY 4
+#define EVT_DONE 5
+#define EVT_CONFLICTED 6
 
 typedef int state_t;
 
@@ -61,6 +64,12 @@ enum {
 	STATE_HEADMOVE = 0x8000,
 	STATE_SPEAKING = 0x4000,
 	STATE_REFUSING
+};
+
+enum{
+	ORD_PAR = 0,
+	ORD_ABS,
+	ORD_STRICT
 };
 
 //with all automated collision avoiding this angle will be reduced

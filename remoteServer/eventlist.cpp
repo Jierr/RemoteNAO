@@ -41,8 +41,12 @@ void EventList::addFirst(event_params_t ep)
 	if (!scnd)
 		last = first;
 	first->ep = ep;
-	first->taskID = 0;
-	first->classification = EVT_PENDING;
+	first->taskID = 0;	
+	
+	if (ep.type >= CODE_PARALLEL)
+		first->classification = EVT_PENDINGPAR;
+	else
+		first->classification = EVT_PENDINGABS;
 	mutex->unlock();
 }
 
@@ -59,7 +63,11 @@ void EventList::addEvent(event_params_t ep)
 		last->next = new Event;
 		last = last->next;	
 	}
-	last->classification = EVT_PENDING;
+	
+	if (ep.type >= CODE_PARALLEL)
+		last->classification = EVT_PENDINGPAR;
+	else
+		last->classification = EVT_PENDINGABS;
 	last->ep = ep;
 	last->taskID = 0;
 	last->next = 0;
@@ -87,11 +95,21 @@ void EventList::removeEvent(const void* const iid)
 		if(prev)
 		{
 			prev->next = curr->next;
+			//if curr is the last event, and not
+			//the onliest
+			if (curr == last)
+				last = prev;
 			delete curr;
 		}
 		else
 		{
 			first = curr->next;
+			//if curr is the onliest event then
+			if (curr == last)
+			{
+				first = 0;
+				last = 0;
+			}
 			delete curr;
 		}
 	}
@@ -111,21 +129,38 @@ void EventList::removeDone()
 	{
 		if (curr->classification == EVT_DONE)
 		{
+			//curr != first
 			if(prev)
 			{
 				prev->next = curr->next;
+				//if curr is the last event, and not
+				//the onliest
+				if (curr == last)
+					last = prev;
 				delete curr;
+				curr = prev->next;
 			}
 			else
 			{
 				first = curr->next;
+				//if curr is the onliest event then
+				if (curr == last)
+				{
+					first = 0;
+					last = 0;
+				}
 				delete curr;
+				curr = first;
 			}
+			
 		}
-		prev = curr;
-		curr = curr->next;
+		else
+		{		
+			prev = curr;
+			curr = curr->next;
+		}
+		
 	}
-	
 	
 	mutex->unlock();
 }
@@ -184,12 +219,27 @@ void EventList::setTask(const void* const iid, const int& tid)
 Event EventList::getPending()
 {	
 	Event* curr;
+	int evt_state;
 	
 	mutex->lock();
 	
+	if (order == ORD_ABS)
+		evt_state = EVT_PENDINGABS;
+	else if (order == ORD_PAR)
+		evt_state = EVT_PENDINGPAR;
+	else 
+		evt_state = EVT_PENDING;
+	
 	curr = first;
-	while (curr && (curr->classification != EVT_PENDING))
+	while (curr && 
+	       	((	(evt_state != EVT_PENDING) && 
+	       		(curr->classification != evt_state)) || 
+	        (	(evt_state == EVT_PENDING) && 
+	        	(curr->classification != EVT_PENDINGPAR) && 
+	        	(curr->classification != EVT_PENDINGABS) )))
+	{
 		curr = curr->next;
+	}
 	
 	//Pending Event found
 	if (curr)
@@ -221,6 +271,17 @@ Event EventList::getLast()
 	Event result(*last);
 	mutex->unlock();
 	return result;
+}
+
+
+void EventList::setOrder(int ord)
+{
+	mutex->lock();
+	if ((ord == EVT_PENDINGABS) || (ord == EVT_PENDINGPAR) )
+		order = ord;
+	else 
+		order = EVT_PENDING;
+	mutex->unlock();
 }
 
 

@@ -416,6 +416,8 @@ void Manager::runExecuter()
 	//xec->setPosture((int&)post);
 	
 
+
+	eventList->setOrder(ORD_STRICT);
 	accessExec.exec->initWalk();	
 	accessExec.exec->setState(STATE_STANDING);
 	while(1)
@@ -425,11 +427,12 @@ void Manager::runExecuter()
 		int pose = (int)((float&)mem.getData("robotPose"));
 		cout << "Posture: " << (rr.getPoseNames()[pose]) << endl;*/
 		qi::os::msleep(50);
-		//eventList->removeDone();
-		//cout<< "removeDone" << endl;
-		Event event(eventList->getPending());
 		try
 		{
+			eventList->removeDone();
+			//cout<< "removeDone" << endl;
+			Event event(eventList->getPending());
+			eventList->setClassf(event.id, EVT_BUSY);
 			taskID = accessExec.pexec.pCall<Event>("process", event);
 			//eventList->setTask(event.id, taskID);
 		}
