@@ -1,37 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">remoteclient</string>
+    <string name="app_name">Remoteclient</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
+    <string name="bew_button1_text">Up</string>
+    <string name="bew_button2_text">Left</string>
+    <string name="bew_button3_text">Right</string>
+    <string name="bew_button4_text">Down</string>
+    <string name="bew_button5_text">Stop</string>
+    <string name="menu_button1_text">Bewegen</string>
+    <string name="menu_button2_text">Sprach-\nausgabe</string>
+    <string name="menu_button3_text">Specials</string>
+    <string name="menu_button4_text">Netzwerk</string>
+    <string name="menu_button5_text">Hilfe</string>
+    <string name="menu_button6_text">Beenden</string>
+    <string name="titel_sprachausgabe">Sprachausgabe</string>
+    <string name="edit_sprachausgabe">Text eingeben</string>
+    <string name="sprachausgabe_text">Sprachausgabe</string>
+    <string name="verbindungstitel_text">Netzwerkverbindung</string>
+    <string name="verbindungsstatus_text">Verbindungsstatus : </string>
+    <string name="verbindungsstatus_wert_text">nicht verbunden</string>
+    <string name="verbindungsip_text">IP-Adresse : </string>
+    <string name="verbindungsip_eingabe">0.0.0.0</string>
+    <string name="verbindungsbutton_text">verbinden</string>
+    <string name="verbindungsbutton_close_text"> Schließen </string>
+    <string name="bewegungsauswahl_radiobutton1_text"> Arme bewegen</string>
+    <string name="bewegungsauswahl_radiobutton2_text"> Laufen </string>
+    <string name="bewegungsauswahl_radiobutton3_text"> Kopf bewegen </string>
+    <string name="bewegungsauswahl_OKbutton_text">" OK "</string>
     
-	<string name="bew_button1_text">Up</string>
-	<string name="bew_button2_text">Left</string>
-	<string name="bew_button3_text">Right</string>
-	<string name="bew_button4_text">Down</string>
-	<string name="bew_button5_text">Stop</string>
-	
-	<string name="menu_button1_text">Auswahl\nder Bew-\nKategorie</string>
-	<string name="menu_button2_text">Sprach-\nausgabe</string>
-	<string name="menu_button3_text">Setzen/\nAufstehen</string>
-	<string name="menu_button4_text">Ausruhen</string>
-	<string name="menu_button5_text">Bewegungsmakro</string>
-	<string name="menu_button6_text">Netzwerk</string>
-	<string name="menu_button7_text">Hilfe</string>
-	<string name="menu_button8_text">Beenden</string>
-	
-	<string name="edit_sprachausgabe">Text eingeben</string>
-	<string name="sprachausgabe_text">Sprachausgabe</string>
-	
-	<string name="verbindungsstatus_text">Verbindungsstatus : </string>
-	<string name="verbindungsstatus_wert_text">nicht verbunden</string>
-	<string name="verbindungsip_text">IP-Adresse : </string>
-	<string name="verbindungsip_eingabe">0.0.0.0</string>
-	<string name="verbindungsbutton_text">verbinden</string>
-	<string name="verbindungsbutton_close_text"> Schließen </string>
-	
-	<string name="bewegungsauswahl_radiobutton1_text"> Arme bewegen</string>
-	<string name="bewegungsauswahl_radiobutton2_text"> Laufen </string>
-	<string name="bewegungsauswahl_radiobutton3_text"> Kopf bewegen </string>
-	<string name="bewegungsauswahl_OKbutton_text">" OK "</string>
+    <string name="specials_button1_text"> Ausruhen </string>
+    <string name="specials_button2_text"> Setzen/Aufstehen </string>
+    <string name="specials_button3_text"> Tanzen </string>
+    <string name="specials_button4_text"> Special 4 </string>
+    <string name="specials_button5_text"> Special 5 </string>
+    
+    <string name="title_activity_bewegung">Bewegungsmodus</string>
+    <string name="title_activity_sprachausgabe">Sprachausgabe</string>
+    <string name="title_activity_config">Netzwerkverbindung</string>
+    <string name="title_activity_specials">SpecialsActivity</string>
 
 </resources>

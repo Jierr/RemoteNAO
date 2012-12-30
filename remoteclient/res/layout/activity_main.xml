@@ -3,80 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <!--  <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="@string/hello_world"
-        tools:context=".MainActivity" />-->
-    
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/linearLayout1" >
-        
-	    <ImageButton 
-	        android:id="@+id/bew_button1"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentTop="true"
-	        android:layout_centerHorizontal="true"
-	        android:layout_marginTop="10dp"
-	        android:background="@drawable/arrowup_button"
-	        android:contentDescription="@string/bew_button1_text"
-	        android:onClick="bew_button1_event"
-	    />
-	    
-		<ImageButton
-	        android:id="@+id/bew_button2"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_centerVertical="true"
-	        android:layout_marginLeft="10dp"
-	        android:background="@drawable/arrowleft_button"
-	        android:contentDescription="@string/bew_button2_text"
-	        android:onClick="bew_button2_event" 
-		/>
-	    	    
-	    <ImageButton 
-	        android:id="@+id/bew_button3"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentRight="true"
-	        android:layout_centerVertical="true"
-	        android:layout_marginRight="10dp"
-	        android:background="@drawable/arrowright_button"
-	        android:contentDescription="@string/bew_button3_text"
-	        android:onClick="bew_button3_event"
-		/>
-	   
-	    <ImageButton
-	        android:id="@+id/bew_button4"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignLeft="@+id/bew_button5"
-	        android:layout_alignParentBottom="true"
-	        android:layout_centerHorizontal="true"
-	        android:layout_marginBottom="10dp"
-	        android:background="@drawable/arrowdown_button"
-	        android:contentDescription="@string/bew_button4_text"
-	        android:onClick="bew_button4_event" 
-	 	/>
-	    
-	  	<ImageButton
-	        android:id="@+id/bew_button5"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_centerHorizontal="true"
-	        android:layout_centerVertical="true"
-	        android:background="@drawable/stop_button"
-	        android:contentDescription="@string/bew_button5_text"
-	        android:onClick="bew_button5_event" />
-
 	    <ImageView
 	        android:id="@+id/img_bat"
 	        android:layout_width="48dp"
@@ -90,89 +16,66 @@
 	        android:scaleType="center"
 	        android:src="@drawable/bat75" 
 	 	/>
-	    
 
+	    <RelativeLayout
+	        android:layout_width="240dp"
+	        android:layout_height="240dp"
+	        android:layout_centerHorizontal="true"
+	        android:layout_centerVertical="true" >
+
+	        <Button
+	            android:id="@+id/menu_button1"
+	            android:layout_width="100dp"
+	            android:layout_height="100dp"
+	            android:layout_alignParentLeft="true"
+	            android:layout_alignParentTop="true"
+	            android:onClick="menu_button1_event"
+	            android:text="@string/menu_button1_text" />
+
+	        <Button
+	            android:id="@+id/menu_button2"
+	            android:layout_width="100dp"
+	            android:layout_height="100dp"
+	            android:layout_alignParentRight="true"
+	            android:layout_alignParentTop="true"
+	            android:onClick="menu_button2_event"
+	            android:text="@string/menu_button2_text" />
+
+	        <Button
+	            android:id="@+id/menu_button3"
+	            android:layout_width="100dp"
+	            android:layout_height="100dp"
+	            android:layout_alignParentBottom="true"
+	            android:layout_alignParentLeft="true"
+	            android:onClick="menu_button3_event"
+	            android:text="@string/menu_button3_text" />
+
+	        <Button
+	            android:id="@+id/menu_button4"
+	            android:layout_width="100dp"
+	            android:layout_height="100dp"
+	            android:layout_alignParentBottom="true"
+	            android:layout_alignParentRight="true"
+	            android:onClick="menu_button4_event"
+	            android:text="@string/menu_button4_text" />
 	    </RelativeLayout>
-	    
-	    <ScrollView 
-	    android:id="@+id/linearLayout1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        >
 
-	    <LinearLayout
-	        android:layout_width="match_parent"
+	    <Button
+	        android:id="@+id/menu_button6"
+	        android:layout_width="100dp"
 	        android:layout_height="wrap_content"
-	        android:orientation="vertical" >
+	        android:layout_alignParentBottom="true"
+	        android:layout_alignParentRight="true"
+	        android:onClick="menu_button6_event"
+	        android:text="@string/menu_button6_text" />
 
-        <Button
-            android:id="@+id/menu_button1"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:minHeight="20dip"
-            android:text="@string/menu_button1_text"
-            android:onClick="menu_button1_event" />
-
-        <Button
-            android:id="@+id/menu_button2"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:minHeight="20dip"
-            android:text="@string/menu_button2_text" 
-            android:onClick="menu_button2_event" />
-
-        <Button
-            android:id="@+id/menu_button3"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:minHeight="20dip"
-            android:text="@string/menu_button3_text"  
-            android:onClick="menu_button3_event" />
-
-        <Button
-            android:id="@+id/menu_button4"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:minHeight="20dip"
-            android:text="@string/menu_button4_text"  
-            android:onClick="menu_button4_event" />
-
-        <Button
-            android:id="@+id/menu_button5"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:minHeight="20dip"
-            android:text="@string/menu_button5_text"
-            android:onClick="menu_button5_event" />
-        <Button
-            android:id="@+id/menu_button6"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:minHeight="20dip"
-            android:text="@string/menu_button6_text"  
-            android:onClick="menu_button6_event" />
-        <Button
-            android:id="@+id/menu_button7"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:minHeight="20dip"
-            android:text="@string/menu_button7_text" 
-            android:onClick="menu_button7_event" />
-        <Button
-            android:id="@+id/menu_button8"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:minHeight="20dip"
-            android:text="@string/menu_button8_text" 
-            android:onClick="menu_button8_event" />
-    </LinearLayout>
-    </ScrollView>
-
-    
-    
-    
+	    <Button
+	        android:id="@+id/menu_button5"
+	        android:layout_width="100dp"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentBottom="true"
+	        android:layout_alignParentLeft="true"
+	        android:onClick="menu_button5_event"
+	        android:text="@string/menu_button5_text" />
 
 </RelativeLayout>

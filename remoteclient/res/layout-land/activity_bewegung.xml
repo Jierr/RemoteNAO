@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:padding="10dp" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignLeft="@+id/bew_radioGroup1"
+            android:layout_alignRight="@+id/bew_radioGroup1"
+            android:background="@android:color/black"
+            android:clickable="false"
+            android:duplicateParentState="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:longClickable="false"
+            android:orientation="horizontal" >
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignLeft="@+id/bew_radioGroup1"
+            android:layout_alignRight="@+id/bew_radioGroup1"
+            android:layout_below="@+id/bew_radioGroup1"
+            android:background="@android:color/black"
+            android:clickable="false"
+            android:duplicateParentState="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:longClickable="false"
+            android:orientation="horizontal" >
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@+id/bew_radioGroup1"
+            android:layout_alignTop="@+id/bew_radioGroup1"
+            android:layout_toRightOf="@+id/bew_radioGroup1"
+            android:background="@android:color/black"
+            android:clickable="false"
+            android:duplicateParentState="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:longClickable="false"
+            android:orientation="vertical" >
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@+id/bew_radioGroup1"
+            android:layout_alignTop="@+id/bew_radioGroup1"
+            android:layout_toLeftOf="@+id/bew_radioGroup1"
+            android:background="@android:color/black"
+            android:clickable="false"
+            android:duplicateParentState="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:longClickable="false"
+            android:orientation="vertical" >
+        </LinearLayout>
+
+        <RadioGroup
+            android:id="@+id/bew_radioGroup1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:padding="8dp" >
+
+            <RadioButton
+                android:id="@+id/bewa_rbutton_ARME"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bewegungsauswahl_radiobutton1_text" />
+
+            <RadioButton
+                android:id="@+id/bewa_rbutton_LAUFEN"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bewegungsauswahl_radiobutton2_text" />
+
+            <RadioButton
+                android:id="@+id/bewa_rbutton_KOPF"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bewegungsauswahl_radiobutton3_text" />
+        </RadioGroup>
+
+    </RelativeLayout>
+    
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/relativeLayout1">
+        
+	    <ImageButton 
+	        android:id="@+id/bew_button1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentTop="true"
+	        android:layout_centerHorizontal="true"
+	        android:layout_marginTop="10dp"
+	        android:background="@drawable/arrowup_button"
+	        android:contentDescription="@string/bew_button1_text"
+	        android:onClick="bew_button1_event"
+	    />
+	    
+		<ImageButton
+	        android:id="@+id/bew_button2"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_centerVertical="true"
+	        android:layout_marginLeft="10dp"
+	        android:background="@drawable/arrowleft_button"
+	        android:contentDescription="@string/bew_button2_text"
+	        android:onClick="bew_button2_event" 
+		/>
+	    	    
+	    <ImageButton 
+	        android:id="@+id/bew_button3"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentRight="true"
+	        android:layout_centerVertical="true"
+	        android:layout_marginRight="10dp"
+	        android:background="@drawable/arrowright_button"
+	        android:contentDescription="@string/bew_button3_text"
+	        android:onClick="bew_button3_event"
+		/>
+	   
+	    <ImageButton
+	        android:id="@+id/bew_button4"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignLeft="@+id/bew_button5"
+	        android:layout_alignParentBottom="true"
+	        android:layout_centerHorizontal="true"
+	        android:layout_marginBottom="10dp"
+	        android:background="@drawable/arrowdown_button"
+	        android:contentDescription="@string/bew_button4_text"
+	        android:onClick="bew_button4_event" 
+	 	/>
+	    
+	  	<ImageButton
+	        android:id="@+id/bew_button5"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_centerHorizontal="true"
+	        android:layout_centerVertical="true"
+	        android:background="@drawable/stop_button"
+	        android:contentDescription="@string/bew_button5_text"
+	        android:onClick="bew_button5_event" />
+	    
+	    </RelativeLayout>
+ 
+</RelativeLayout>
