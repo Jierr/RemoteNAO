@@ -3,31 +3,29 @@ package de.tuchemnitz.remoteclient;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Intent;
-import android.graphics.Color;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
-public class MainActivity extends Activity {
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+
+public class MainActivity extends SherlockActivity {
 
 	private Timer BattTimer = null;
 	private final int EVENT_BATT = 0;
 	private final int EVENT_SIT = 1;
 	private final int EVENT_CONN = 2;
+	
+	private MenuItem BatteryIcon;
 	
 	private Handler EvtHandler = new Handler()
 	{
@@ -37,9 +35,28 @@ public class MainActivity extends Activity {
 		    
 		    switch(msg.what)
 		    {
+		    case EVENT_CONN:
+		    	Log.v("MainAct.Event", "Connection Status: " + String.valueOf(msg.arg1));
+		    	if (msg.arg1 < 0)
+		    	{
+		    		Callbacksplit.showConnectionLostDialog();
+		    	}
+		    	else
+		    	{
+			    	if(Callbacksplit.getConfigActivity() != null)
+			    		Callbacksplit.getConfigActivity().changeConnectionView(msg.arg1);
+		    	}
+		    	break;
+		    case EVENT_SIT:
+				final String SitStatus = (String)msg.obj;
+		    	
+				if(Callbacksplit.getSpecialsActivity() != null)
+					Callbacksplit.getSpecialsActivity().changeSitButtonText(SitStatus);
+		    	
+		    	break;
 		    case EVENT_BATT:
-				final ImageView battery_view = (ImageView)findViewById(R.id.img_bat);
 				final int batt_pic;
+				Drawable batt_icon_r;
 				
 			    if (msg.arg1 > 90)
 			    	batt_pic = R.drawable.bat100;
@@ -51,7 +68,18 @@ public class MainActivity extends Activity {
 			    	batt_pic = R.drawable.bat25;
 			    else
 			    	batt_pic = R.drawable.bat0;
-			    battery_view.setImageDrawable(getResources().getDrawable(batt_pic));
+			    batt_icon_r = getResources().getDrawable(batt_pic);
+			    Callbacksplit.saveBatteryStateIcon(batt_icon_r);
+			    BatteryIcon.setIcon(batt_icon_r);
+			    if(Callbacksplit.getBewegungActivity()!= null)
+				    Callbacksplit.getBewegungActivity().setActBarBatteryIcon(batt_icon_r);
+			    if(Callbacksplit.getConfigActivity()!= null)
+				    Callbacksplit.getConfigActivity().setActBarBatteryIcon(batt_icon_r);
+			    if(Callbacksplit.getSpecialsActivity()!= null)
+				    Callbacksplit.getSpecialsActivity().setActBarBatteryIcon(batt_icon_r);
+			    if(Callbacksplit.getSprachausgabeActivity()!= null)
+				    Callbacksplit.getSprachausgabeActivity().setActBarBatteryIcon(batt_icon_r);
+			    
 			    break;
 		    }
 		    
@@ -64,23 +92,45 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        Callbacksplit.registerMainActivity(this);
+        Callbacksplit.saveBatteryStateIcon(null);
+        
     	//NetworkModule.SetIPAddress("134.109.97.52");
         //NetworkModule.SetIPAddress("134.109.151.142");
         NetworkModule.SetIPAddress("192.168.5.20");
         menu_button4_event(null);
         
         NetworkModule.RegisterCallback(null,		-1,			0);
+		NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,	NetworkModule.INFO_CONN);
+		NetworkModule.RegisterCallback(EvtHandler,	EVENT_SIT,	NetworkModule.INFO_SIT);
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,	NetworkModule.INFO_BATT);
         
-        
         Log.v("MainAct", "Activity started.");
-		BattTimer = new Timer();
+        BattTimer = new Timer();
 		BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
     }
+    
+	@Override
+	protected void onResume(){
+		super.onResume();
+		Callbacksplit.setActiveActivity(this);
+	}
+	@Override
+	protected void onPause(){
+		super.onPause();
+		Callbacksplit.unsetActiveActivity();
+	}
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_main, menu);
+        //getMenuInflater().inflate(R.menu.activity_main, menu);
+    	super.onCreateOptionsMenu(menu);
+        getSupportMenuInflater().inflate(R.menu.actionbar, menu);
+        BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
+    	//setContentView(R.menu.actionbar);
+//        menu.add("Save")
+//        .setIcon(R.drawable.bat100)
+//        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         return true;
     }
     

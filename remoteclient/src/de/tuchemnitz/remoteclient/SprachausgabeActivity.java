@@ -1,25 +1,51 @@
 package de.tuchemnitz.remoteclient;
 
-import android.app.Activity;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
 
-public class SprachausgabeActivity extends Activity {
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 
+public class SprachausgabeActivity extends SherlockActivity {
+
+	private MenuItem BatteryIcon;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sprachausgabe);
+		
+		Callbacksplit.registerSprachausgabeActivity(this);
 	}
+	
+	@Override
+	protected void onResume(){
+		super.onResume();
+		Callbacksplit.setActiveActivity(this);
+	}
+	@Override
+	protected void onPause(){
+		super.onPause();
+		Callbacksplit.unsetActiveActivity();
+	}
+	@Override
+    public void onDestroy(){
+		super.onDestroy();
+    	Callbacksplit.registerSprachausgabeActivity(null);
+    }
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_sprachausgabe, menu);
-		return true;
-	}
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //getMenuInflater().inflate(R.menu.activity_main, menu);
+    	super.onCreateOptionsMenu(menu);
+        getSupportMenuInflater().inflate(R.menu.actionbar, menu);
+        BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
+        setActBarBatteryIcon(Callbacksplit.getsavedBatteryStateIcon());
+        return true;
+    }
 	
 	
 	public void okbutton_event(View view){
@@ -30,6 +56,15 @@ public class SprachausgabeActivity extends Activity {
     	finish();
     	
 	}
+	
+	
+    /************ Dynamisches Aenderugszeug *****************
+     ********************************************************/
+    
+	public void setActBarBatteryIcon(Drawable pic){
+    	if(pic!=null)
+    		BatteryIcon.setIcon(pic);
+    }
 	
 	
 //	/* Dialogbox erstellen*/

@@ -1,38 +1,66 @@
 package de.tuchemnitz.remoteclient;
 
-import android.app.Activity;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.Toast;
 
-public class BewegungActivity extends Activity {
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+
+public class BewegungActivity extends SherlockActivity {
 
 	static private int bewegungsart = R.id.bewa_rbutton_LAUFEN;
 	static private RadioGroup bewart_radiogroup;
+
+	private MenuItem BatteryIcon;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_bewegung);
 		
+		Callbacksplit.registerBewegungActivity(this);
+		
 		Log.v("BewAct", "init BewActivity");
 		bewart_radiogroup = (RadioGroup) findViewById(R.id.bew_radioGroup1);
 		bewart_radiogroup.check(bewegungsart);
 		setListeners();
-		
+
 	}
+	
+	@Override
+	protected void onResume(){
+		super.onResume();
+		Callbacksplit.setActiveActivity(this);
+	}
+	@Override
+	protected void onPause(){
+		super.onPause();
+		Callbacksplit.unsetActiveActivity();
+	}
+	
+	@Override
+    public void onDestroy(){
+		super.onDestroy();
+    	Callbacksplit.registerBewegungActivity(null);
+    }
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_bewegung, menu);
-		return true;
-	}
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //getMenuInflater().inflate(R.menu.activity_main, menu);
+    	super.onCreateOptionsMenu(menu);
+        getSupportMenuInflater().inflate(R.menu.actionbar, menu);
+        BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
+        setActBarBatteryIcon(Callbacksplit.getsavedBatteryStateIcon());
+        return true;
+    }
 	
 	private void setListeners(){
 		
@@ -177,6 +205,15 @@ public class BewegungActivity extends Activity {
     	Toast toast = Toast.makeText(BewegungActivity.this, "STOP", Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
     	toast.show();
+    }
+    
+    
+    /************ Dynamisches Aenderugszeug *****************
+     ********************************************************/
+    
+    public void setActBarBatteryIcon(Drawable pic){
+    	if(pic!=null)
+    		BatteryIcon.setIcon(pic);
     }
 
 }

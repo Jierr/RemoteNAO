@@ -1,85 +1,33 @@
 package de.tuchemnitz.remoteclient;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class ConfigActivity extends Activity {
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+
+public class ConfigActivity extends SherlockActivity {
 
 	private TextView text_verbindungsstatus;
 	private EditText textfeld_ipeingabe;
 	/*Buttons*/
 	private Button button_verbindenbutton;
-	private final int EVENT_CONN = 2;
-	private boolean is_activity_active = false;
 	
-	private Handler EvtHandler = new Handler()
-	{
-		@Override public void dispatchMessage(Message msg)
-		{
-		    //super.dispatchMessage(msg);
-		    
-		    switch(msg.what)
-		    {
-		    case EVENT_CONN:
-		    	Log.v("MainAct.Event", "Connection Status: " + String.valueOf(msg.arg1));
-		    	if (msg.arg1 < 0)
-		    	{
-		    		if(is_activity_active){
-			    		switch(msg.arg1)
-			    		{
-			    		case -1:
-				    		new AlertDialog.Builder(ConfigActivity.this)
-								.setMessage("Verbindung verloren.")
-								.setNeutralButton("Mist", null)
-								.show();
-				    		break;
-			    		}
-		    		}
-		    	}
-		    	else
-		    	{
-			    	//if (verbindungs_dialog == null)
-			    		//return;
-			    	
-			    	switch(msg.arg1)
-			    	{
-			    	case 0:
-			    		text_verbindungsstatus.setText("nicht verbunden");
-			        	text_verbindungsstatus.setTextColor(Color.RED);
-			        	button_verbindenbutton.setText("verbinden");
-			        	break;
-			    	case 1:
-			    		text_verbindungsstatus.setText("verbinden ...");
-			        	text_verbindungsstatus.setTextColor(Color.YELLOW);
-			        	break;
-			    	case 2:
-			    		text_verbindungsstatus.setText("verbunden");
-			        	text_verbindungsstatus.setTextColor(Color.GREEN);
-			        	button_verbindenbutton.setText("trennen");
-			        	break;
-			    	}
-		    	}
-		    	break;
-		    }
-		    
-		    return;
-		}
-	};
+	private MenuItem BatteryIcon;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_config);
+		
+		Callbacksplit.registerConfigActivity(this);
 		
 		//Referenzen auf Zeug
 		text_verbindungsstatus = (TextView)findViewById(R.id.verbindungsstatus_wert);
@@ -105,27 +53,38 @@ public class ConfigActivity extends Activity {
     	}
     	textfeld_ipeingabe.setText(NetworkModule.GetIPAddress());
     	
-    	//Callbackzeug
-    	NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,	NetworkModule.INFO_CONN);
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_config, menu);
-		return true;
 	}
 	
 	@Override
 	protected void onResume(){
 		super.onResume();
-		is_activity_active = true;
+		Callbacksplit.setActiveActivity(this);
 	}
 	@Override
 	protected void onPause(){
 		super.onPause();
-		is_activity_active = false;
+		Callbacksplit.unsetActiveActivity();
 	}
+	
+	@Override
+    public void onDestroy(){
+		super.onDestroy();
+    	Callbacksplit.registerConfigActivity(null);
+    }
+	
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //getMenuInflater().inflate(R.menu.activity_main, menu);
+    	super.onCreateOptionsMenu(menu);
+        getSupportMenuInflater().inflate(R.menu.actionbar, menu);
+        BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
+        setActBarBatteryIcon(Callbacksplit.getsavedBatteryStateIcon());
+    	//setContentView(R.menu.actionbar);
+//        menu.add("Save")
+//        .setIcon(R.drawable.bat100)
+//        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        return true;
+    }
 	
 //	   /* Dialogbox erstellen*/
 //    	verbindungs_dialog = new Dialog(MainActivity.this);
@@ -181,5 +140,34 @@ public class ConfigActivity extends Activity {
 		finish();
 	}
 	
-
+	
+	/************ Dynamisches Aenderugszeug *****************
+     ********************************************************/
+    
+    public void changeConnectionView(int state){
+    	switch(state)
+    	{
+    	case 0:
+    		text_verbindungsstatus.setText("nicht verbunden");
+        	text_verbindungsstatus.setTextColor(Color.RED);
+        	button_verbindenbutton.setText("verbinden");
+        	break;
+    	case 1:
+    		text_verbindungsstatus.setText("verbinden ...");
+        	text_verbindungsstatus.setTextColor(Color.YELLOW);
+        	break;
+    	case 2:
+    		text_verbindungsstatus.setText("verbunden");
+        	text_verbindungsstatus.setTextColor(Color.GREEN);
+        	button_verbindenbutton.setText("trennen");
+        	break;
+    	}
+    }
+    
+    public void setActBarBatteryIcon(Drawable pic){
+    	if(pic!=null)
+    		BatteryIcon.setIcon(pic);
+    }
+	
+	
 }

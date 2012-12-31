@@ -1,59 +1,55 @@
 package de.tuchemnitz.remoteclient;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.app.Activity;
 import android.view.Gravity;
-import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
-public class SpecialsActivity extends Activity {
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 
-	private final int EVENT_SIT = 1;
+public class SpecialsActivity extends SherlockActivity {
 	
-	
-	private Handler EvtHandler = new Handler()
-	{
-		@Override public void dispatchMessage(Message msg)
-		{
-		    //super.dispatchMessage(msg);
-		    
-		    switch(msg.what)
-		    {
-		    case EVENT_SIT:
-				final Button sit_text = (Button)findViewById(R.id.specials_button2);
-		    	final String SitStatus = (String)msg.obj;
-		    	
-		    	if (SitStatus.equals("STAND"))
-		    		sit_text.setText("Setzen");
-		    	else
-		    		sit_text.setText("Aufstehen");
-		    	break;
-		    }
-		    
-		    return;
-		}
-	};
+	private MenuItem BatteryIcon;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_specials);
 		
+		Callbacksplit.registerSpecialsActivity(this);
 		
-		NetworkModule.RegisterCallback(EvtHandler,	EVENT_SIT,	NetworkModule.INFO_SIT);
 	}
+	
+	@Override
+	protected void onResume(){
+		super.onResume();
+		Callbacksplit.setActiveActivity(this);
+	}
+	@Override
+	protected void onPause(){
+		super.onPause();
+		Callbacksplit.unsetActiveActivity();
+	}
+	
+	@Override
+    public void onDestroy(){
+		super.onDestroy();
+    	Callbacksplit.registerSpecialsActivity(null);
+    }
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_specials, menu);
-		return true;
-	}
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //getMenuInflater().inflate(R.menu.activity_main, menu);
+    	super.onCreateOptionsMenu(menu);
+        getSupportMenuInflater().inflate(R.menu.actionbar, menu);
+        BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
+        setActBarBatteryIcon(Callbacksplit.getsavedBatteryStateIcon());
+        return true;
+    }
 	
 	
 	/*********************** Auswahl ************************
@@ -87,6 +83,23 @@ public class SpecialsActivity extends Activity {
     	Toast toast = Toast.makeText(SpecialsActivity.this, "nichts passiert", Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
     	toast.show();
+    }
+    
+    /************ Dynamisches Aenderugszeug *****************
+     ********************************************************/
+    
+    public void changeSitButtonText(String state){
+    	final Button sitButton_text = (Button)findViewById(R.id.specials_button2);
+    	
+    	if (state.equals("STAND"))
+    		sitButton_text.setText("Setzen");
+    	else
+    		sitButton_text.setText("Aufstehen");
+    }
+    
+    public void setActBarBatteryIcon(Drawable pic){
+    	if(pic!=null)
+    		BatteryIcon.setIcon(pic);
     }
 
 }
