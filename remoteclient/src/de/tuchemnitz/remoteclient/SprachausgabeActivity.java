@@ -92,9 +92,7 @@ public class SprachausgabeActivity extends SherlockActivity {
 		EditText textfeld = (EditText)findViewById(R.id.spk_editText1);
     	String words = textfeld.getText().toString();
     	NetworkModule.Speak(words);
-    	textfeld.setText(null);
-    	finish();
-    	
+    	textfeld.setText(null);    	
 	}
 	
 	
