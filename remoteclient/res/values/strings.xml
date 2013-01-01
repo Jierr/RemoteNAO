@@ -36,6 +36,12 @@
     <string name="specials_button4_text"> Special 4 </string>
     <string name="specials_button5_text"> Special 5 </string>
     
+    <string name="acb_m1_text">App</string>
+    <string name="acb_m2_text">Bewegen</string>
+    <string name="acb_m3_text">Sprechen</string>
+    <string name="acb_m4_text">Specials</string>
+    <string name="acb_m5_text">Netzwerk</string>
+    
     <string name="title_activity_bewegung">Bewegungsmodus</string>
     <string name="title_activity_sprachausgabe">Sprachausgabe</string>
     <string name="title_activity_config">Netzwerkverbindung</string>

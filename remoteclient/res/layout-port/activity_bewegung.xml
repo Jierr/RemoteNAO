@@ -60,7 +60,6 @@
             android:layout_height="match_parent"
             android:layout_alignBottom="@+id/bew_radioGroup1"
             android:layout_alignTop="@+id/bew_radioGroup1"
-            android:layout_toLeftOf="@+id/bew_radioGroup1"
             android:background="@android:color/black"
             android:clickable="false"
             android:duplicateParentState="false"

@@ -83,6 +83,32 @@ public class Callbacksplit {
 	}
 	
 	
+	public static void setActBarBatteryIcon(Drawable batt_icon_r){
+		if(Callbacksplit.getBewegungActivity()!= null)
+		    Callbacksplit.getBewegungActivity().setActBarBatteryIcon(batt_icon_r);
+	    if(Callbacksplit.getConfigActivity()!= null)
+		    Callbacksplit.getConfigActivity().setActBarBatteryIcon(batt_icon_r);
+	    if(Callbacksplit.getSpecialsActivity()!= null)
+		    Callbacksplit.getSpecialsActivity().setActBarBatteryIcon(batt_icon_r);
+	    if(Callbacksplit.getSprachausgabeActivity()!= null)
+		    Callbacksplit.getSprachausgabeActivity().setActBarBatteryIcon(batt_icon_r);
+	}
+	
+	public static void setActBarConnectIcon(){
+		
+		Callbacksplit.getMainActivity().setActBarConnectIcon();
+		    
+		if(Callbacksplit.getBewegungActivity()!= null)
+		    Callbacksplit.getBewegungActivity().setActBarConnectIcon();
+	    if(Callbacksplit.getConfigActivity()!= null)
+		    Callbacksplit.getConfigActivity().setActBarConnectIcon();
+	    if(Callbacksplit.getSpecialsActivity()!= null)
+		    Callbacksplit.getSpecialsActivity().setActBarConnectIcon();
+	    if(Callbacksplit.getSprachausgabeActivity()!= null)
+		    Callbacksplit.getSprachausgabeActivity().setActBarConnectIcon();
+	}
+	
+	
 	
 	
 }

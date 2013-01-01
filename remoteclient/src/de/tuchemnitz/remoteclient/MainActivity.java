@@ -12,8 +12,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
@@ -26,6 +29,8 @@ public class MainActivity extends SherlockActivity {
 	private final int EVENT_CONN = 2;
 	
 	private MenuItem BatteryIcon;
+	private MenuItem ConnectIcon;
+	
 	
 	private Handler EvtHandler = new Handler()
 	{
@@ -45,6 +50,8 @@ public class MainActivity extends SherlockActivity {
 		    	{
 			    	if(Callbacksplit.getConfigActivity() != null)
 			    		Callbacksplit.getConfigActivity().changeConnectionView(msg.arg1);
+			    	
+			    	Callbacksplit.setActBarConnectIcon();
 		    	}
 		    	break;
 		    case EVENT_SIT:
@@ -71,14 +78,7 @@ public class MainActivity extends SherlockActivity {
 			    batt_icon_r = getResources().getDrawable(batt_pic);
 			    Callbacksplit.saveBatteryStateIcon(batt_icon_r);
 			    BatteryIcon.setIcon(batt_icon_r);
-			    if(Callbacksplit.getBewegungActivity()!= null)
-				    Callbacksplit.getBewegungActivity().setActBarBatteryIcon(batt_icon_r);
-			    if(Callbacksplit.getConfigActivity()!= null)
-				    Callbacksplit.getConfigActivity().setActBarBatteryIcon(batt_icon_r);
-			    if(Callbacksplit.getSpecialsActivity()!= null)
-				    Callbacksplit.getSpecialsActivity().setActBarBatteryIcon(batt_icon_r);
-			    if(Callbacksplit.getSprachausgabeActivity()!= null)
-				    Callbacksplit.getSprachausgabeActivity().setActBarBatteryIcon(batt_icon_r);
+			    Callbacksplit.setActBarBatteryIcon(batt_icon_r);
 			    
 			    break;
 		    }
@@ -120,21 +120,8 @@ public class MainActivity extends SherlockActivity {
 		super.onPause();
 		Callbacksplit.unsetActiveActivity();
 	}
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        //getMenuInflater().inflate(R.menu.activity_main, menu);
-    	super.onCreateOptionsMenu(menu);
-        getSupportMenuInflater().inflate(R.menu.actionbar, menu);
-        BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
-    	//setContentView(R.menu.actionbar);
-//        menu.add("Save")
-//        .setIcon(R.drawable.bat100)
-//        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        return true;
-    }
-    
-    @Override
+	
+	@Override
     public void onDestroy(){
     	
     	BattTimer.cancel();
@@ -142,6 +129,71 @@ public class MainActivity extends SherlockActivity {
     	NetworkModule.CloseConnection();
     	super.onDestroy();
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //getMenuInflater().inflate(R.menu.activity_main, menu);
+    	super.onCreateOptionsMenu(menu);
+        getSupportMenuInflater().inflate(R.menu.actionbar, menu);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ConnectIcon = (MenuItem)menu.findItem(R.id.acb_connect);
+        BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
+        setActBarConnectIcon();
+        
+        ((MenuItem)menu.findItem(R.id.acb_m_1)).setVisible(false);
+        
+        //getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+    	//setContentView(R.menu.actionbar);
+//        menu.add("Save")
+//        .setIcon(R.drawable.bat100)
+//        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        
+        return true;
+    }
+    
+    @Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		super.onOptionsItemSelected(item);
+		Intent intent;
+		switch(item.getItemId()){
+		case android.R.id.home:
+			finish();
+			break;
+		case R.id.acb_m_1:
+			break;
+		case R.id.acb_m_2:
+			intent = new Intent(this, BewegungActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.acb_m_3:
+			intent = new Intent(this, SprachausgabeActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.acb_m_4:
+			intent = new Intent(this, SpecialsActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.acb_m_5:
+			intent = new Intent(this, ConfigActivity.class);
+			startActivity(intent);
+			break;
+		}
+		
+		return true;
+	}
+    
+    public void setActBarConnectIcon(){
+    	if(NetworkModule.IsConnected()==0)
+    	{
+    		ConnectIcon.setIcon(R.drawable.network_disconnected);
+    	}
+    	else
+    	{
+    		ConnectIcon.setIcon(R.drawable.network_connected);
+    	}
+    }
+
     
     /** Called when the user clicks the Send button */
     public void sendMessage(View view) {

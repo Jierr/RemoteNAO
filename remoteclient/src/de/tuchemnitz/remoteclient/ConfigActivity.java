@@ -1,5 +1,6 @@
 package de.tuchemnitz.remoteclient;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ public class ConfigActivity extends SherlockActivity {
 	private Button button_verbindenbutton;
 	
 	private MenuItem BatteryIcon;
+	private MenuItem ConnectIcon;
 	
 	
 	@Override
@@ -77,14 +79,49 @@ public class ConfigActivity extends SherlockActivity {
         //getMenuInflater().inflate(R.menu.activity_main, menu);
     	super.onCreateOptionsMenu(menu);
         getSupportMenuInflater().inflate(R.menu.actionbar, menu);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
         setActBarBatteryIcon(Callbacksplit.getsavedBatteryStateIcon());
-    	//setContentView(R.menu.actionbar);
-//        menu.add("Save")
-//        .setIcon(R.drawable.bat100)
-//        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        ConnectIcon = (MenuItem)menu.findItem(R.id.acb_connect);
+        setActBarConnectIcon();
+        
+        ((MenuItem)menu.findItem(R.id.acb_m_5)).setVisible(false);
+
         return true;
     }
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		super.onOptionsItemSelected(item);
+		Intent intent;
+		switch(item.getItemId()){
+		case android.R.id.home:
+		case R.id.acb_m_1:
+			finish();
+			break;
+		case R.id.acb_m_2:
+			intent = new Intent(Callbacksplit.getMainActivity(), BewegungActivity.class);
+			finish();
+			startActivity(intent);
+			break;
+		case R.id.acb_m_3:
+			intent = new Intent(Callbacksplit.getMainActivity(), SprachausgabeActivity.class);
+			finish();
+			startActivity(intent);
+			break;
+		case R.id.acb_m_4:
+			intent = new Intent(Callbacksplit.getMainActivity(), SpecialsActivity.class);
+			finish();
+			startActivity(intent);
+			break;
+		case R.id.acb_m_5:
+			break;
+		}
+		
+		return true;
+	}
+	
 	
 //	   /* Dialogbox erstellen*/
 //    	verbindungs_dialog = new Dialog(MainActivity.this);
@@ -169,5 +206,15 @@ public class ConfigActivity extends SherlockActivity {
     		BatteryIcon.setIcon(pic);
     }
 	
+    public void setActBarConnectIcon(){
+    	if(NetworkModule.IsConnected()==0)
+    	{
+    		ConnectIcon.setIcon(R.drawable.network_disconnected);
+    	}
+    	else
+    	{
+    		ConnectIcon.setIcon(R.drawable.network_connected);
+    	}
+    }
 	
 }
