@@ -26,7 +26,7 @@ class RobotInformation
 
 public class NetworkModule {
 
-	private static String IP_Addr = null;
+	private static String IP_Addr = "134.109.151.142";
 	private static final int Port = 0x8000;
 	public static final char MOVE_UP 	= 'F';
 	public static final char MOVE_DOWN	= 'B';

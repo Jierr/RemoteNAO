@@ -97,7 +97,7 @@ public class MainActivity extends SherlockActivity {
         
     	//NetworkModule.SetIPAddress("134.109.97.52");
         //NetworkModule.SetIPAddress("134.109.151.142");
-        NetworkModule.SetIPAddress("192.168.5.20");
+        //NetworkModule.SetIPAddress("192.168.5.20");
         menu_button4_event(null);
         
         NetworkModule.RegisterCallback(null,		-1,			0);
@@ -107,7 +107,8 @@ public class MainActivity extends SherlockActivity {
         
         Log.v("MainAct", "Activity started.");
         BattTimer = new Timer();
-		BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
+		//BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
+        BattTimer.schedule(new BattTmrTask(), 1000, 10000);
     }
     
 	@Override
@@ -252,46 +253,16 @@ public class MainActivity extends SherlockActivity {
 		.show();
     }
     
-    public void menu_button6_event(View view) {
-    	//jetzt in onDestroy
-    	//BattTimer.cancel();
-    	//NetworkModule.Rest();
-    	//NetworkModule.CloseConnection();
-    	MainActivity.this.finish();
-    }
-    
 	class BattTmrTask extends TimerTask
 	{
-		private Handler updateUI/* = new Handler(){
-			@Override
-			public void dispatchMessage(Message msg) {
-			    super.dispatchMessage(msg);
-			    if(msg.what > 90)
-			    {
-			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat100));
-			    }
-			    else if (msg.what <= 90 && msg.what > 65) {
-			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat75));
-				}
-			    else if (msg.what <= 65 && msg.what > 35) {
-			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat50));
-				}
-			    else if (msg.what <= 35 && msg.what > 10) {
-			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat25));
-				}
-			    else
-			    {
-			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat0));
-			    }
-			}
-		}*/;
+		/*private Handler updateUI;
 		
 		BattTmrTask(Handler EvtHandler)
 		{
 			updateUI = EvtHandler;
 			
 			return;
-		}
+		}*/
 		
 		public void run()  
 		{

@@ -61,15 +61,6 @@
 	    </RelativeLayout>
 
 	    <Button
-	        android:id="@+id/menu_button6"
-	        android:layout_width="100dp"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentBottom="true"
-	        android:layout_alignParentRight="true"
-	        android:onClick="menu_button6_event"
-	        android:text="@string/menu_button6_text" />
-
-	    <Button
 	        android:id="@+id/menu_button5"
 	        android:layout_width="100dp"
 	        android:layout_height="wrap_content"

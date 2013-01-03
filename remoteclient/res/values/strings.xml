@@ -13,7 +13,7 @@
     <string name="menu_button2_text">Sprach-\nausgabe</string>
     <string name="menu_button3_text">Specials</string>
     <string name="menu_button4_text">Netzwerk</string>
-    <string name="menu_button5_text">Hilfe</string>
+    <string name="menu_button5_text">About</string>
     <string name="menu_button6_text">Beenden</string>
     <string name="titel_sprachausgabe">Sprachausgabe</string>
     <string name="edit_sprachausgabe">Text eingeben</string>
