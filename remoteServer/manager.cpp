@@ -5,6 +5,7 @@
 #include <althread/alcriticalsection.h>
 #include <alproxies/almemoryproxy.h>
 #include <alproxies/altexttospeechproxy.h>
+#include <alproxies/albehaviormanagerproxy.h>
 #include <alcommon/alproxy.h>
 #include <qi/os.hpp>
 #include <alproxies/alrobotposeproxy.h>
@@ -139,6 +140,12 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 			fstr = "";
 			//return <ingnore params>
 			return false;
+		}	
+		else if (fstr.compare("ZST") == 0)
+		{
+			ep.type = CODE_STATE;
+			fstr = "";
+			return false;
 		}
 		else if (fstr.compare("MOV") == 0)
 			ep.type = CODE_MOV;
@@ -146,6 +153,8 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 			ep.type = CODE_SPK;
 		else if (fstr.compare("HAD") == 0)
 			ep.type = CODE_HEAD;
+		else if (fstr.compare("ARM") == 0)
+			ep.type = CODE_ARM;
 		else 
 			ep.type = CODE_INVALID;	
 		fstr = "";	
@@ -232,6 +241,53 @@ bool Manager::getParams(const string& toParse, int& pos, event_params_t& ep, int
 						break;
 					case 'R':
 						ep.iparams[0] = MOV_RIGHT;
+						break;
+					default:
+						ep.type = CODE_INVALID;
+						break;
+				};
+				++pos;
+				return false;
+			}
+			
+			if (toParse[pos] == '_')
+			{
+				++paramCount;
+				++pos;
+			}			
+			break;
+		case CODE_ARM:
+			if (paramCount == 1)
+			{
+				switch (toParse[pos])
+				{
+					case 'L':
+						ep.iparams[0] = ARM_LEFT;
+						break;
+					case 'R':
+						ep.iparams[0] = ARM_RIGHT;
+						break;
+					default:
+						ep.type = CODE_INVALID;
+						break;
+				};
+				++pos;
+			}
+			else if (paramCount == 2)
+			{
+				switch (toParse[pos])
+				{
+					case 'F':
+						ep.iparams[1] = MOV_FORWARD;
+						break;
+					case 'B':
+						ep.iparams[1] = MOV_BACKWARD;
+						break;
+					case 'L':
+						ep.iparams[1] = MOV_LEFT;
+						break;
+					case 'R':
+						ep.iparams[1] = MOV_RIGHT;
 						break;
 					default:
 						ep.type = CODE_INVALID;
@@ -387,12 +443,16 @@ void Manager::runExecuter()
 	//xec->setPosture((int&)post);
 	
 
-
+	cout << "Behaviours" << endl;
+	AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+	AL::ALValue behav = pbehav.getDefaultBehaviors();
+	cout << behav.toString() << endl;
+	behav.clear();
+	behav = pbehav.getInstalledBehaviors();
+	cout << behav.toString() << endl;
+	
 	eventList->setOrder(ORD_STRICT);
 	accessExec.exec->initWalk();	
-	//accessExec.exec->standToSit();	
-	//accessExec.exec->initSecure();
-	//accessExec.exec->joints();
 	accessExec.exec->setState(STATE_STANDING);
 	while(1)
 	{

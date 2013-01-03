@@ -38,14 +38,18 @@
 #define RESET_CONNECTION 42
 #define CODE_PARALLEL 1000
 #define CODE_SPK 1001
-#define CODE_BAT 1002
 #define CODE_HEAD 1003
+#define CODE_ARM 1004
+#define CODE_BAT 1100
+#define CODE_STATE 1101
 
 #define MOV_STOP -1
 #define MOV_FORWARD 1
 #define MOV_BACKWARD 2
 #define MOV_LEFT 3
 #define MOV_RIGHT 4
+#define ARM_LEFT 11
+#define ARM_RIGHT 12
 
 #define EVT_PENDING 1
 #define EVT_PENDINGABS 2
@@ -69,6 +73,7 @@ enum {
 	STATE_PARALLEL = 0xFF00,
 	STATE_HEADMOVE = 0x8000,
 	STATE_SPEAKING = 0x4000,
+	STATE_ARMMOVE  = 0x2000,
 	STATE_REFUSING
 };
 
@@ -79,13 +84,15 @@ enum{
 };
 
 //with all automated collision avoiding this angle will be reduced
-//to approx 23° perr 2 steps
+//to approx 23° per 2 steps
 #define TURN_ANGLE 18
 //therefor 30 steps are neede total to turn 360
 #define TURN_STEPS 2*15
 
 #define HEAD_YAW 0.6
 #define HEAD_PITCH 0.3
+#define ARM_SHOULDER_PITCH 45.0f
+#define ARM_SHOULDER_ROLL 20.0f
 
 
 

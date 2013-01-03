@@ -5,6 +5,7 @@
 #include <alproxies/almotionproxy.h>
 #include <alproxies/almemoryproxy.h>
 #include <alproxies/albatteryproxy.h>
+#include <alproxies/dcmproxy.h>
 #include <alcommon/alproxy.h>
 #include <alvalue/alvalue.h>
 #include <qi/os.hpp>
@@ -21,8 +22,7 @@ using namespace std;
 Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 : 	AL::ALModule(broker, name),
 	mutex(AL::ALMutex::createALMutex()),
-	sync(AL::ALMutex::createALMutex()),
-	bat(0)
+	sync(AL::ALMutex::createALMutex())
 {
 	setModuleDescription("This Module manages the Data comming from the remoteServer module");
 	
@@ -93,6 +93,7 @@ void Executer::setState(state_t s)
 	mutex->lock();
 	state = s;
 	mutex->unlock();
+	sendState();
 }
 
 
@@ -202,11 +203,21 @@ int Executer::processConflicts(const Event& event)
 			if (stateAbs == STATE_UNKNOWN)
 				classf = EVT_DONE;
 			break;
+		case CODE_ARM:
+			if (statePar == STATE_ARMMOVE)
+			{
+				classf = EVT_PENDINGPAR;
+			}
+			if (stateAbs == STATE_UNKNOWN)
+				classf = EVT_DONE;
+			break;
 		case CODE_STOP:
 			if (stateAbs != STATE_WALKING)
 				classf = EVT_DONE;
 			break;
 		case CODE_BAT:
+			break;
+		case CODE_STATE:
 			break;
 		case RESET_CONNECTION:
 			if (stateAbs == STATE_WALKING)
@@ -298,6 +309,11 @@ void Executer::process()
 				moveHead(*event);
 				setState(getState() & ~STATE_HEADMOVE);
 				break;
+			case CODE_ARM:
+				setState(getState() | STATE_ARMMOVE);
+				moveArm(*event);
+				setState(getState() & ~STATE_ARMMOVE);
+				break;
 			//TODO: Stopping can trigger while walking before acutally walking
 			//		Stop would be done before the walking started --> 
 			//  	Stop would have no actual result
@@ -310,9 +326,11 @@ void Executer::process()
 				sync->unlock();
 				cout<< "STP: NOW STANDING" << endl;
 				break;
-			case CODE_BAT:
+			case CODE_BAT:			
 				sendBatteryStatus();
-				//joints();
+				break;
+			case CODE_STATE:			
+				sendState();
 				break;
 			case RESET_CONNECTION:
 				setState(getState(STATE_PARALLEL) | STATE_CROUCHING);
@@ -334,7 +352,7 @@ void Executer::process()
 				break;
 			}
 		};
-
+				
 		eventList->setClassf(event->id, EVT_DONE);	
 	}
 }
@@ -365,10 +383,6 @@ void Executer::initWalk()
         //motion->setStiffnesses(snames, stiffnesses);
 		motion.walkInit(); 
 		//motion->walkTo(x,y,t);
-		stiffnesses  = 0.0f;
-        //motion->setStiffnesses(snames, stiffnesses);
-		//cout << motion.getSummary() << endl;
-		//tts.say("Standing!");
 	}
 	catch(const AL::ALError& e)
 	{
@@ -1147,7 +1161,6 @@ void Executer::moveHead(const Event& event)
         	
 	try
 	{
-		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 		AL::ALMotionProxy motion(MB_IP, MB_PORT);
 			
 		switch(mode)
@@ -1206,6 +1219,120 @@ void Executer::moveHead(const Event& event)
 	{
 		cout << "Error [Executer]<moveHead>:" << endl << e.what() << endl;
 	}
+}
+
+void Executer::moveArm(const Event& event)
+{	
+	AL::ALValue jointNames;		
+	AL::ALValue stiffList;		
+	AL::ALValue stiffTime;
+    AL::ALValue angleList;
+    AL::ALValue angleTime;
+	int arm = event.ep.iparams[0];  
+	int mode = event.ep.iparams[1]; 
+	jointNames.arrayPush("Body");
+	stiffList.arrayPush(0.6);
+	stiffTime.arrayPush(1.0);	
+	cout<< "MOVE_ARM" << endl;
+	
+	if (arm == ARM_LEFT)
+	{
+		try
+		{
+			AL::ALMotionProxy motion(MB_IP, MB_PORT);
+			motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
+			switch(mode)
+			{
+				case MOV_FORWARD: 
+					cout<< ">>>ARM FORWARD<<<" << endl;
+					jointNames.clear(); 
+					jointNames.arrayPush("LShoulderPitch");      
+					angleList.arrayPush(-ARM_SHOULDER_PITCH*RAD);
+					angleTime.arrayPush(0.5);			
+					motion.angleInterpolation(jointNames, angleList, angleTime, false);
+					break;
+				case MOV_BACKWARD:
+					cout<< ">>>ARM BACKWARD<<<" << endl;
+					jointNames.clear(); 
+					jointNames.arrayPush("LShoulderPitch");      
+					angleList.arrayPush(ARM_SHOULDER_PITCH*RAD);
+					angleTime.arrayPush(0.5);			
+					motion.angleInterpolation(jointNames, angleList, angleTime, false);
+					break;
+				case MOV_LEFT:
+					cout<< ">>>ARM LEFT<<<" << endl;
+					jointNames.clear(); 
+					jointNames.arrayPush("LShoulderRoll");      
+					angleList.arrayPush(ARM_SHOULDER_ROLL*RAD);
+					angleTime.arrayPush(0.5);			
+					motion.angleInterpolation(jointNames, angleList, angleTime, false);
+					break;
+				case MOV_RIGHT:
+					cout<< ">>>ARM RIGHT<<<" << endl;
+					jointNames.clear(); 
+					jointNames.arrayPush("LShoulderRoll");      
+					angleList.arrayPush(-ARM_SHOULDER_ROLL*RAD);
+					angleTime.arrayPush(0.5);			
+					motion.angleInterpolation(jointNames, angleList, angleTime, false);
+					break;
+			}
+		
+		}
+		catch(const AL::ALError& e)
+		{
+			cout << "Error [Executer]<moveHead>:" << endl << e.what() << endl;
+		}
+	}
+	else
+	{
+		try
+		{
+			AL::ALMotionProxy motion(MB_IP, MB_PORT);
+			motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
+			switch(mode)
+			{
+				case MOV_FORWARD: 
+					cout<< ">>>ARM FORWARD<<<" << endl;
+					jointNames.clear(); 
+					jointNames.arrayPush("RShoulderPitch");      
+					angleList.arrayPush(-ARM_SHOULDER_PITCH*RAD);
+					angleTime.arrayPush(0.5);			
+					motion.angleInterpolation(jointNames, angleList, angleTime, false);
+					break;
+				case MOV_BACKWARD:
+					cout<< ">>>ARM BACKWARD<<<" << endl;
+					jointNames.clear(); 
+					jointNames.arrayPush("RShoulderPitch");      
+					angleList.arrayPush(ARM_SHOULDER_PITCH*RAD);
+					angleTime.arrayPush(0.5);			
+					motion.angleInterpolation(jointNames, angleList, angleTime, false);
+					break;
+				case MOV_LEFT:
+					cout<< ">>>ARM LEFT<<<" << endl;
+					jointNames.clear(); 
+					jointNames.arrayPush("RShoulderRoll");      
+					angleList.arrayPush(ARM_SHOULDER_ROLL*RAD);
+					angleTime.arrayPush(0.5);			
+					motion.angleInterpolation(jointNames, angleList, angleTime, false);
+					break;
+				case MOV_RIGHT:
+					cout<< ">>>ARM RIGHT<<<" << endl;
+					jointNames.clear(); 
+					jointNames.arrayPush("RShoulderRoll");      
+					angleList.arrayPush(-ARM_SHOULDER_ROLL*RAD);
+					angleTime.arrayPush(0.5);			
+					motion.angleInterpolation(jointNames, angleList, angleTime, false);
+					break;
+			}
+		
+		}
+		catch(const AL::ALError& e)
+		{
+			cout << "Error [Executer]<moveHead>:" << endl << e.what() << endl;
+		}
+	}
+		
+
 }
 
 void Executer::speak(const string& msg)
@@ -1270,15 +1397,15 @@ void Executer::setPosture(const int& pos)
 void Executer::sendBatteryStatus()
 {
 	int sclient;
-	string buf = "BAT_";
 	int value = 0;
-	bool balue = false;
 	int sent= 0;
+	string buf = "BAT_";
 	try
 	{
-		AL::ALBatteryProxy pbat = AL::ALBatteryProxy();
-		//BatteryLevelChanged
-		vector<string> events;
+		AL::ALBatteryProxy pbat = AL::ALBatteryProxy(MB_IP, MB_PORT);
+		AL::DCMProxy dcm = AL::DCMProxy(MB_IP, MB_PORT);
+		
+		/*vector<string> events;
 		vector<string> subs;
 		events = mem.getDataList("Battery");
 		cout << "Available Events: " << events.size() << endl;
@@ -1289,36 +1416,17 @@ void Executer::sendBatteryStatus()
 		cout << "Available Subscribers: " << subs.size() << endl;
 		for (int i = 0; i < subs.size(); ++i)
 			cout << subs[i] << " with type: " << mem.getType("BatteryLevelChanged") << endl;
-			
+		*/	
 		//mem.raiseEvent("BatteryLevelChanged", 5);
-			
-		cout << "bat: " << (int)(char)bat << endl;
 		//mem.insertData("BatteryLevelChanged", 90);
-		value=(int&)mem.getData("BatteryLevelChanged");
-		cout << "value: " << value << ":" << mem.getData("BatteryLevelChanged").toString() /*(int)buf[4]/*(int)(char)bat*/ << endl;
+		value=(int)((float&)mem.getData("Device/SubDeviceList/Battery/Charge/Sensor/Value") * 100);
+		cout << "value: " << value << ":" << mem.getData("BatteryLevelChanged").toString() << endl;
 		
-		value=(int&)mem.getData("Device/SubDeviceList/Battery/Current/Sensor/Value");
-		cout << "value[Device/SubDeviceList/Battery/Current/Sensor/Value]: " << value/*(int)buf[4]/*(int)(char)bat*/ << endl;
-		
-		
-		value=(int&)mem.getData("Device/SubDeviceList/Battery/Charge/Sensor/Status");
-		cout << "value[Device/SubDeviceList/Battery/Charge/Sensor/Status]: " << value/*(int)buf[4]/*(int)(char)bat*/ << endl;
-		
-		
-		value=(int&)mem.getData("Device/SubDeviceList/Battery/Charge/Sensor/CellVoltageMin");
-		cout << "value[Device/SubDeviceList/Battery/Charge/Sensor/CellVoltageMin]: " << value/*(int)buf[4]/*(int)(char)bat*/ << endl;
-		
-		
-		balue=(bool&)mem.getData("BatteryDisChargingFlagChanged");
-		cout << "balue[BatteryDisChargingFlagChanged]: " << balue/*(int)buf[4]/*(int)(char)bat*/ << endl;
-		balue=(bool&)mem.getData("BatteryFullChargedFlagChanged");
-		cout << "balue[BatteryFullChargedFlagChanged]: " << balue/*(int)buf[4]/*(int)(char)bat*/ << endl;
-		balue=(bool&)mem.getData("BatteryDisChargingFlagChanged");
-		cout << "balue[BatteryDisChargingFlagChanged]: " << balue/*(int)buf[4]/*(int)(char)bat*/ << endl;
 		
 		AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), CB_IP, CB_PORT);
 		sclient = pNetNao.call<int>("getClient_tcp"); 
 		
+		buf = buf + (char)(value);
 		cout << "buf.length() = " << (int)buf.length() << endl;
 		sent = pNetNao.call<int, int, AL::ALValue, int, int>(
 									"sendString", sclient, buf, buf.length(), 0);
@@ -1330,15 +1438,56 @@ void Executer::sendBatteryStatus()
 	}
 }
 
+
+void Executer::sendState()
+{
+	int sclient;
+	string value;
+	int sent= 0;
+	string buf;
+	try
+	{		
+		AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), CB_IP, CB_PORT);
+		sclient = pNetNao.call<int>("getClient_tcp"); 
+		
+		switch (getState(STATE_ABSOLUT))
+		{
+			case STATE_CROUCHING: 
+				buf = "ZST_CROUCHING";
+				break;
+			case STATE_STANDING: 
+				buf = "ZST_STANDING";
+				break;
+			case STATE_SITTING: 
+				buf = "ZST_SITTING";
+				break;
+			case STATE_WALKING: 
+				buf = "ZST_WALKING";
+				break;
+			case STATE_STOPPING: 
+				buf = "ZST_STOPPING";
+				break;
+			case STATE_MOVING: 
+				buf = "ZST_MOVING";
+				break;
+			case STATE_UNKNOWN: 
+			default:
+				buf = "ZST_UNKNOWN";
+				break;
+		};
+		sent = pNetNao.call<int, int, AL::ALValue, int, int>(
+									"sendString", sclient, buf, buf.length(), 0);
+		cout << "buf.length() = " << (int)buf.length() << ", gesendet: " << sent << endl;
+		
+	}
+	catch (const AL::ALError& e)
+	{
+		cout<< "ERROR [Executer]<sendBatteryStatus>:" << endl << e.what() << endl;
+	}	
+}
+
 void Executer::callback()
 {
-	char str [255];
-	bat = (int&)mem.getData("BatteryLevelChanged");
-	AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-	sprintf(str, "%d", bat);
-	tts.say(string("Battery") + string(str));
-	cout<< "Battery Level changed! --> Percentage:" << endl;
-	bat = (int&)mem.getData("BatteryLevelChanged");
 }
 
 void Executer::cbPoseChanged(const string& eventName, const string& postureName, const string& subscriberIdentifier)

@@ -18,7 +18,6 @@ class Executer:public AL::ALModule
 		boost::shared_ptr<EventList> eventList;
 		state_t state;
 		string mpose;
-		int bat;
 		AL::ALMemoryProxy mem;
 	public:
 		//always get a shared_ptr from this via lock()	
@@ -42,8 +41,10 @@ class Executer:public AL::ALModule
 		void cbPoseChanged(const string& eventName, const string& postureName, const string& subscriberIdentifier);
 		void speak(const string& msg);
 		void moveHead(const Event& event);
+		void moveArm(const Event& event);
 		void joints();
 		void sendBatteryStatus();
+		void sendState();
 };
 
 #endif
