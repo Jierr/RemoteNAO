@@ -57,17 +57,21 @@ class EventList
 		EventList();
 		~EventList();
 		bool isEmpty();
+		bool hasPending();
 		void setOrder(int ord);
 		void addEvent(event_params_t ep);
 		void addFirst(event_params_t ep);
 		void removeEvent(const void* const iid);
 		void removeDone();
+		void removePending();
 		void removeAll();
 		void list();
 		void setClassf(const void* const iid, int classf);
+		int getClassf(const void* const iid);
 		void setTask(const void* const iid, const int& tid);
 		Event getFirst();
-		Event getPending();
+		Event* getPending();
+		Event withID(const void* const iid);
 		Event getLast();		
 };
 

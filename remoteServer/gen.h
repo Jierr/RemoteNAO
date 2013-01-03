@@ -1,6 +1,10 @@
 #ifndef __GEN__
 #define __GEN__
 
+#define SPACE_TORSO 0
+#define SPACE_WORLD 1
+#define SPACE_NAO 2
+
 #define MB_IP "127.0.0.1"
 #define MB_PORT 9559
 #define CB_IP "127.0.0.1"
@@ -27,6 +31,8 @@
 #define CODE_ABSOLUT 10
 #define INIT_WALK 10
 #define INIT_REST 11
+#define INIT_SIT 12
+#define INIT_UP 13
 #define CODE_MOV 20
 #define CODE_STOP 21
 #define RESET_CONNECTION 42

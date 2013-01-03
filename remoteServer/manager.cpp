@@ -69,50 +69,7 @@ Manager::~Manager()
 }
 
 void Manager::init()
-{
-	/*event_params_t ep;
-	Event* tmp;
-	
-	cout<< "Initialisierung:" << endl;
-	for (int n = 0; n < 10; ++n)
-	{
-		ep.type = n;
-		eventList->addEvent(ep);
-	}
-	if (!eventList->isEmpty())
-		eventList->list();
-	
-	
-	cout<< "Lösche First:" << endl;
-	tmp = new Event(eventList->getFirst());
-	eventList->removeEvent(tmp->id);
-	delete tmp;
-	
-	if (!eventList->isEmpty())
-		eventList->list();	
-
-	
-	cout<< "Lösche Last" << endl;	
-	tmp = new Event(eventList->getLast());
-	eventList->removeEvent(tmp->id);
-	delete tmp;
-	
-	if (!eventList->isEmpty())
-		eventList->list();
-		
-	for (int i = 0; i< 8; ++i)
-	{
-		cout<< "Lösche PENDING------------------" << endl;	
-		tmp = new Event(eventList->getPending());
-		eventList->removeEvent(tmp->id);
-		delete tmp;
-	
-		if (!eventList->isEmpty())
-			eventList->list();
-	}
-	*/
-	
-	
+{	
 }
 
 void Manager::localRespond()
@@ -145,6 +102,20 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 		else if (fstr.compare("RST") == 0)
 		{
 			ep.type = INIT_REST;
+			fstr = "";
+			//return <ingnore params>
+			return false;
+		}
+		else if (fstr.compare("SIT") == 0)
+		{
+			ep.type = INIT_SIT;
+			fstr = "";
+			//return <ingnore params>
+			return false;
+		}
+		else if (fstr.compare("AUF") == 0)
+		{
+			ep.type = INIT_UP;
 			fstr = "";
 			//return <ingnore params>
 			return false;
@@ -419,6 +390,9 @@ void Manager::runExecuter()
 
 	eventList->setOrder(ORD_STRICT);
 	accessExec.exec->initWalk();	
+	//accessExec.exec->standToSit();	
+	//accessExec.exec->initSecure();
+	//accessExec.exec->joints();
 	accessExec.exec->setState(STATE_STANDING);
 	while(1)
 	{
@@ -430,67 +404,30 @@ void Manager::runExecuter()
 		try
 		{
 			eventList->removeDone();
-			//cout<< "removeDone" << endl;
-			Event event(eventList->getPending());
-			eventList->setClassf(event.id, EVT_BUSY);
-			taskID = accessExec.pexec.pCall<Event>("process", event);
-			//eventList->setTask(event.id, taskID);
+			if (eventList->hasPending())
+			{
+				//cout<< "HAS PENDING" << endl;
+				//int iid(pevent->ep.type);
+				//void* const iid= (void*)pevent;
+				//AL::ALValue iid((const void*)pevent->id, sizeof(pevent->id));
+				/*AL::ALValue iid;
+				iid.setObject(&pevent->id, sizeof(pevent->id));
+				cout<< "pevent->id = " << pevent->id << ", iid = " << iid.toString() 
+				<< ", getBinary = "<< (const void*)(*(const void**)(iid.getObject())) << endl;*/
+				//eventList->setClassf(pevent->id, EVT_BUSY);
+				taskID = accessExec.pexec.pCall(string("process"));
+				//eventList->setTask(event.id, taskID);
+			}
+			else
+			{
+				//cout<< "HAS NOT PENDING" << endl;
+				eventList->setOrder(ORD_STRICT);
+			}
 		}
 		catch(const AL::ALError& e)
 		{
 			cout<< "Error: [Manager]<runExecuter>:" << endl << e.what() << endl;
 		}
-		/*
-		string msg = "";
-		vector<int> vtemp (2, 0);
-		mutex->lock();
-			lastOp = mem.getData("lastOp");
-			msg = (string&)mem.getData("msg");
-			vtemp =  mem.getData("iparams");
-			mem.insertData("lastOp", CODE_INVALID);
-		mutex->unlock();
-		
-		switch (event.ep.type)
-		{
-			case INIT_WALK:
-				accessExec.exec->initWalk();
-				//cout << "Done initWalk()" << endl;
-				break;
-			case INIT_REST:
-				accessExec.exec->initSecure();
-				break;
-			case CODE_SPK:
-				accessExec.exec->speak(msg);
-				break;
-			case CODE_MOV:
-				accessExec.exec->walk(event);
-				break;
-			case CODE_STOP:
-				//event.ep.iparams[0] = MOV_STOP;
-				accessExec.exec->walk(event);
-				break;
-			case CODE_BAT:
-				accessExec.exec->sendBatteryStatus();
-				break;
-			case RESET_CONNECTION:
-			case CODE_INVALID:
-				//cout<< "Nothing to do" << endl;
-				break;
-			default:
-			{
-				try
-				{
-					AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-					tts.say("Unknown command!");
-				}	
-				catch(const AL::ALError& e)
-				{
-					cout<< "Error runExecuter case default: " << endl << e.what() << endl;
-				}
-				break;
-			}
-		
-		};*/
 	}
 }
 

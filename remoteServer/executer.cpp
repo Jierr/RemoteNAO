@@ -52,7 +52,7 @@ Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	BIND_METHOD(Executer::sendBatteryStatus);
 	
 	functionName("process", getName(), "Execute a given event");
-	addParam("event", "The event to be processed");
+	//addParam("event", "The event to be processed");
 	BIND_METHOD(Executer::process);
 	
 	functionName("callback", getName(), "Callback");
@@ -96,15 +96,20 @@ void Executer::setState(state_t s)
 }
 
 
-state_t Executer::getState()
+state_t Executer::getState(int type)
 {
-	return state;
+	int result;
+	mutex->lock();
+	result = state & type;
+	mutex->unlock();
+	return result;
 }
 
 
 int Executer::processConflicts(const Event& event)
 {
 	mutex->lock();
+	//eventList->list();
 	event_params_t ep;
 	int classf = EVT_BUSY;
 	
@@ -125,12 +130,49 @@ int Executer::processConflicts(const Event& event)
 				classf = EVT_DONE;
 			}		
 			break;
+		case INIT_SIT:
+			if (stateAbs == STATE_WALKING)
+			{
+				ep.type = CODE_STOP;
+				ep.iparams[0] = MOV_STOP;
+				eventList->addFirst(ep);
+				classf = EVT_PENDINGABS;
+			}	
+			else if (stateAbs == STATE_CROUCHING)
+			{
+				ep.type = INIT_WALK;
+				eventList->addFirst(ep);
+				classf = EVT_PENDINGABS;
+			}		
+			else if ((stateAbs == STATE_MOVING) 	||
+					 (stateAbs == STATE_STOPPING)		)
+			{
+				classf = EVT_PENDINGABS;
+				eventList->setOrder(ORD_PAR);
+			}
+			else if (stateAbs != STATE_STANDING)
+			{
+				classf = EVT_DONE;
+			}		
+			break;
+		case INIT_UP:
+			if (stateAbs != STATE_SITTING)
+			{
+				classf = EVT_DONE;
+			}		
+			break;
 		case CODE_SPK:
 			break;
 		case CODE_MOV:
 			if (stateAbs == STATE_CROUCHING)
 			{
 				ep.type = INIT_WALK;
+				eventList->addFirst(ep);
+				classf = EVT_PENDINGABS;
+			}
+			else if (stateAbs == STATE_SITTING)
+			{
+				ep.type = INIT_UP;
 				eventList->addFirst(ep);
 				classf = EVT_PENDINGABS;
 			}
@@ -153,10 +195,9 @@ int Executer::processConflicts(const Event& event)
 			}
 			break;
 		case CODE_HEAD:
-			if (statePar & STATE_HEADMOVE)
+			if (statePar == STATE_HEADMOVE)
 			{
 				classf = EVT_PENDINGPAR;
-				eventList->setOrder(ORD_PAR);
 			}
 			if (stateAbs == STATE_UNKNOWN)
 				classf = EVT_DONE;
@@ -168,7 +209,6 @@ int Executer::processConflicts(const Event& event)
 		case CODE_BAT:
 			break;
 		case RESET_CONNECTION:
-			eventList->list();
 			if (stateAbs == STATE_WALKING)
 			{
 				cout<< "DIS: first stop Movement" << endl;
@@ -197,59 +237,85 @@ int Executer::processConflicts(const Event& event)
 	return classf;
 }
 
-void Executer::process(const Event& event)
+void Executer::process()
 {
 	//cout<<"----->Process Event" << endl;
 	int classf;	
-
+	//cout << "PROCESS pevent = " << pevent.toString() << endl;
+	//Event* event = & (eventList->withID((const void*)(*(const void**)(pevent.getObject()))));
+	//const void* const id = pevent;
+	//Event event(eventList->withID(id));
 	
-	classf = processConflicts(event);
-	eventList->setClassf(event.id, classf);
+	mutex->lock();
+	Event* event = eventList->getPending();
+	if (!event)
+	{
+		mutex->unlock();
+		return;
+	}
+	eventList->setClassf(event->id, EVT_BUSY);
+	mutex->unlock();
+	cout<< "[PROCESS] ID: " << event->id << ", TYPE: " << event->ep.type << endl;	
+	classf = processConflicts(*event);
+	eventList->setClassf(event->id, classf);
 	if (classf == EVT_BUSY)
 	{
-		switch (event.ep.type)
+		switch (event->ep.type)
 		{
 			case INIT_WALK:
-				setState(STATE_MOVING);
+				setState(getState(STATE_PARALLEL) | STATE_MOVING);
 				initWalk();
 				setState(STATE_STANDING);
 				//cout << "Done initWalk()" << endl;
 				break;
 			case INIT_REST:
-				setState(STATE_MOVING);
+				setState(getState(STATE_PARALLEL) | STATE_MOVING);
 				initSecure();
 				setState(STATE_CROUCHING);
 				break;
+			case INIT_SIT:
+				setState(getState(STATE_PARALLEL) | STATE_MOVING);
+				standToSit();
+				setState(STATE_SITTING);
+				break;
+			case INIT_UP:
+				setState(getState(STATE_PARALLEL) | STATE_MOVING);
+				sitToStand();
+				setState(STATE_STANDING);
+				break;
 			case CODE_SPK:
-				speak(event.ep.sparam);
+				speak(event->ep.sparam);
 				break;
 			case CODE_MOV:
-				setState(STATE_WALKING);
-				walk(event);
+				setState(getState(STATE_PARALLEL) | STATE_WALKING);
+				walk(*event);
 				sync->lock();
 				setState(STATE_STANDING);
 				sync->unlock();
 				break;
 			case CODE_HEAD:
 				setState(getState() | STATE_HEADMOVE);
-				moveHead(event);
+				moveHead(*event);
 				setState(getState() & ~STATE_HEADMOVE);
 				break;
+			//TODO: Stopping can trigger while walking before acutally walking
+			//		Stop would be done before the walking started --> 
+			//  	Stop would have no actual result
 			case CODE_STOP:
 				//event.ep.iparams[0] = MOV_STOP;
 				sync->lock();
-				setState(STATE_STOPPING);
-				walk(event);
+				setState(getState(STATE_PARALLEL) | STATE_STOPPING);
+				walk(*event);
 				setState(STATE_STANDING);
 				sync->unlock();
 				cout<< "STP: NOW STANDING" << endl;
 				break;
 			case CODE_BAT:
-				//sendBatteryStatus();
-				joints();
+				sendBatteryStatus();
+				//joints();
 				break;
 			case RESET_CONNECTION:
-				setState(STATE_CROUCHING);
+				setState(getState(STATE_PARALLEL) | STATE_CROUCHING);
 				break;
 			case CODE_INVALID:
 				//cout<< "Nothing to do" << endl;
@@ -269,7 +335,7 @@ void Executer::process(const Event& event)
 			}
 		};
 
-		eventList->setClassf(event.id, EVT_DONE);	
+		eventList->setClassf(event->id, EVT_DONE);	
 	}
 }
 
@@ -292,10 +358,12 @@ void Executer::initWalk()
 		string snames = "Body";
 		float x(1.0), y(0.0), t(0.0); 
 		
-		boost::shared_ptr<AL::ALMotionProxy> motion = getParentBroker()->getMotionProxy(); 
-        motion->stiffnessInterpolation(snames, stiffnesses, 1.0);
+		
+		AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		//boost::shared_ptr<AL::ALMotionProxy> motion = getParentBroker()->getMotionProxy(); 
+        motion.stiffnessInterpolation(snames, stiffnesses, 1.0);
         //motion->setStiffnesses(snames, stiffnesses);
-		motion->walkInit(); 
+		motion.walkInit(); 
 		//motion->walkTo(x,y,t);
 		stiffnesses  = 0.0f;
         //motion->setStiffnesses(snames, stiffnesses);
@@ -336,6 +404,519 @@ void Executer::joints()
         AL::ALValue targetAngles(vtargetAngles);
         float maxSpeedFraction = 0.2;
         motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+}
+
+void Executer::standToSit()
+{
+		AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		
+		float stiffnesses  = 1.0f; 
+		string snames = "Body";
+        motion.stiffnessInterpolation("Body", 1.0, 1.0);		
+        
+        AL::ALValue names = "Body";
+        /*
+       		HeadYawAngle, HeadPitchAngle
+        	ShoulderPitchAngle, +ShoulderRollAngle, +ElbowYawAngle, +ElbowRollAngle, WristYawAngle, HandAngle
+        	hipYawPitch,  spreadAngle, -kneeAngle/2-torsoAngle, kneeAngle, -kneeAngle/2, -spreadAngle
+        	-hipYawPitch, -spreadAngle, -kneeAngle/2-torsoAngle, kneeAngle, -kneeAngle/2,  spreadAngle
+        	ShoulderPitchAngle, -ShoulderRollAngle, -ElbowYawAngle, -ElbowRollAngle, WristYawAngle, HandAngle
+        */
+        {
+        	float ftargetAngles[] = {
+		    						 	 0.0, 0.0,
+										 119.0, -18.0, +0.0, -0.0, 0.0, 0.0,
+										 -35.0, 15.0, -150.0/2 - 0.0, 150.0, -25.0, -15.0,
+										 -35.0, -15.0, -150.0/2 - 0.0, 150.0, -25.0, 15.0,
+										 119.0, 18.0, -0.0, +0.0, 0.0, 0.0
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }
+        
+        names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 15.0, -200.0/2 - 50.0, 200.0, -0.0, -15.0,
+										 -45.0, -15.0, -200.0/2 - 50.0, 200.0, -0.0, 15.0,
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }
+        
+        names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 15.0, -200.0/2 - 50.0, 200.0, 20.0, -15.0,
+										 -45.0, -15.0, -200.0/2 - 50.0, 200.0, 20.0, 15.0,
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }
+        
+        
+        qi::os::msleep(500);
+        names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 15.0, -90, 60.0, 60.0, -15.0,
+										 -45.0, -15.0, -90, 60.0, 60.0, 15.0,
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }     
+}
+
+
+void Executer::sitToStand()
+{        
+		AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		AL::ALValue names;
+		 
+        motion.stiffnessInterpolation("Body", 1.0, 1.0);	
+
+		names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 15.0, -100, 120.0, 20.0, -15.0,
+										 -45.0, -15.0, -90, 60.0, 60.0, 15.0,
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }     
+            	
+        names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 15.0, -100, 120.0, 20.0, -15.0,
+										 -45.0, -15.0, -90, 60.0, 60.0, 15.0,
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }      
+            	
+        names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg", "LArm");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 10.0, -50, 120.0, -20.0, -15.0,
+										 -45.0, -15.0, -90, 60.0, 60.0, -15.0,
+										 0.0, 30.0, +0.0, -20.0, 0.0, 0.0,
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }   
+                  	
+        names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg", "LArm", "RArm");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 10.0, -0.0, 120.0, -50.0, -15.0,
+										 -45.0, -40.0, -100.0, 60.0, 60.0, -15.0,
+										 60.0, 0.0, +0.0, -20.0, 0.0, 0.0,
+										 119.0, -0.0, -0.0, +0.0, 0.0, 0.0
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        } 
+                          	
+        names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg", "LArm", "RArm");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 10.0, 0.0, 120.0, -50.0, -20.0,
+										 -45.0, -40.0, -100.0, 60.0, 60.0, 0.0,
+										 60.0, -18.0, +0.0, -20.0, 0.0, 0.0,
+										 119.0, -0.0, -0.0, +0.0, 0.0, 0.0
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }         
+        
+        names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg", "LArm", "RArm");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 0.0, 0.0, 120.0, -50.0, -20.0,
+										 -45.0, -40.0, -100.0, 100.0, 20.0, 0.0,
+										 60.0, -18.0, +0.0, -20.0, 0.0, 0.0,
+										 119.0, -0.0, -0.0, +0.0, 0.0, 0.0
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        } 
+          
+          
+        names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg", "LArm", "RArm");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 0.0, -20.0, 100.0, -30.0, -20.0,
+										 -45.0, -40.0, -100.0, 100.0, 10.0, 0.0,
+										 20.0, -18.0, +0.0, -20.0, 0.0, 0.0,
+										 119.0, -25.0, -0.0, +20.0, 0.0, 0.0
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }  
+                 
+        names.clear();
+        names = AL::ALValue::array("LLeg", "RLeg", "LArm", "RArm");
+        {
+        	float ftargetAngles[] = {
+										 -45.0, 0.0, -100.0, 120.0, -10.0, -0.0,
+										 -45.0, -0.0, -100.0, 120.0, -10.0, 0.0,
+										 20.0, -18.0, +0.0, -20.0, 0.0, 0.0,
+										 119.0, -25.0, -20.0, +0.0, 0.0, 0.0
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        } 
+        
+		motion.walkInit();
+}
+
+
+
+void initSit2()
+{
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		AL::ALMotionProxy motion(MB_IP, MB_PORT);
+		
+		float stiffnesses  = 1.0f; 
+		string snames = "Body";
+        motion.stiffnessInterpolation("Body", 1.0, 1.0);		
+        
+        /*motion.wbEnable(true); 
+		motion.wbFootState("Plane", "LLeg");
+		motion.wbFootState("Plane", "RLeg");
+		motion.wbEnableEffectorOptimization("LArm", true);
+		motion.wbEnableEffectorOptimization("RArm", true);*/
+        
+        AL::ALValue names = "Body";
+        /*
+       		HeadYawAngle, HeadPitchAngle
+        	ShoulderPitchAngle, +ShoulderRollAngle, +ElbowYawAngle, +ElbowRollAngle, WristYawAngle, HandAngle
+        	hipYawPitch,  spreadAngle, -kneeAngle/2-torsoAngle, kneeAngle, -kneeAngle/2, -spreadAngle
+        	-hipYawPitch, -spreadAngle, -kneeAngle/2-torsoAngle, kneeAngle, -kneeAngle/2,  spreadAngle
+        	ShoulderPitchAngle, -ShoulderRollAngle, -ElbowYawAngle, -ElbowRollAngle, WristYawAngle, HandAngle
+        */
+        {
+        
+       
+		   float ftargetAngles[] = {
+		    						 	 0.0, 0.0,
+										 60.0, 0.0, +0.0, -60.0, 0.0, 0.0,
+										 -35.0, 15.0, -100.0/2 + 25.0, 100.0, -100.0/2, -15.0,
+										 -35.0, -15.0, -100.0/2 + 25.0, 100.0, -100.0/2, 15.0,
+										 100.0, -0.0, -0.0, +0.0, 0.0, 0.0
+		    						};
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }
+
+
+
+		motion.wbEnable(true); 
+		string effector 	 = "Torso";
+		AL::ALValue path     = AL::ALValue(motion.getPosition(effector, SPACE_NAO, true));
+		//path[0] = (float&)path[0] - 0.3f;
+		path[1] = (float&)path[1] + 0.5f;
+		//path[2] = 0.0f;//(float&)path[2] - 0.1f;
+		//AL::ALValue path     = AL::ALValue::array(-0.0f, -0.00f, -0.0f, 0.0f, 0.0f, 0.0f);
+		AL::ALValue timeList = 2.0f; // seconds
+		int axisMask = 7; // control all axis of the effector
+		motion.positionInterpolation(effector, SPACE_NAO, path,
+                                     axisMask, timeList, true);
+                                     
+
+		/*motion.wbFootState("Plane", "LLeg");
+		motion.wbFootState("Free", "RLeg");	
+		motion.wbEnableBalanceConstraint(true, "LLeg");
+		motion.wbGoToBalance("LLeg", 1.0);*/
+		
+		effector 	 = "RLeg";
+		path     = AL::ALValue::array(0.25f, -0.07f, -0.0f, 0.0f, 0.0f, 0.0f);
+	    axisMask = 7; // control all axis of the effector
+		timeList = 2.0f; // seconds
+		motion.positionInterpolation(effector, SPACE_NAO, path,
+                                     axisMask, timeList, false);
+                                 
+  		//motion.wbFootState("Plane", "Legs");        
+		//motion.wbGoToBalance("Legs", 1.0);      
+		                             				
+        /*effector 	 = "LLeg";
+		path     = AL::ALValue::array(0.1f, 0.1f, -0.0f, 0.0f, 0.0f, 0.0f);
+	    axisMask = 7; // control all axis of the effector
+		timeList = 2.0f; // seconds
+		motion.positionInterpolation(effector, SPACE_NAO, path,
+                                     axisMask, timeList, false);*/
+        
+        //motion.wbEnable(false);                              		
+	                                     
+                                     
+		//motion.wbFootState("Plane", "Legs");        
+		//motion.wbGoToBalance("Legs", 1.0);
+		
+		
+					
+		                   
+		motion.wbGoToBalance("Legs", 1.0);         
+                                     
+        effector 	 = "Torso";
+		path     = AL::ALValue(motion.getPosition(effector, SPACE_NAO, true));
+		//path[0] = (float&)path[0] - 0.3f;
+		//path[1] = (float&)path[1] - 0.1f;
+		//path[2] = 0.0f;//(float&)path[2] - 0.1f;
+		path[4] = (float&)path[4] - 20*RAD;
+		//path[4] = (float&)path[3] - 90*RAD;
+	    axisMask = 63; // control all axis of the effector
+		timeList = 2.0f; // seconds
+		motion.positionInterpolation(effector, SPACE_NAO, path,
+                                     axisMask, timeList, true);  
+                                     
+                                     
+       /* effector 	 = "Torso";
+		path     = AL::ALValue(motion.getPosition(effector, SPACE_NAO, true));
+		//path[0] = (float&)path[0] - 0.3f;
+		//path[1] = (float&)path[1] - 0.1f;
+		//path[2] = 0.0f;//(float&)path[2] - 0.1f;
+		path[5] = (float&)path[5] + 20*RAD;
+		//path[4] = (float&)path[3] - 90*RAD;
+	    axisMask = 63; // control all axis of the effector
+		timeList = 2.0f; // seconds
+		motion.positionInterpolation(effector, SPACE_NAO, path,
+                                     axisMask, timeList, true);  */                                
+                                     
+                                                                         
+       	effector 	 = "Torso";
+		path     = AL::ALValue(motion.getPosition(effector, SPACE_NAO, true));
+		//path[0] = (float&)path[0] - 0.3f;
+		//path[1] = (float&)path[1] - 0.1f;
+		//path[2] = 0.0f;//(float&)path[2] - 0.1f;
+		path[3] = (float&)path[3] + 60*RAD;
+		//path[4] = (float&)path[3] - 90*RAD;
+	    axisMask = 63; // control all axis of the effector
+		timeList = 2.0f; // seconds
+		motion.positionInterpolation(effector, SPACE_NAO, path,
+                                     axisMask, timeList, true); 
+                                     
+                                     
+        effector 	 = "Torso";
+		path     = AL::ALValue(motion.getPosition(effector, SPACE_NAO, true));
+		//path[0] = (float&)path[0] - 0.3f;
+		//path[1] = (float&)path[1] - 0.1f;
+		path[2] = 0.f;//(float&)path[2] - 0.1f;
+		//path[3] = (float&)path[3] + 90*RAD;
+	    axisMask = 7; // control all axis of the effector
+		timeList = 2.0f; // seconds
+		motion.positionInterpolation(effector, SPACE_NAO, path,
+                                     axisMask, timeList, true);   
+                                     
+        //motion.wbGoToBalance("RLeg", 1.0);                           
+		
+		motion.wbEnable(false); 
+		
+
+
+		
+		
+		
+		//motion.wbEnableEffectorOptimization("RArm", true);
+		//motion.wbEnableEffectorOptimization("LArm", true);
+		//motion.wbSetEffectorControl("RArm", AL::ALValue::array()); 
+       // motion.wbGoToBalance("RLeg", 1.0);
+		/*motion.wbFootState("Free", "LLeg");
+		motion.wbFootState("Plane", "RLeg");	
+		motion.wbEnableBalanceConstraint(false, "Legs");
+		motion.wbEnableBalanceConstraint(true, "RLeg");    */
+        //motion.wbGoToBalance("RLeg", 1.0);    
+		
+		
+		
+		names.clear();
+		names = AL::ALValue::array("LArm");
+        {
+        
+       
+		   float ftargetAngles[] = {
+										 100.0, 60.0, +0.0, -0.0, 0.0, 0.0,
+								   };
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        } 
+        
+        names.clear();
+		names = AL::ALValue::array("LArm");
+        {
+        
+       
+		   float ftargetAngles[] = {
+										 -35.0, 15.0, -100.0/2 + 25.0, 100.0, -100.0/2, -15.0,
+								   };
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        }  	
+        
+        
+        names.clear();
+		names = AL::ALValue::array("LLeg");
+        {
+        
+       
+		   float ftargetAngles[] = {
+										 119.0, -18.0, +0.0, -0.0, 0.0, 0.0,
+								   };
+		    						
+		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
+		    	ftargetAngles[i]*= RAD;
+		   	std::vector<float> vtargetAngles(ftargetAngles,ftargetAngles + sizeof(ftargetAngles)/ sizeof(float));
+		    AL::ALValue targetAngles(vtargetAngles);
+		    float maxSpeedFraction = 0.2;
+		    
+		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
+        } 
+        
+       
+                                     
+        //motion.wbGoToBalance("RLeg", 1.0);                           
+		
+		motion.wbEnable(false); 
+			
+		/*effector 	 = "LLeg";
+		path     = AL::ALValue::array(0.2f, 0.1f, -0.0f, 0.0f, 0.0f, 0.0f);
+	    axisMask = 63; // control all axis of the effector
+		timeList = 2.0f; // seconds
+		motion.positionInterpolation(effector, SPACE_NAO, path,
+                                     axisMask, timeList, false);*/
+		
+   
+                                    
+ 		
+		/*motion.wbEnableEffectorOptimization("RArm", false);
+		motion.wbEnableEffectorOptimization("LArm", false);
+		//motion.wbSetEffectorControl("RArm", AL::ALValue::array());
+		motion.wbFootState("Free", "LLeg");
+		motion.wbFootState("Free", "RLeg");	
+		motion.wbEnableBalanceConstraint(false, "Legs");
+		motion.wbEnableBalanceConstraint(false, "RLeg");   
+		
+        effector 	 = "Torso";
+		path     = AL::ALValue(motion.getPosition(effector, SPACE_NAO, true));
+		//path[0] = (float&)path[0] - 0.3f;
+		//path[1] = (float&)path[1] - 0.1f;
+		path[2] = 0.0f;//(float&)path[2] - 0.1f;
+		//path[3] = (float&)path[3] + 90*RAD;
+	    axisMask = 7; // control all axis of the effector
+		timeList = 2.0f; // seconds
+		motion.positionInterpolation(effector, SPACE_NAO, path,
+                                     axisMask, timeList, true); 
+		
+                                     
+        
+        */
+
+		
+		//motion.wbEnable(false);
+		
+		//stiffnesses  = 0.0f; 
+        //motion.stiffnessInterpolation("Body", 0.0, 1.2);
+        
 }
 
 
@@ -545,7 +1126,7 @@ void Executer::walk(const Event& event)
 		};
 		
 		while (motion.walkIsActive())			
-			qi::os::msleep(50);
+			qi::os::msleep(20);
 		cout << "walking done!" << endl;
 		
 	}
@@ -557,17 +1138,18 @@ void Executer::walk(const Event& event)
 
 void Executer::moveHead(const Event& event)
 {
+	int mode = event.ep.iparams[0];
+	AL::ALValue jointNames;		
+	AL::ALValue stiffList;		
+	AL::ALValue stiffTime;
+    AL::ALValue angleList;
+    AL::ALValue angleTime;
+        	
 	try
 	{
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 		AL::ALMotionProxy motion(MB_IP, MB_PORT);
-		int mode = event.ep.iparams[0];
-		AL::ALValue jointNames;		
-		AL::ALValue stiffList;		
-		AL::ALValue stiffTime;
-        AL::ALValue angleList;
-        AL::ALValue angleTime;
-		
+			
 		switch(mode)
 		{
 			case MOV_FORWARD: 

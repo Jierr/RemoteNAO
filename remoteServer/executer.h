@@ -27,14 +27,16 @@ class Executer:public AL::ALModule
 		virtual ~Executer();
 		virtual void init();
 		void initEventList(boost::shared_ptr<EventList> eL);
-		void process(const Event& event);
+		void process();
 		int processConflicts(const Event& event);
 		void setState(state_t s);
-		state_t getState();
+		state_t getState(int type = 0xFFFF);
 		void executerRespond();	
 		void setPosture(const int& pos);	
 		void initWalk();
 		void initSecure();
+		void standToSit();
+		void sitToStand();
 		void walk(const Event& event);
 		void callback();
 		void cbPoseChanged(const string& eventName, const string& postureName, const string& subscriberIdentifier);

@@ -84,6 +84,9 @@ int main(int argc, char* argv[])
 		AL::ALBrokerManager::kill();
 	}
 	
+	
+	
+	//qi::os::msleep(5000);
 	//kills old BrokerManager Singleton and replaces it with a new one
 	//fBrokerManager is weak pointer and converted to shared ptr via lock
 	//lock additionally checks if there is one reference existing to AlBM
@@ -92,7 +95,7 @@ int main(int argc, char* argv[])
 	AL::ALBrokerManager::getInstance()->addBroker(broker);
 
 	cout<< "connect to Broker naoqi" << endl;
-	static boost::shared_ptr<NetNao> net = \
+	static boost::shared_ptr<NetNao> net = 
 		AL::ALModule::createModule<NetNao>(broker, "RMNetNao");	
 	cout<< "connected" << endl;
 	

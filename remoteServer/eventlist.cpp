@@ -29,6 +29,24 @@ bool EventList::isEmpty()
 	return (first == 0);
 }
 
+bool EventList::hasPending()
+{
+	bool result = false;
+	Event* curr;
+	mutex->lock();
+	curr = first;
+	while (curr && 
+		  	((curr->classification != EVT_PENDINGABS) &&
+		  	 (curr->classification != EVT_PENDINGPAR)))
+	{
+		curr = curr->next;
+	}
+	if (curr)
+		result = true;
+	mutex->unlock();
+	return result;
+}
+
 
 void EventList::addFirst(event_params_t ep)
 {
@@ -199,6 +217,22 @@ void EventList::setClassf(const void* const iid, int classf)
 	mutex->unlock();
 }
 
+int EventList::getClassf(const void* const iid)
+{
+	int result;
+	Event* curr;
+	mutex->lock();
+	curr = first;
+	while (curr && (curr->id != iid))
+		curr = curr->next;
+		
+	if (curr)
+		result = curr->classification;
+	else
+		result = EVT_DONE;
+	mutex->unlock();
+	return result;
+}
 
 void EventList::setTask(const void* const iid, const int& tid)
 {
@@ -216,7 +250,7 @@ void EventList::setTask(const void* const iid, const int& tid)
 }
 
 
-Event EventList::getPending()
+Event* EventList::getPending()
 {	
 	Event* curr;
 	int evt_state;
@@ -244,6 +278,28 @@ Event EventList::getPending()
 	//Pending Event found
 	if (curr)
 	{
+		//Event result(*curr);
+		mutex->unlock();
+		return curr;
+	}
+	else
+	{
+		//Event result;
+		mutex->unlock();
+		return 0;
+	}
+}
+
+
+Event EventList::withID(const void* const iid)
+{
+	Event* curr;
+	mutex->lock();
+	curr = first;
+	while(curr && (curr->id != iid))
+		curr = curr->next;
+	if (curr)
+	{
 		Event result(*curr);
 		mutex->unlock();
 		return result;
@@ -252,8 +308,9 @@ Event EventList::getPending()
 	{
 		Event result;
 		mutex->unlock();
-		return result;
+		return result;	
 	}
+
 }
 
 Event EventList::getFirst()
