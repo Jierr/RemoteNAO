@@ -272,7 +272,7 @@ public class SprachausgabeActivity extends SherlockActivity {
 			if(collected==null)
 				return null;
 			else
-				return collected.split("\n");
+				return collected.split("\r#\n");
 		}
 		
 		
@@ -289,9 +289,9 @@ public class SprachausgabeActivity extends SherlockActivity {
 		{
 			String text = load(pos);
 			if(text.length() < 23 )
-				return text.substring(0, text.length());
+				return (text.substring(0, text.length())).replace('\n', ' ');
 			else 
-			 return (text.substring(0, 22)+"...");
+				return ((text.substring(0, 22).replace('\n', ' '))+"...");
 		}
 		
 		public void save(String neutext, int pos)
@@ -313,7 +313,7 @@ public class SprachausgabeActivity extends SherlockActivity {
 				fos = openFileOutput("spk_textfile", Context.MODE_PRIVATE);
 				for(int i=0; i<texte.length; i++)
 				{
-					fos.write( (texte[i]+"\n").getBytes() );
+					fos.write( (texte[i]+"\r#\n").getBytes() );
 				}
 				fos.close();
 			}
