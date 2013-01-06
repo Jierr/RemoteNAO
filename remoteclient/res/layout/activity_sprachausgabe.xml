@@ -1,49 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SprachausgabeActivity"
-    android:orientation="vertical" >
+    tools:context=".SprachausgabeActivity" >
 
-    <!--  <TextView
-        android:id="@+id/greeting_field"
-        android:layout_width="fill_parent"
-        android:layout_height="30dp"
-        android:text="@string/sprachausgabe_text" /> -->
+   <LinearLayout 
+        android:layout_width="match_parent"
+    	android:layout_height="wrap_content"
+    	android:orientation="vertical" >
+            
+	    <TextView
+	        android:id="@+id/spk_title"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:padding="12dp"
+	        android:text="@string/titel_sprachausgabe"
+	        android:textAppearance="?android:attr/textAppearanceLarge" />
+	    
+	    <EditText
+		    android:id="@+id/spk_editText1"
+		    android:layout_width="fill_parent" 
+		    android:inputType="textMultiLine" 
+		    android:layout_height="wrap_content"
+		    android:hint="@string/spk_editText1_hinttext"
+	  	/>
+	
+	
+	    <RelativeLayout
+	        android:orientation="horizontal"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:paddingTop="12dp"
+		    >
+
+	    <Button
+	        android:id="@+id/spk_ok_button"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentRight="true"
+	        android:layout_alignParentTop="true"
+	        android:layout_marginRight="20dp"
+	        android:onClick="okbutton_event"
+	        android:text=" OK " />
+
+	    <Button
+	        android:id="@+id/spk_save_button"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_alignParentTop="true"
+	        android:layout_marginLeft="20dp"
+	        android:onClick="saveload"
+	        android:text="@string/spk_saveload_button_text" />
+	
+	    </RelativeLayout> 
+    </LinearLayout>
     
-    <TextView
-        android:id="@+id/spk_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="12dp"
-        android:text="@string/titel_sprachausgabe"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-    
-    <EditText
-	    android:id="@+id/spk_editText1"
-	    android:layout_width="fill_parent" 
-	    android:inputType="textMultiLine" 
-	    android:layout_height="wrap_content"
-	    android:hint="@string/edit_sprachausgabe"
-  	/>
 
-
-    <RelativeLayout
-        android:orientation="horizontal"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    >
-
-    <Button
-        android:id="@+id/spk_ok_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="okbutton_event"
-        android:text=" OK " />
-
-    </RelativeLayout>
-
-</LinearLayout>
+</ScrollView>

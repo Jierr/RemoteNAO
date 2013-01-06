@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <TextView
+        android:id="@+id/spkdial_textvorschau"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <LinearLayout
+	    android:id="@+id/linearLayout1"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_below="@+id/spkdial_textvorschau"
+	    android:layout_centerHorizontal="true"
+	    android:paddingTop="10dp" >
+
+	    <Button
+	        android:id="@+id/spkdial_plus"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:ems="3"
+	        android:text="+" />
+
+	    <EditText
+	        android:id="@+id/spkdial_editText_num"
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
+	        android:ems="2"
+	        android:inputType="number"
+	        android:text="1" />
+
+	    <Button
+	        android:id="@+id/spkdial_minus"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:ems="3"
+	        android:text="-" />
+	</LinearLayout>
+	
+	<LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayout1"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="15dp" >
+        
+	    <Button
+            android:id="@+id/spkdial_save"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="86dp"
+            android:text="@string/spkdial_speichernbutton_text" />
+	    
+        <Button
+            android:id="@+id/spkdial_load"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="86dp"
+            android:text="@string/spkdial_ladenbutton_text" />
+        
+        <Button
+	        android:id="@+id/spkdial_close"
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:minWidth="86dp"
+	        android:text="@string/spkdial_closebutton_text" />
+	    
+    </LinearLayout>
+
+</RelativeLayout>

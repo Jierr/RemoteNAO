@@ -16,7 +16,11 @@
     <string name="menu_button5_text">About</string>
     <string name="menu_button6_text">Beenden</string>
     <string name="titel_sprachausgabe">Sprachausgabe</string>
-    <string name="edit_sprachausgabe">Text eingeben</string>
+    <string name="spk_editText1_hinttext">Text eingeben</string>
+    <string name="spk_saveload_button_text">speichern/laden</string>
+    <string name="spkdial_speichernbutton_text">speichern</string>
+    <string name="spkdial_ladenbutton_text">laden</string>
+    <string name="spkdial_closebutton_text">abbrechen</string>
     <string name="sprachausgabe_text">Sprachausgabe</string>
     <string name="verbindungstitel_text">Netzwerkverbindung</string>
     <string name="verbindungsstatus_text">Verbindungsstatus : </string>
