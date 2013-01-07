@@ -298,13 +298,28 @@ public class SprachausgabeActivity extends SherlockActivity {
 		{
 			String[] texte = readfile();
 			
-			if( texte==null )
+			if( texte==null)
 			{
 				texte = new String[100];
 				for( int i=0; i<100; i++)
 				{
 					texte[i]="frei";
 				}
+			}
+			
+			if(texte.length < pos)
+			{
+				String[] replacetexte = new String[100];
+				int i = 0;
+				for(i=0; i<texte.length; i++)
+				{
+						replacetexte[i]=texte[i];
+				}
+				for(i=texte.length; i<100; i++)
+				{
+						texte[i]="frei";
+				}
+				texte=replacetexte;
 			}
 			
 			texte[pos-1] = neutext;
