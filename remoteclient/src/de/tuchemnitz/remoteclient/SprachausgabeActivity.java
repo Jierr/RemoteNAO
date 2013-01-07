@@ -317,7 +317,7 @@ public class SprachausgabeActivity extends SherlockActivity {
 				}
 				for(i=texte.length; i<100; i++)
 				{
-						texte[i]="frei";
+					replacetexte[i]="frei";
 				}
 				texte=replacetexte;
 			}
