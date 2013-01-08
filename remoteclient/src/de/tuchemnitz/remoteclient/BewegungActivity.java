@@ -39,7 +39,9 @@ public class BewegungActivity extends SherlockActivity {
 		if (bewart_radiogroup1 != null)
 			bewart_radiogroup1.check(bewegungsart);
 		bewart_radiogroup2 = (RadioGroup) findViewById(R.id.bew_radioGroup2);
-		bewart_radiogroupA = (RadioGroup) findViewById(R.id.bew_radioGroup2);
+		if (bewart_radiogroup2 != null)
+			bewart_radiogroup2.check(bewegungsart);
+		bewart_radiogroupA = (RadioGroup) findViewById(R.id.bew_radioGroupA);
 		if (bewart_radiogroupA != null)
 			bewart_radiogroupA.check(bewegungsart);
 		setListeners();

@@ -51,6 +51,7 @@ public class MainActivity extends SherlockActivity {
 		    	break;
 		    case EVENT_STATE:
 				final String SitStatus = (String)msg.obj;
+				Log.v("MainAct.Event", "State: " + SitStatus);
 		    	
 				if(Callbacksplit.getSpecialsActivity() != null)
 					Callbacksplit.getSpecialsActivity().changeSitButtonText(SitStatus);

@@ -110,13 +110,14 @@ public class SpecialsActivity extends SherlockActivity {
     	Toast toast = Toast.makeText(SpecialsActivity.this, "Tanz", Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
     	toast.show();
-    	NetworkModule.Dance("Rumba");
+    	NetworkModule.Dance(null);
     }
     
     public void specials_button4_event(View view) {
-    	Toast toast = Toast.makeText(SpecialsActivity.this, "nichts passiert", Toast.LENGTH_SHORT);
+    	Toast toast = Toast.makeText(SpecialsActivity.this, "Winken", Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
     	toast.show();
+    	NetworkModule.Wink();
     }
     
     public void specials_button5_event(View view) {

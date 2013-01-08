@@ -39,6 +39,13 @@ public class NetworkModule {
 	public static final int CONN_CLOSED = 0;
 	public static final int CONN_CONNECTING = 1;
 	public static final int CONN_OPEN = 2;
+	public static final String STATE_CROUCH		= "CROUCHING";
+	public static final String STATE_STAND		= "STANDING";
+	public static final String STATE_SIT		= "SITTING";
+	public static final String STATE_WALK		= "WALKING";
+	public static final String STATE_STOP		= "STOPPING";
+	public static final String STATE_MOVE		= "MOVING";
+	public static final String STATE_UNKNOWN	= "UNKNOWN";
 	
 	private static ArrayList<EventCallback> EventList = new ArrayList<EventCallback>();
 	private static RobotInformation RoboInfo = new RobotInformation();
@@ -94,7 +101,7 @@ public class NetworkModule {
 				CommandStr = "L";
 			else //if (Type == 2)
 				CommandStr = "R";
-			CommandStr = "_" + String.valueOf(Direction);
+			CommandStr += "_" + String.valueOf(Direction);
 			break;
 		case 3:
 			MoveType = NetworkThread.CMDTYPE.MOVEHEAD;	// "HAD"
@@ -155,6 +162,16 @@ public class NetworkModule {
 			return;
 		
 		NetTData.QueueCommand(NetworkThread.CMDTYPE.DANCE, Text);
+		
+		return;
+	}
+	
+	public static void Wink()
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.WINK, null);
 		
 		return;
 	}
@@ -235,7 +252,7 @@ class NetworkThread extends Thread
 {
 	public enum CMDTYPE
 	{
-		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, REST, SPEAK, DANCE, GETBATT
+		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, REST, SPEAK, DANCE, WINK, GETBATT
 	};
 	private final String CMDTYPE_MOVE	= "MOV";
 	private final String CMDTYPE_MVARM	= "ARM";
@@ -245,17 +262,11 @@ class NetworkThread extends Thread
 	private final String CMDTYPE_REST	= "RST";
 	private final String CMDTYPE_SPEAK 	= "SPK";
 	private final String CMDTYPE_DANCE 	= "DNC";
+	private final String CMDTYPE_WINK 	= "WNK";
 	private final String CMDTYPE_BATT	= "BAT";
 	
 	private final String RETCMD_BATT	= "BAT";
 	private final String RETCMD_STATE	= "ZST";
-	private final String STATE_CROUCH	= "CROUCHING";
-	private final String STATE_STAND	= "STANDING";
-	private final String STATE_SIT		= "SITTING";
-	private final String STATE_WALK		= "WALKING";
-	private final String STATE_STOP		= "STOPPING";
-	private final String STATE_MOVE		= "MOVING";
-	private final String STATE_UNKNOWN	= "UNKNOWN";
 	
 	private final String TERMINATE_CHR = "";
 	private final String IP_Addr;
@@ -365,6 +376,9 @@ class NetworkThread extends Thread
 				case DANCE:
 					CmdStr = CMDTYPE_DANCE;
 					break;
+				case WINK:
+					CmdStr = CMDTYPE_WINK;
+					break;
 				case GETBATT:
 					CmdStr = CMDTYPE_BATT;
 					break;
@@ -466,7 +480,7 @@ class NetworkThread extends Thread
 				STATE_UNKNOWN	*/
 			RoboInfo.State = ReceiveStr;
 			
-			//Log.v("NetMod.SIT", "returned string: " + ReceiveStr);
+			Log.v("NetMod.SIT", "returned string: " + ReceiveStr);
 			DestCB = GetCallback(NetworkModule.INFO_STATE);
 			ArgObj = RoboInfo.State;
 		}
