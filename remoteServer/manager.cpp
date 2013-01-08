@@ -147,6 +147,27 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 			fstr = "";
 			return false;
 		}
+		else if (fstr.compare("DNC") == 0)
+		{
+			ep.type = INIT_DANCE;
+			fstr = "";
+			//return <ingnore params>
+			return false;
+		}
+		else if (fstr.compare("WNK") == 0)
+		{
+			ep.type = INIT_WAVE;
+			fstr = "";
+			//return <ingnore params>
+			return false;
+		}
+		else if (fstr.compare("WIP") == 0)
+		{
+			ep.type = INIT_WIPE;
+			fstr = "";
+			//return <ingnore params>
+			return false;
+		}
 		else if (fstr.compare("MOV") == 0)
 			ep.type = CODE_MOV;
 		else if (fstr.compare("SPK") == 0)
@@ -442,18 +463,34 @@ void Manager::runExecuter()
 	int taskID = 0;
 	//xec->setPosture((int&)post);
 	
-
-	cout << "Behaviours" << endl;
-	AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
-	AL::ALValue behav = pbehav.getDefaultBehaviors();
-	cout << behav.toString() << endl;
-	behav.clear();
-	behav = pbehav.getInstalledBehaviors();
-	cout << behav.toString() << endl;
+	
 	
 	eventList->setOrder(ORD_STRICT);
-	accessExec.exec->initWalk();	
+	//accessExec.exec->initWalk();	
+	accessExec.pexec.pCall("behave_stand");
+	AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+	qi::os::msleep(12000);
+	pbehav.stopBehavior("stand");
+	
+	/*{
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		cout << "Behaviours" << endl;
+		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+		AL::ALValue behav = pbehav.getDefaultBehaviors();
+		cout << behav.toString() << endl;
+		//tts.say(behav.toString());
+		behav.clear();
+		behav = pbehav.getInstalledBehaviors();
+		cout << behav.toString() << endl;
+		//tts.say(behav.toString());
+		behav.clear();
+		pbehav.runBehavior("dance");
+		//behav = pbehav.getBehaviorNames();
+		//cout << behav.toString() << endl;
+		//tts.say(behav.toString());
+	}	*/
 	accessExec.exec->setState(STATE_STANDING);
+	
 	while(1)
 	{
 		

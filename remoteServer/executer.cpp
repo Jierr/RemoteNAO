@@ -5,6 +5,7 @@
 #include <alproxies/almotionproxy.h>
 #include <alproxies/almemoryproxy.h>
 #include <alproxies/albatteryproxy.h>
+#include <alproxies/albehaviormanagerproxy.h>
 #include <alproxies/dcmproxy.h>
 #include <alcommon/alproxy.h>
 #include <alvalue/alvalue.h>
@@ -12,6 +13,7 @@
 #include <almath/tools/almath.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
 
 
 #include "executer.h"
@@ -38,6 +40,22 @@ Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	
 	functionName("initSecure", getName(), "Sets NAO in resting mode.");
 	BIND_METHOD(Executer::initSecure);
+	
+	functionName("behave_stand", getName(), "stand");
+	BIND_METHOD(Executer::behave_stand);
+	
+	
+	functionName("behave_wipe", getName(), "stand");
+	BIND_METHOD(Executer::behave_wipe);
+	
+	functionName("behave_sit", getName(), "sit");
+	BIND_METHOD(Executer::behave_sit);
+	
+	functionName("behave_hello", getName(), "say hello");
+	BIND_METHOD(Executer::behave_hello);
+	
+	functionName("behave_dance", getName(), "dance");
+	BIND_METHOD(Executer::behave_dance);
 	
 	functionName("walk", getName(), "NAO will walk.");
 	addParam("x", "Walking mode");
@@ -157,10 +175,31 @@ int Executer::processConflicts(const Event& event)
 			}		
 			break;
 		case INIT_UP:
-			if (stateAbs != STATE_SITTING)
+			if ((stateAbs == STATE_MOVING) || (stateAbs == STATE_STOPPING))
 			{
 				classf = EVT_DONE;
+			}	
+			else if((stateAbs == STATE_WALKING))
+			{
+				classf = EVT_PENDINGABS;
 			}		
+			break;
+		case INIT_WIPE:
+		case INIT_WAVE:
+			if (stateAbs == STATE_MOVING)
+			{
+				classf = EVT_DONE;
+			}	
+			else if((stateAbs == STATE_WALKING) || (stateAbs == STATE_STOPPING))
+			{
+				classf = EVT_PENDINGABS;
+			}		
+			break;
+		case INIT_DANCE:
+			if (stateAbs != STATE_STANDING)
+			{
+				classf = EVT_DONE;
+			}	
 			break;
 		case CODE_SPK:
 			break;
@@ -248,6 +287,7 @@ int Executer::processConflicts(const Event& event)
 	return classf;
 }
 
+
 void Executer::process()
 {
 	//cout<<"----->Process Event" << endl;
@@ -285,15 +325,100 @@ void Executer::process()
 				setState(STATE_CROUCHING);
 				break;
 			case INIT_SIT:
-				setState(getState(STATE_PARALLEL) | STATE_MOVING);
-				standToSit();
-				setState(STATE_SITTING);
-				break;
+				{
+				
+					setState(getState(STATE_PARALLEL) | STATE_MOVING);
+					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
+					pexec.pCall("behave_sit");
+					qi::os::msleep(10000);
+					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+					pbehav.stopBehavior("sit");
+					//standToSit();
+					//behave_sit();
+					/*accessExec.pexec.pCall("behave_sit");
+					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+					qi::os::msleep(5000);
+					pbehav.stopBehavior("behave_sit");*/
+					setState(STATE_SITTING);
+					break;
+				}
 			case INIT_UP:
-				setState(getState(STATE_PARALLEL) | STATE_MOVING);
-				sitToStand();
-				setState(STATE_STANDING);
-				break;
+				{
+					
+					setState(getState(STATE_PARALLEL) | STATE_MOVING);
+					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
+					pexec.pCall("behave_stand");
+					qi::os::msleep(12000);
+				
+					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+					//while (pbehav.isBehaviorRunning("stand"));
+						//qi::os::msleep(50);
+					pbehav.stopBehavior("stand");
+					//sitToStand();
+					//behave_stand();
+					/*accessExec.pexec.pCall("behave_stand");
+					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+					qi::os::msleep(5000);
+					pbehav.stopBehavior("behave_stand");*/
+					setState(STATE_STANDING);
+					break;
+				}
+			case INIT_WAVE:
+				{
+					int state = getState(STATE_ABSOLUT);
+					setState(getState(STATE_PARALLEL) | STATE_MOVING);
+					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
+					pexec.pCall("behave_hello");
+					qi::os::msleep(5000);
+					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+					pbehav.stopBehavior("hello");
+					//sitToStand();
+					//behave_stand();
+					/*accessExec.pexec.pCall("behave_stand");
+					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+					qi::os::msleep(5000);
+					pbehav.stopBehavior("behave_stand");*/
+					setState(getState(STATE_PARALLEL) | state);
+					break;
+				}
+			case INIT_WIPE:
+				{
+					
+					int state = getState(STATE_ABSOLUT);  
+					setState(getState(STATE_PARALLEL) | STATE_MOVING);
+					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
+					pexec.pCall("behave_wipe");
+					qi::os::msleep(5000);
+					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+					pbehav.stopBehavior("wipe");
+					//sitToStand();
+					//behave_stand();
+					/*accessExec.pexec.pCall("behave_stand");
+					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+					qi::os::msleep(5000);
+					pbehav.stopBehavior("behave_stand");*/
+					
+					setState(getState(STATE_PARALLEL) | state);
+					break;
+				}
+			case INIT_DANCE:
+				{
+					
+					setState(getState(STATE_PARALLEL) | STATE_MOVING);
+					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
+					pexec.pCall("behave_dance");
+					qi::os::sleep(50);
+					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+					pbehav.stopBehavior("dance");
+					//sitToStand();
+					//behave_stand();
+					/*accessExec.pexec.pCall("behave_stand");
+					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+					qi::os::msleep(5000);
+					pbehav.stopBehavior("behave_stand");*/
+					setState(STATE_STANDING);
+					break;
+				}
 			case CODE_SPK:
 				speak(event->ep.sparam);
 				break;
@@ -508,6 +633,60 @@ void Executer::standToSit()
         }     
 }
 
+void Executer::behave_stand()
+{
+		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		AL::ALValue behav = pbehav.getDefaultBehaviors();
+		pbehav.preloadBehavior("stand");
+		pbehav.runBehavior("stand");
+		//tts.say("Behaviour done");
+}
+		
+		
+void Executer::behave_sit()
+{
+		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		AL::ALValue behav = pbehav.getDefaultBehaviors();
+		pbehav.preloadBehavior("sit");
+		pbehav.runBehavior("sit");
+		//tts.say("Behaviour done");
+
+}		
+		
+void Executer::behave_wipe()
+{
+		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		AL::ALValue behav = pbehav.getDefaultBehaviors();
+		pbehav.preloadBehavior("wipe");
+		pbehav.runBehavior("wipe");
+		//tts.say("Behaviour done");
+
+}		
+		
+void Executer::behave_hello()
+{
+		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		AL::ALValue behav = pbehav.getDefaultBehaviors();
+		pbehav.preloadBehavior("hello");
+		pbehav.runBehavior("hello");
+		//tts.say("Behaviour done");
+
+}		
+		
+void Executer::behave_dance()
+{
+		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		AL::ALValue behav = pbehav.getDefaultBehaviors();
+		pbehav.preloadBehavior("dance");
+		pbehav.runBehavior("dance");
+		//tts.say("Behaviour done");
+
+}
 
 void Executer::sitToStand()
 {        
@@ -517,11 +696,13 @@ void Executer::sitToStand()
         motion.stiffnessInterpolation("Body", 1.0, 1.0);	
 
 		names.clear();
-        names = AL::ALValue::array("LLeg", "RLeg");
+        names = AL::ALValue::array("LLeg", "RLeg", "LArm", "RArm");
         {
         	float ftargetAngles[] = {
 										 -45.0, 15.0, -100, 120.0, 20.0, -15.0,
 										 -45.0, -15.0, -90, 60.0, 60.0, 15.0,
+										 119.0, -18.0, +0.0, -0.0, 0.0, 0.0,
+										 100.0, -25.0, -0.0, +0.0, 0.0, 0.0
 		    						};
 		    						
 		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
@@ -534,11 +715,13 @@ void Executer::sitToStand()
         }     
             	
         names.clear();
-        names = AL::ALValue::array("LLeg", "RLeg");
+        names = AL::ALValue::array("LLeg", "RLeg", "LArm", "RArm");
         {
         	float ftargetAngles[] = {
 										 -45.0, 15.0, -100, 120.0, 20.0, -15.0,
 										 -45.0, -15.0, -90, 60.0, 60.0, 15.0,
+										 119.0, -18.0, +0.0, -0.0, 0.0, 0.0,
+										 100.0, -25.0, -0.0, +0.0, 0.0, 0.0
 		    						};
 		    						
 		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
@@ -549,14 +732,16 @@ void Executer::sitToStand()
 		    
 		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
         }      
-            	
+        
+        //CHANGE LARM    	
         names.clear();
-        names = AL::ALValue::array("LLeg", "RLeg", "LArm");
+        names = AL::ALValue::array("LLeg", "RLeg", "LArm", "RArm");
         {
         	float ftargetAngles[] = {
 										 -45.0, 10.0, -50, 120.0, -20.0, -15.0,
 										 -45.0, -15.0, -90, 60.0, 60.0, -15.0,
 										 0.0, 30.0, +0.0, -20.0, 0.0, 0.0,
+										 100.0, -25.0, -0.0, +0.0, 0.0, 0.0
 		    						};
 		    						
 		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
@@ -575,7 +760,7 @@ void Executer::sitToStand()
 										 -45.0, 10.0, -0.0, 120.0, -50.0, -15.0,
 										 -45.0, -40.0, -100.0, 60.0, 60.0, -15.0,
 										 60.0, 0.0, +0.0, -20.0, 0.0, 0.0,
-										 119.0, -0.0, -0.0, +0.0, 0.0, 0.0
+										 100.0, -25.0, -0.0, +0.0, 0.0, 0.0
 		    						};
 		    						
 		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
@@ -594,7 +779,7 @@ void Executer::sitToStand()
 										 -45.0, 10.0, 0.0, 120.0, -50.0, -20.0,
 										 -45.0, -40.0, -100.0, 60.0, 60.0, 0.0,
 										 60.0, -18.0, +0.0, -20.0, 0.0, 0.0,
-										 119.0, -0.0, -0.0, +0.0, 0.0, 0.0
+										 119.0, -20.0, -0.0, +0.0, 0.0, 0.0
 		    						};
 		    						
 		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
@@ -613,7 +798,7 @@ void Executer::sitToStand()
 										 -45.0, 0.0, 0.0, 120.0, -50.0, -20.0,
 										 -45.0, -40.0, -100.0, 100.0, 20.0, 0.0,
 										 60.0, -18.0, +0.0, -20.0, 0.0, 0.0,
-										 119.0, -0.0, -0.0, +0.0, 0.0, 0.0
+										 119.0, -20.0, -0.0, +0.0, 0.0, 0.0
 		    						};
 		    						
 		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
@@ -625,15 +810,21 @@ void Executer::sitToStand()
 		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
         } 
           
-          
+         //changed knee 100 to 80, left 120
+         //ankle right 10 to 20 to 10
+         //ankle left -30 to 0
+         //rshoulderroll -20 
+         //rshoulderpitch 119 to 100
+         //rhippitch -40 to -60
+         //lhippitch -0 to -20
         names.clear();
         names = AL::ALValue::array("LLeg", "RLeg", "LArm", "RArm");
         {
         	float ftargetAngles[] = {
-										 -45.0, 0.0, -20.0, 100.0, -30.0, -20.0,
-										 -45.0, -40.0, -100.0, 100.0, 10.0, 0.0,
+										 -45.0, -20.0, -20.0, 120.0, -40.0, -20.0,
+										 -45.0, -60.0, -100.0, 80.0, 10.0, 0.0,
 										 20.0, -18.0, +0.0, -20.0, 0.0, 0.0,
-										 119.0, -25.0, -0.0, +20.0, 0.0, 0.0
+										 100.0, -20.0, -0.0, +0.0, 0.0, 0.0
 		    						};
 		    						
 		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
@@ -644,15 +835,18 @@ void Executer::sitToStand()
 		    
 		    motion.angleInterpolationWithSpeed(names, targetAngles, maxSpeedFraction);
         }  
-                 
+              
+        //rshoulderpitch 119 to 80  
+        //ankle right -10 to -40 to 20
+        //ankle left -10 to -40 to 20
         names.clear();
         names = AL::ALValue::array("LLeg", "RLeg", "LArm", "RArm");
         {
         	float ftargetAngles[] = {
-										 -45.0, 0.0, -100.0, 120.0, -10.0, -0.0,
-										 -45.0, -0.0, -100.0, 120.0, -10.0, 0.0,
+										 -45.0, 0.0, -100.0, 120.0, 20.0, -0.0,
+										 -45.0, -0.0, -100.0, 120.0, 20.0, 0.0,
 										 20.0, -18.0, +0.0, -20.0, 0.0, 0.0,
-										 119.0, -25.0, -20.0, +0.0, 0.0, 0.0
+										 80.0, -20.0, -20.0, +0.0, 0.0, 0.0
 		    						};
 		    						
 		    for (int i = 0; i < sizeof(ftargetAngles)/sizeof(float); ++i)
@@ -1400,6 +1594,7 @@ void Executer::sendBatteryStatus()
 	int value = 0;
 	int sent= 0;
 	string buf = "BAT_";
+	char str[15];
 	try
 	{
 		AL::ALBatteryProxy pbat = AL::ALBatteryProxy(MB_IP, MB_PORT);
@@ -1419,7 +1614,12 @@ void Executer::sendBatteryStatus()
 		*/	
 		//mem.raiseEvent("BatteryLevelChanged", 5);
 		//mem.insertData("BatteryLevelChanged", 90);
+		
+		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		
 		value=(int)((float&)mem.getData("Device/SubDeviceList/Battery/Charge/Sensor/Value") * 100);
+		sprintf(str, "%d", value);
+		tts.say(str);
 		cout << "value: " << value << ":" << mem.getData("BatteryLevelChanged").toString() << endl;
 		
 		
@@ -1493,11 +1693,11 @@ void Executer::callback()
 void Executer::cbPoseChanged(const string& eventName, const string& postureName, const string& subscriberIdentifier)
 {
 	mpose = (string&)mem.getData("robotPoseChanged");
-	cout<< ">>>POSTURE CHANGED<<<>" << "[" << postureName << "]:" << mpose << endl;
+	//cout<< ">>>POSTURE CHANGED<<<>" << "[" << postureName << "]:" << mpose << endl;
 	try
 	{
-		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-				tts.say((mpose));
+		//AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+		//	tts.say((mpose));
 	}
 	catch (const AL::ALError& e)
 	{

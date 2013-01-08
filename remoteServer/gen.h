@@ -33,6 +33,9 @@
 #define INIT_REST 11
 #define INIT_SIT 12
 #define INIT_UP 13
+#define INIT_WAVE 14
+#define INIT_DANCE 15
+#define INIT_WIPE 16
 #define CODE_MOV 20
 #define CODE_STOP 21
 #define RESET_CONNECTION 42

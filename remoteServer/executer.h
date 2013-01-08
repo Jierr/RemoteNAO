@@ -34,6 +34,11 @@ class Executer:public AL::ALModule
 		void setPosture(const int& pos);	
 		void initWalk();
 		void initSecure();
+		void behave_stand();
+		void behave_sit();
+		void behave_hello();
+		void behave_dance();
+		void behave_wipe();
 		void standToSit();
 		void sitToStand();
 		void walk(const Event& event);
