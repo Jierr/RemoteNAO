@@ -142,7 +142,7 @@ public class SpecialsActivity extends SherlockActivity {
     
     public void specials_button5_event(View view) {
     	NetworkModule.Wipe();
-    	Toast toast = Toast.makeText(SpecialsActivity.this, "winken", Toast.LENGTH_SHORT);
+    	Toast toast = Toast.makeText(SpecialsActivity.this, "PUH", Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
     	toast.show();
     }
