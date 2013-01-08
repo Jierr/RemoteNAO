@@ -32,14 +32,14 @@
     <string name="bewegungsauswahl_radiobutton1_text">l. Arm bew.</string>
     <string name="bewegungsauswahl_radiobutton2_text">r. Arm bew.</string>
     <string name="bewegungsauswahl_radiobutton3_text">Laufen</string>
-    <string name="bewegungsauswahl_radiobutton4_text">Kopf bewegen</string>
+    <string name="bewegungsauswahl_radiobutton4_text">Kopf bew.</string>
     <string name="bewegungsauswahl_OKbutton_text">" OK "</string>
     
     <string name="specials_button1_text"> Ausruhen </string>
     <string name="specials_button2_text"> Setzen/Aufstehen </string>
     <string name="specials_button3_text"> Tanzen </string>
     <string name="specials_button4_text"> Winken </string>
-    <string name="specials_button5_text"> Special 5 </string>
+    <string name="specials_button5_text"> Stirn wischen </string>
     
     <string name="acb_m1_text">RemoteApp</string>
     <string name="acb_m2_text">Bewegen</string>

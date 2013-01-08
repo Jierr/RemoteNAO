@@ -136,6 +136,16 @@ public class NetworkModule {
 		return;
 	}
 	
+	public static void StandUp()
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.STANDUP, null);
+		
+		return;
+	}
+	
 	public static void Rest()
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -176,6 +186,16 @@ public class NetworkModule {
 		return;
 	}
 	
+	public static void Wipe()
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.WIPE, null);
+		
+		return;
+	}
+	
 	public static void RequestBatteryState()
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -189,7 +209,7 @@ public class NetworkModule {
 	public static Object GetInfoData(int Type)
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
-			return 0;
+			return null;
 				
 		switch(Type)
 		{
@@ -252,17 +272,19 @@ class NetworkThread extends Thread
 {
 	public enum CMDTYPE
 	{
-		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, REST, SPEAK, DANCE, WINK, GETBATT
+		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, STANDUP, REST, SPEAK, DANCE, WINK, WIPE, GETBATT
 	};
 	private final String CMDTYPE_MOVE	= "MOV";
 	private final String CMDTYPE_MVARM	= "ARM";
 	private final String CMDTYPE_MVHEAD	= "HAD";
 	private final String CMDTYPE_STOP	= "STP";
 	private final String CMDTYPE_SIT	= "SIT";
+	private final String CMDTYPE_STANDUP= "AUF";
 	private final String CMDTYPE_REST	= "RST";
 	private final String CMDTYPE_SPEAK 	= "SPK";
 	private final String CMDTYPE_DANCE 	= "DNC";
 	private final String CMDTYPE_WINK 	= "WNK";
+	private final String CMDTYPE_WIPE 	= "WIP";
 	private final String CMDTYPE_BATT	= "BAT";
 	
 	private final String RETCMD_BATT	= "BAT";
@@ -367,6 +389,9 @@ class NetworkThread extends Thread
 				case SIT:
 					CmdStr = CMDTYPE_SIT;
 					break;
+				case STANDUP:
+					CmdStr = CMDTYPE_STANDUP;
+					break;
 				case REST:
 					CmdStr = CMDTYPE_REST;
 					break;
@@ -378,6 +403,9 @@ class NetworkThread extends Thread
 					break;
 				case WINK:
 					CmdStr = CMDTYPE_WINK;
+					break;
+				case WIPE:
+					CmdStr = CMDTYPE_WIPE;
 					break;
 				case GETBATT:
 					CmdStr = CMDTYPE_BATT;

@@ -24,6 +24,8 @@ public class SpecialsActivity extends SherlockActivity {
 		
 		Callbacksplit.registerSpecialsActivity(this);
 		
+		changeSitButtonText( (String)NetworkModule.GetInfoData(NetworkModule.INFO_STATE) );
+		
 	}
 	
 	@Override
@@ -103,7 +105,25 @@ public class SpecialsActivity extends SherlockActivity {
     }
 	
 	public void specials_button2_event(View view) {
-    	NetworkModule.SitToggle();
+		String state = (String) NetworkModule.GetInfoData(NetworkModule.INFO_STATE);
+		if(state == null)
+		{
+			NetworkModule.StandUp();
+		}
+		else if (state.equals("STANDING") || state.equals("WALKING") || state.equals("STOPPING"))
+		{
+			NetworkModule.SitToggle();
+			Toast toast = Toast.makeText(SpecialsActivity.this, "setzen", Toast.LENGTH_SHORT);
+	    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+	    	toast.show();
+		}
+    	else
+    	{
+    		NetworkModule.StandUp();
+    		Toast toast = Toast.makeText(SpecialsActivity.this, "aufstehen", Toast.LENGTH_SHORT);
+	    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+	    	toast.show();
+    	}
     }
     
     public void specials_button3_event(View view) {
@@ -121,7 +141,8 @@ public class SpecialsActivity extends SherlockActivity {
     }
     
     public void specials_button5_event(View view) {
-    	Toast toast = Toast.makeText(SpecialsActivity.this, "nichts passiert", Toast.LENGTH_SHORT);
+    	NetworkModule.Wipe();
+    	Toast toast = Toast.makeText(SpecialsActivity.this, "winken", Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
     	toast.show();
     }
@@ -132,7 +153,11 @@ public class SpecialsActivity extends SherlockActivity {
     public void changeSitButtonText(String state){
     	final Button sitButton_text = (Button)findViewById(R.id.specials_button2);
     	
-    	if (state.equals("STAND"))
+    	if(state == null)
+		{
+			return;
+		}
+		else if (state.equals("STANDING") || state.equals("WALKING") || state.equals("STOPPING"))
     		sitButton_text.setText("Setzen");
     	else
     		sitButton_text.setText("Aufstehen");
