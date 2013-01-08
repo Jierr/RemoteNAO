@@ -1,0 +1,59 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SpecialsActivity" >
+
+    <ScrollView
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/specials_button1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="specials_button1_event"
+                android:text="@string/specials_button1_text" />
+
+            <Button
+                android:id="@+id/specials_button2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="specials_button2_event"
+                android:text="@string/specials_button2_text" />
+
+            <Button
+                android:id="@+id/specials_button3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="specials_button3_event"
+                android:text="@string/specials_button3_text" />
+
+            <Button
+                android:id="@+id/specials_button4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="specials_button4_event"
+                android:text="@string/specials_button4_text" />
+
+            <Button
+                android:id="@+id/specials_button5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="specials_button5_event"
+                android:text="@string/specials_button5_text" />
+		</LinearLayout>
+            
+    </ScrollView>
+
+</RelativeLayout>

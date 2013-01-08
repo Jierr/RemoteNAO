@@ -1,36 +1,31 @@
 package de.tuchemnitz.remoteclient;
 
-import java.util.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.res.Configuration;
-import android.graphics.Color;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.RadioGroup;
-import android.widget.TextView;
-import android.widget.Toast;
 
-public class MainActivity extends Activity {
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+
+public class MainActivity extends SherlockActivity {
 
 	private Timer BattTimer = null;
-	private int bewegungsart = R.id.bewa_rbutton_LAUFEN;
-	private Dialog verbindungs_dialog = null;
 	private final int EVENT_BATT = 0;
-	private final int EVENT_SIT = 1;
+	private final int EVENT_STATE = 1;
 	private final int EVENT_CONN = 2;
+	
+	private MenuItem BatteryIcon;
+	private MenuItem ConnectIcon;
+	
 	
 	private Handler EvtHandler = new Handler()
 	{
@@ -40,9 +35,31 @@ public class MainActivity extends Activity {
 		    
 		    switch(msg.what)
 		    {
+		    case EVENT_CONN:
+		    	Log.v("MainAct.Event", "Connection Status: " + String.valueOf(msg.arg1));
+		    	if (msg.arg1 < 0)
+		    	{
+		    		Callbacksplit.showConnectionLostDialog();
+		    	}
+		    	else
+		    	{
+			    	if(Callbacksplit.getConfigActivity() != null)
+			    		Callbacksplit.getConfigActivity().changeConnectionView(msg.arg1);
+			    	
+			    	Callbacksplit.setActBarConnectIcon();
+		    	}
+		    	break;
+		    case EVENT_STATE:
+				final String SitStatus = (String)msg.obj;
+				Log.v("MainAct.Event", "State: " + SitStatus);
+		    	
+				if(Callbacksplit.getSpecialsActivity() != null)
+					Callbacksplit.getSpecialsActivity().changeSitButtonText(SitStatus);
+		    	
+		    	break;
 		    case EVENT_BATT:
-				final ImageView battery_view = (ImageView)findViewById(R.id.img_bat);
 				final int batt_pic;
+				Drawable batt_icon_r;
 				
 			    if (msg.arg1 > 90)
 			    	batt_pic = R.drawable.bat100;
@@ -54,58 +71,12 @@ public class MainActivity extends Activity {
 			    	batt_pic = R.drawable.bat25;
 			    else
 			    	batt_pic = R.drawable.bat0;
-			    battery_view.setImageDrawable(getResources().getDrawable(batt_pic));
+			    batt_icon_r = getResources().getDrawable(batt_pic);
+			    BatteryIcon.setIcon(batt_icon_r);
+			    Callbacksplit.saveBatteryStateIcon(batt_icon_r);
+			    Callbacksplit.setActBarBatteryIcon(batt_icon_r);
+			    
 			    break;
-		    case EVENT_SIT:
-				final Button sit_text = (Button)findViewById(R.id.menu_button3);
-		    	final String SitStatus = (String)msg.obj;
-		    	
-		    	if (SitStatus.equals("STAND"))
-		    		sit_text.setText("Setzen");
-		    	else
-		    		sit_text.setText("Aufstehen");
-		    	break;
-		    case EVENT_CONN:
-		    	Log.v("MainAct.Event", "Connection Status: " + String.valueOf(msg.arg1));
-		    	if (msg.arg1 < 0)
-		    	{
-		    		switch(msg.arg1)
-		    		{
-		    		case -1:
-			    		new AlertDialog.Builder(MainActivity.this)
-							.setMessage("Verbindung verloren.")
-							.setNeutralButton("Mist", null)
-							.show();
-			    		break;
-		    		}
-		    	}
-		    	else
-		    	{
-			    	if (verbindungs_dialog == null)
-			    		return;
-			    	
-			    	final TextView text_verbindungsstatus = (TextView)verbindungs_dialog.findViewById(R.id.verbindungsstatus_wert);
-			    	final Button button_verbindenbutton = (Button) verbindungs_dialog.findViewById(R.id.verbindungsbutton);
-			    	
-			    	switch(msg.arg1)
-			    	{
-			    	case 0:
-			    		text_verbindungsstatus.setText("nicht verbunden");
-			        	text_verbindungsstatus.setTextColor(Color.RED);
-			        	button_verbindenbutton.setText("verbinden");
-			        	break;
-			    	case 1:
-			    		text_verbindungsstatus.setText("verbinden ...");
-			        	text_verbindungsstatus.setTextColor(Color.YELLOW);
-			        	break;
-			    	case 2:
-			    		text_verbindungsstatus.setText("verbunden");
-			        	text_verbindungsstatus.setTextColor(Color.GREEN);
-			        	button_verbindenbutton.setText("trennen");
-			        	break;
-			    	}
-		    	}
-		    	break;
 		    }
 		    
 		    return;
@@ -117,28 +88,37 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-    	//NetworkModule.SetIPAddress("134.109.97.52");
-        NetworkModule.SetIPAddress("134.109.151.142");
-        //NetworkModule.SetIPAddress("192.168.5.20");
-        menu_button6_event(null);
+        Callbacksplit.registerMainActivity(this);
+        Callbacksplit.saveBatteryStateIcon(null);
         
-        NetworkModule.RegisterCallback(null,		-1,			0);
-        NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,	NetworkModule.INFO_BATT);
-        NetworkModule.RegisterCallback(EvtHandler,	EVENT_SIT,	NetworkModule.INFO_SIT);
-        NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,	NetworkModule.INFO_CONN);
+    	//NetworkModule.SetIPAddress("134.109.97.52");
+        //NetworkModule.SetIPAddress("134.109.151.142");
+        //NetworkModule.SetIPAddress("192.168.5.20");
+        menu_button4_event(null);
+        
+        NetworkModule.RegisterCallback(null,		-1,				0);
+		NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,		NetworkModule.INFO_CONN);
+		NetworkModule.RegisterCallback(EvtHandler,	EVENT_STATE,	NetworkModule.INFO_STATE);
+        NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,		NetworkModule.INFO_BATT);
         
         Log.v("MainAct", "Activity started.");
-		BattTimer = new Timer();
-		BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
+        BattTimer = new Timer();
+		//BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
+        BattTimer.schedule(new BattTmrTask(), 1000, 10000);
     }
     
-    @Override
+	@Override
+	protected void onResume(){
+		super.onResume();
+		Callbacksplit.setActiveActivity(this);
+	}
+	@Override
+	protected void onPause(){
+		super.onPause();
+		Callbacksplit.unsetActiveActivity();
+	}
+	
+	@Override
     public void onDestroy(){
     	
     	BattTimer.cancel();
@@ -146,6 +126,71 @@ public class MainActivity extends Activity {
     	NetworkModule.CloseConnection();
     	super.onDestroy();
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //getMenuInflater().inflate(R.menu.activity_main, menu);
+    	super.onCreateOptionsMenu(menu);
+        getSupportMenuInflater().inflate(R.menu.actionbar, menu);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ConnectIcon = (MenuItem)menu.findItem(R.id.acb_connect);
+        BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
+        setActBarConnectIcon();
+        
+        ((MenuItem)menu.findItem(R.id.acb_m_1)).setVisible(false);
+        
+        //getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+    	//setContentView(R.menu.actionbar);
+//        menu.add("Save")
+//        .setIcon(R.drawable.bat100)
+//        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        
+        return true;
+    }
+    
+    @Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		super.onOptionsItemSelected(item);
+		Intent intent;
+		switch(item.getItemId()){
+		case android.R.id.home:
+			finish();
+			break;
+		case R.id.acb_m_1:
+			break;
+		case R.id.acb_m_2:
+			intent = new Intent(this, BewegungActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.acb_m_3:
+			intent = new Intent(this, SprachausgabeActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.acb_m_4:
+			intent = new Intent(this, SpecialsActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.acb_m_5:
+			intent = new Intent(this, ConfigActivity.class);
+			startActivity(intent);
+			break;
+		}
+		
+		return true;
+	}
+    
+    public void setActBarConnectIcon(){
+    	if(NetworkModule.IsConnected()==0)
+    	{
+    		ConnectIcon.setIcon(R.drawable.network_disconnected);
+    	}
+    	else
+    	{
+    		ConnectIcon.setIcon(R.drawable.network_connected);
+    	}
+    }
+
     
     /** Called when the user clicks the Send button */
     public void sendMessage(View view) {
@@ -171,319 +216,43 @@ public class MainActivity extends Activity {
     	return;
     }
     
-    /************** BEW_BUTTONS ******************
-     *********************************************/
     
-    public void bew_button1_event(View view) {
-    	int MoveType;
-    	String ToastStr;
-    	
-    	switch(bewegungsart)
-    	{
-    	case R.id.bewa_rbutton_LAUFEN:
-    		MoveType = 0;	// MOVE
-    		ToastStr = "vorwärts";
-    		break;
-    	case R.id.bewa_rbutton_ARME:
-    		MoveType = 1;	// ARM
-    		ToastStr = "Arm hoch";
-    		break;
-    	default:
-    		MoveType = 2;	// HEAD
-    		ToastStr = "Kopf hoch";
-    		break;
-    	}
-		NetworkModule.Move(MoveType, NetworkModule.MOVE_UP);
-    	Toast toast = Toast.makeText(MainActivity.this, ToastStr, Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    }
-    
-    public void bew_button2_event(View view) {
-    	int MoveType;
-    	String ToastStr;
-    	
-    	switch(bewegungsart)
-    	{
-    	case R.id.bewa_rbutton_LAUFEN:
-    		MoveType = 0;	// MOVE
-    		ToastStr = "links";
-    		break;
-    	case R.id.bewa_rbutton_ARME:
-    		MoveType = 1;	// ARM
-    		ToastStr = "Arm links";
-    		break;
-    	default:
-    		MoveType = 2;	// HEAD
-    		ToastStr = "Kopf links";
-    		break;
-    	}
-		NetworkModule.Move(MoveType, NetworkModule.MOVE_LEFT);
-    	Toast toast = Toast.makeText(MainActivity.this, ToastStr, Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    }
-    
-    public void bew_button3_event(View view) {
-    	int MoveType;
-    	String ToastStr;
-    	
-    	switch(bewegungsart)
-    	{
-    	case R.id.bewa_rbutton_LAUFEN:
-    		MoveType = 0;	// MOVE
-    		ToastStr = "rechts";
-    		break;
-    	case R.id.bewa_rbutton_ARME:
-    		MoveType = 1;	// ARM
-    		ToastStr = "Arm rechts";
-    		break;
-    	default:
-    		MoveType = 2;	// HEAD
-    		ToastStr = "Kopf rechts";
-    		break;
-    	}
-		NetworkModule.Move(MoveType, NetworkModule.MOVE_RIGHT);
-    	Toast toast = Toast.makeText(MainActivity.this, ToastStr, Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    }
-    
-    public void bew_button4_event(View view) {
-    	int MoveType;
-    	String ToastStr;
-    	
-    	switch(bewegungsart)
-    	{
-    	case R.id.bewa_rbutton_LAUFEN:
-    		MoveType = 0;	// MOVE
-    		ToastStr = "rückwärts";
-    		break;
-    	case R.id.bewa_rbutton_ARME:
-    		MoveType = 1;	// ARM
-    		ToastStr = "Arm runter";
-    		break;
-    	default:
-    		MoveType = 2;	// HEAD
-    		ToastStr = "Kopf runter";
-    		break;
-    	}
-		NetworkModule.Move(MoveType, NetworkModule.MOVE_DOWN);
-    	Toast toast = Toast.makeText(MainActivity.this, ToastStr, Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    }
-    
-    public void bew_button5_event(View view) {
-    	
-    	NetworkModule.Stop();
-    	Toast toast = Toast.makeText(MainActivity.this, "STOP", Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    }
     
     /********************** Menu *************************
      *****************************************************/
     public void menu_button1_event(View view) {
-    	final Dialog bewa_dialog = new Dialog(MainActivity.this);
-    	bewa_dialog.setContentView(R.layout.bewegungsauswahl);
-    	bewa_dialog.setTitle("Bewegungsauswahl");
-    	((RadioGroup) bewa_dialog.findViewById(R.id.bew_radioGroup1)).check(bewegungsart);
-    	/*bewa_radiogroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			
-			@Override
-			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				Toast toast = Toast.makeText(MainActivity.this, "checked: " + Integer.toString(checkedId), Toast.LENGTH_SHORT);
-		    	toast.setGravity(Gravity.TOP | Gravity.RIGHT, 0, 0);
-		    	toast.show();
-			}
-		});*/
-    	
-    	/* ------------ Funktion bei OK Button ------------ */
-    	Button dial_button_ok = (Button) bewa_dialog.findViewById(R.id.bewa_OKbutton);
-    	dial_button_ok.setOnClickListener(new OnClickListener() {
-    		@Override
-			public void onClick(View view) {
-    			bewa_dialog.dismiss();
-    			final RadioGroup bewa_radiogroup = (RadioGroup)bewa_dialog.findViewById(R.id.bew_radioGroup1);
-    			int checkedId = bewa_radiogroup.getCheckedRadioButtonId();
-    			
-    			bewegungsart = checkedId;
-    		}
-    	});
-    	/*Dialogbox anzeigen*/
-    	bewa_dialog.show();
+    	final Intent bewintent = new Intent (this,BewegungActivity.class);
+    	//Log.v("main button1", "bewIntent: " + bewintent.toString());
+    	startActivity(bewintent);
     }
     
     
     public void menu_button2_event(View view) {
-    	/* Dialogbox erstellen*/
-    	final Dialog spk_dialog = new Dialog(MainActivity.this);
-    	spk_dialog.setContentView(R.layout.sprachausgabe);
-    	spk_dialog.setTitle("Sprachausgabe");
-    	
-    	/* ------------ Funktion bei OK Button ------------ */
-    	Button dial_button_ok = (Button) spk_dialog.findViewById(R.id.spk_ok_button);
-    	dial_button_ok.setOnClickListener(new OnClickListener() {
-		
-			@Override
-			public void onClick(View v) {
-				spk_dialog.dismiss();
-				/*Text aus dem Texteingabefeld*/
-				EditText textfeld = (EditText)spk_dialog.findViewById(R.id.spk_editText1);
-		    	String words = textfeld.getText().toString();
-	        	NetworkModule.Speak(words);
-			}
-		});
-    	
-    	/*Dialogbox anzeigen*/
-    	spk_dialog.show();
+    	final Intent spkintent = new Intent (this,SprachausgabeActivity.class);
+    	startActivity(spkintent);
     }
     
     public void menu_button3_event(View view) {
-    	NetworkModule.SitToggle();
+    	final Intent specialsintent = new Intent (this,SpecialsActivity.class);
+    	startActivity(specialsintent);
     }
     
     public void menu_button4_event(View view) {
-    	Toast toast = Toast.makeText(MainActivity.this, "Motoren entspannen", Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    	NetworkModule.Rest();    	
+    	final Intent cfgintent = new Intent (this,ConfigActivity.class);
+    	startActivity(cfgintent);
     }
     
     public void menu_button5_event(View view) {
-    	Toast toast = Toast.makeText(MainActivity.this, "Tanz", Toast.LENGTH_SHORT);
-    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-    	toast.show();
-    	NetworkModule.Dance("Rumba");
-    }
-    
-    
-    public void menu_button6_event(View view) {
-    	/* Dialogbox erstellen*/
-    	verbindungs_dialog = new Dialog(MainActivity.this);
-    	verbindungs_dialog.setContentView(R.layout.netzwerkverbindung);
-    	verbindungs_dialog.setTitle("Netzwerkverbindung");
-    	
-    	final TextView text_verbindungsstatus = (TextView)verbindungs_dialog.findViewById(R.id.verbindungsstatus_wert);
-    	final EditText textfeld_ipeingabe = (EditText)verbindungs_dialog.findViewById(R.id.verbindungsip_eingabe);
-    	/*Buttons*/
-    	final Button dial_button_verbinden = (Button) verbindungs_dialog.findViewById(R.id.verbindungsbutton);
-    	final Button dial_button_close = (Button) verbindungs_dialog.findViewById(R.id.verbindungsbutton_close);
-    	
-    	switch(NetworkModule.IsConnected())
-    	{
-    	case 0:
-    		text_verbindungsstatus.setText("nicht verbunden");
-        	text_verbindungsstatus.setTextColor(Color.RED);
-        	break;
-    	case 1:
-    		text_verbindungsstatus.setText("verbinden ...");
-        	text_verbindungsstatus.setTextColor(Color.YELLOW);
-        	break;
-    	case 2:
-    		text_verbindungsstatus.setText("verbunden");
-        	text_verbindungsstatus.setTextColor(Color.GREEN);
-        	dial_button_verbinden.setText("trennen");
-        	break;
-    	}
-    	textfeld_ipeingabe.setText(NetworkModule.GetIPAddress());
-    	
-    	
-    	/* ----------- Funktionen der Button ------------- */
-    	/* Verbinden */
-    	dial_button_verbinden.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				/*Text aus dem Texteingabefeld*/
-		    	String ip_word = textfeld_ipeingabe.getText().toString();
-		    	ip_word = ip_word.trim();
-		    	
-            	if (NetworkModule.IsConnected() == NetworkModule.CONN_OPEN)
-            	{
-            		NetworkModule.CloseConnection();
-            	}
-            	else if (NetworkModule.IsConnected() == NetworkModule.CONN_CLOSED)
-            	{
-			    	NetworkModule.SetIPAddress(ip_word);
-			    	NetworkModule.OpenConnection();
-            	}
-			}
-		});
-    	/* schließen */
-    	dial_button_close.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				verbindungs_dialog.dismiss();
-				verbindungs_dialog = null;
-			}
-		});
-    	
-    	
-    	/*Dialogbox anzeigen*/
-    	verbindungs_dialog.show();
-    }
-    
-    public void menu_button7_event(View view) {
     	new AlertDialog.Builder(this)
 		.setMessage("Das ist eine App um den NAO zu steuern")
 		.setNeutralButton("Wer weiss?", null)
 		.show();
     }
     
-    public void menu_button8_event(View view) {
-    	//jetzt in onDestroy
-    	//BattTimer.cancel();
-    	//NetworkModule.Rest();
-    	//NetworkModule.CloseConnection();
-    	MainActivity.this.finish();
-    }
-    
 	class BattTmrTask extends TimerTask
 	{
-		private Handler updateUI/* = new Handler(){
-			@Override
-			public void dispatchMessage(Message msg) {
-			    super.dispatchMessage(msg);
-			    if(msg.what > 90)
-			    {
-			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat100));
-			    }
-			    else if (msg.what <= 90 && msg.what > 65) {
-			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat75));
-				}
-			    else if (msg.what <= 65 && msg.what > 35) {
-			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat50));
-				}
-			    else if (msg.what <= 35 && msg.what > 10) {
-			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat25));
-				}
-			    else
-			    {
-			    	battery_view.setImageDrawable(getResources().getDrawable(R.drawable.bat0));
-			    }
-			}
-		}*/;
-		
-		BattTmrTask(Handler EvtHandler)
-		{
-			updateUI = EvtHandler;
-			
-			return;
-		}
-		
 		public void run()  
 		{
-			/*if (NetworkModule.IsConnected() != 1)
-				return;
-			
-			int BattState;
-			
-			//System.out.println("Make my day.");
-			//NetworkModule.Speak(MainActivity.NOTIFICATION_SERVICE);
-			BattState = NetworkModule.GetBatteryState();
-			updateUI.sendEmptyMessage(BattState);*/
-			
 			NetworkModule.RequestBatteryState();
 		}
 	}

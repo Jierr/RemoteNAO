@@ -1,17 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    tools:context=".ConfigActivity" >
+
+    
+    <TextView
+        android:id="@+id/verbindungstitel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:text="@string/verbindungstitel_text"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:paddingBottom="10dp"
-        android:paddingTop="5dp" >
+        android:layout_below="@+id/verbindungstitel"
+        android:padding="12dp" >
 
         <TextView
             android:id="@+id/verbindungsstatus"
@@ -36,6 +44,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/linearLayout1"
+        android:paddingLeft="12dp"
         android:text="@string/verbindungsip_text" />
 
     <LinearLayout
@@ -44,7 +53,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/verbindungsip" >
+        android:layout_below="@+id/verbindungsip"
+        android:paddingLeft="12dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="20dp" >
 
         <EditText
             android:id="@+id/verbindungsip_eingabe"
@@ -58,15 +70,17 @@
             android:id="@+id/verbindungsbutton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/verbindungsbutton_text" />
+            android:text="@string/verbindungsbutton_text"
+            android:onClick="verbindungsbutton_event" />
+
     </LinearLayout>
 
     <Button
-        android:id="@+id/verbindungsbutton_close"
+        android:id="@+id/cfgbutton_close"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/linearLayout2"
         android:layout_centerHorizontal="true"
-        android:text="@string/verbindungsbutton_close_text" />
-
+        android:text="@string/verbindungsbutton_close_text"
+        android:onClick="cfgbutton_close_event" />
 </RelativeLayout>
