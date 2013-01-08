@@ -17,8 +17,11 @@ import com.actionbarsherlock.view.MenuItem;
 public class BewegungActivity extends SherlockActivity {
 
 	static private int bewegungsart = R.id.bewa_rbutton_LAUFEN;
-	static private RadioGroup bewart_radiogroup1;
-	static private RadioGroup bewart_radiogroup2;
+	private RadioGroup bewart_radiogroup1;
+	private RadioGroup bewart_radiogroup2;
+	private RadioGroup bewart_radiogroupA;
+	private OnCheckedChangeListener Grp1Listener = null;
+	private OnCheckedChangeListener Grp2Listener = null;
 
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
@@ -33,9 +36,12 @@ public class BewegungActivity extends SherlockActivity {
 		
 		Log.v("BewAct", "init BewActivity");
 		bewart_radiogroup1 = (RadioGroup) findViewById(R.id.bew_radioGroup1);
-		bewart_radiogroup1.check(bewegungsart);
+		if (bewart_radiogroup1 != null)
+			bewart_radiogroup1.check(bewegungsart);
 		bewart_radiogroup2 = (RadioGroup) findViewById(R.id.bew_radioGroup2);
-		bewart_radiogroup2.check(bewegungsart);
+		bewart_radiogroupA = (RadioGroup) findViewById(R.id.bew_radioGroup2);
+		if (bewart_radiogroupA != null)
+			bewart_radiogroupA.check(bewegungsart);
 		setListeners();
 
 	}
@@ -107,13 +113,48 @@ public class BewegungActivity extends SherlockActivity {
 	
 	private void setListeners(){
 		
-		bewart_radiogroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			
-			@Override
-			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				bewegungsart = checkedId;
-			}
-		});
+		if (bewart_radiogroupA != null)
+			bewart_radiogroupA.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+				@Override
+				public void onCheckedChanged(RadioGroup group, int checkedId) {
+					bewegungsart = checkedId;
+					Log.v("Check", "Clicked on All: " + Integer.toString(checkedId));
+				}
+			});
+		if (bewart_radiogroup1 != null)
+		{
+			Grp1Listener = new OnCheckedChangeListener() {
+				@Override
+				public void onCheckedChanged(RadioGroup group, int checkedId) {
+					if (checkedId != -1)
+					{
+						bewegungsart = checkedId;
+						bewart_radiogroup2.setOnCheckedChangeListener(null);
+						bewart_radiogroup2.clearCheck();
+						bewart_radiogroup2.setOnCheckedChangeListener(Grp2Listener);
+					}
+					Log.v("Check", "Clicked on 1: " + Integer.toString(checkedId));
+				}
+			};
+			bewart_radiogroup1.setOnCheckedChangeListener(Grp1Listener);
+		}
+		if (bewart_radiogroup2 != null)
+		{
+			Grp2Listener = new OnCheckedChangeListener() {
+				@Override
+				public void onCheckedChanged(RadioGroup group, int checkedId) {
+					if (checkedId != -1)
+					{
+						bewegungsart = checkedId;
+						bewart_radiogroup1.setOnCheckedChangeListener(null);
+						bewart_radiogroup1.clearCheck();
+						bewart_radiogroup1.setOnCheckedChangeListener(Grp1Listener);
+					}
+					Log.v("Check", "Clicked on 2: " + Integer.toString(checkedId));
+				}
+			};
+			bewart_radiogroup2.setOnCheckedChangeListener(Grp2Listener);
+		}
 	}
 	
 	/*bewa_radiogroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {

@@ -14,8 +14,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_alignLeft="@+id/bew_radioGroup1"
-            android:layout_alignRight="@+id/bew_radioGroup1"
+            android:layout_alignLeft="@+id/bew_radioGroupA"
+            android:layout_alignRight="@+id/bew_radioGroupA"
             android:background="@android:color/black"
             android:clickable="false"
             android:duplicateParentState="false"
@@ -28,9 +28,9 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_alignLeft="@+id/bew_radioGroup1"
-            android:layout_alignRight="@+id/bew_radioGroup1"
-            android:layout_below="@+id/bew_radioGroup1"
+            android:layout_alignLeft="@+id/bew_radioGroupA"
+            android:layout_alignRight="@+id/bew_radioGroupA"
+            android:layout_below="@+id/bew_radioGroupA"
             android:background="@android:color/black"
             android:clickable="false"
             android:duplicateParentState="false"
@@ -43,9 +43,9 @@
         <LinearLayout
             android:layout_width="1dp"
             android:layout_height="match_parent"
-            android:layout_alignBottom="@+id/bew_radioGroup1"
-            android:layout_alignTop="@+id/bew_radioGroup1"
-            android:layout_toRightOf="@+id/bew_radioGroup1"
+            android:layout_alignBottom="@+id/bew_radioGroupA"
+            android:layout_alignTop="@+id/bew_radioGroupA"
+            android:layout_toRightOf="@+id/bew_radioGroupA"
             android:background="@android:color/black"
             android:clickable="false"
             android:duplicateParentState="false"
@@ -58,8 +58,8 @@
         <LinearLayout
             android:layout_width="1dp"
             android:layout_height="match_parent"
-            android:layout_alignBottom="@+id/bew_radioGroup1"
-            android:layout_alignTop="@+id/bew_radioGroup1"
+            android:layout_alignBottom="@+id/bew_radioGroupA"
+            android:layout_alignTop="@+id/bew_radioGroupA"
             android:background="@android:color/black"
             android:clickable="false"
             android:duplicateParentState="false"
@@ -70,7 +70,7 @@
         </LinearLayout>
 
         <RadioGroup
-            android:id="@+id/bew_radioGroup1"
+            android:id="@+id/bew_radioGroupA"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
