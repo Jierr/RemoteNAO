@@ -17,7 +17,8 @@ import com.actionbarsherlock.view.MenuItem;
 public class BewegungActivity extends SherlockActivity {
 
 	static private int bewegungsart = R.id.bewa_rbutton_LAUFEN;
-	static private RadioGroup bewart_radiogroup;
+	static private RadioGroup bewart_radiogroup1;
+	static private RadioGroup bewart_radiogroup2;
 
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
@@ -31,8 +32,10 @@ public class BewegungActivity extends SherlockActivity {
 		Callbacksplit.registerBewegungActivity(this);
 		
 		Log.v("BewAct", "init BewActivity");
-		bewart_radiogroup = (RadioGroup) findViewById(R.id.bew_radioGroup1);
-		bewart_radiogroup.check(bewegungsart);
+		bewart_radiogroup1 = (RadioGroup) findViewById(R.id.bew_radioGroup1);
+		bewart_radiogroup1.check(bewegungsart);
+		bewart_radiogroup2 = (RadioGroup) findViewById(R.id.bew_radioGroup2);
+		bewart_radiogroup2.check(bewegungsart);
 		setListeners();
 
 	}
@@ -149,12 +152,16 @@ public class BewegungActivity extends SherlockActivity {
     		MoveType = 0;	// MOVE
     		ToastStr = "vorwärts";
     		break;
-    	case R.id.bewa_rbutton_ARME:
+    	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
-    		ToastStr = "Arm hoch";
+    		ToastStr = "l. Arm hoch";
+    		break;
+    	case R.id.bewa_rbutton_ARM_R:
+    		MoveType = 2;	// ARM
+    		ToastStr = "r. Arm hoch";
     		break;
     	default:
-    		MoveType = 2;	// HEAD
+    		MoveType = 3;	// HEAD
     		ToastStr = "Kopf vor";
     		break;
     	}
@@ -174,12 +181,16 @@ public class BewegungActivity extends SherlockActivity {
     		MoveType = 0;	// MOVE
     		ToastStr = "links";
     		break;
-    	case R.id.bewa_rbutton_ARME:
+    	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
-    		ToastStr = "Arm links";
+    		ToastStr = "l. Arm links";
+    		break;
+    	case R.id.bewa_rbutton_ARM_R:
+    		MoveType = 2;	// ARM
+    		ToastStr = "r. Arm links";
     		break;
     	default:
-    		MoveType = 2;	// HEAD
+    		MoveType = 3;	// HEAD
     		ToastStr = "Kopf links";
     		break;
     	}
@@ -199,12 +210,16 @@ public class BewegungActivity extends SherlockActivity {
     		MoveType = 0;	// MOVE
     		ToastStr = "rechts";
     		break;
-    	case R.id.bewa_rbutton_ARME:
+    	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
-    		ToastStr = "Arm rechts";
+    		ToastStr = "l. Arm rechts";
+    		break;
+    	case R.id.bewa_rbutton_ARM_R:
+    		MoveType = 2;	// ARM
+    		ToastStr = "r. Arm rechts";
     		break;
     	default:
-    		MoveType = 2;	// HEAD
+    		MoveType = 3;	// HEAD
     		ToastStr = "Kopf rechts";
     		break;
     	}
@@ -224,12 +239,16 @@ public class BewegungActivity extends SherlockActivity {
     		MoveType = 0;	// MOVE
     		ToastStr = "rückwärts";
     		break;
-    	case R.id.bewa_rbutton_ARME:
+    	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
-    		ToastStr = "Arm runter";
+    		ToastStr = "l. Arm runter";
+    		break;
+    	case R.id.bewa_rbutton_ARM_R:
+    		MoveType = 2;	// ARM
+    		ToastStr = "r. Arm runter";
     		break;
     	default:
-    		MoveType = 2;	// HEAD
+    		MoveType = 3;	// HEAD
     		ToastStr = "Kopf hinter";
     		break;
     	}

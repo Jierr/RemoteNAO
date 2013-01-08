@@ -20,7 +20,7 @@ public class MainActivity extends SherlockActivity {
 
 	private Timer BattTimer = null;
 	private final int EVENT_BATT = 0;
-	private final int EVENT_SIT = 1;
+	private final int EVENT_STATE = 1;
 	private final int EVENT_CONN = 2;
 	
 	private MenuItem BatteryIcon;
@@ -49,7 +49,7 @@ public class MainActivity extends SherlockActivity {
 			    	Callbacksplit.setActBarConnectIcon();
 		    	}
 		    	break;
-		    case EVENT_SIT:
+		    case EVENT_STATE:
 				final String SitStatus = (String)msg.obj;
 		    	
 				if(Callbacksplit.getSpecialsActivity() != null)
@@ -71,8 +71,8 @@ public class MainActivity extends SherlockActivity {
 			    else
 			    	batt_pic = R.drawable.bat0;
 			    batt_icon_r = getResources().getDrawable(batt_pic);
-			    Callbacksplit.saveBatteryStateIcon(batt_icon_r);
 			    BatteryIcon.setIcon(batt_icon_r);
+			    Callbacksplit.saveBatteryStateIcon(batt_icon_r);
 			    Callbacksplit.setActBarBatteryIcon(batt_icon_r);
 			    
 			    break;
@@ -95,10 +95,10 @@ public class MainActivity extends SherlockActivity {
         //NetworkModule.SetIPAddress("192.168.5.20");
         menu_button4_event(null);
         
-        NetworkModule.RegisterCallback(null,		-1,			0);
-		NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,	NetworkModule.INFO_CONN);
-		NetworkModule.RegisterCallback(EvtHandler,	EVENT_SIT,	NetworkModule.INFO_SIT);
-        NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,	NetworkModule.INFO_BATT);
+        NetworkModule.RegisterCallback(null,		-1,				0);
+		NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,		NetworkModule.INFO_CONN);
+		NetworkModule.RegisterCallback(EvtHandler,	EVENT_STATE,	NetworkModule.INFO_STATE);
+        NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,		NetworkModule.INFO_BATT);
         
         Log.v("MainAct", "Activity started.");
         BattTimer = new Timer();
@@ -250,27 +250,8 @@ public class MainActivity extends SherlockActivity {
     
 	class BattTmrTask extends TimerTask
 	{
-		/*private Handler updateUI;
-		
-		BattTmrTask(Handler EvtHandler)
-		{
-			updateUI = EvtHandler;
-			
-			return;
-		}*/
-		
 		public void run()  
 		{
-			/*if (NetworkModule.IsConnected() != 1)
-				return;
-			
-			int BattState;
-			
-			//System.out.println("Make my day.");
-			//NetworkModule.Speak(MainActivity.NOTIFICATION_SERVICE);
-			BattState = NetworkModule.GetBatteryState();
-			updateUI.sendEmptyMessage(BattState);*/
-			
 			NetworkModule.RequestBatteryState();
 		}
 	}

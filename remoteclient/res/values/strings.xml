@@ -29,9 +29,10 @@
     <string name="verbindungsip_eingabe">0.0.0.0</string>
     <string name="verbindungsbutton_text">verbinden</string>
     <string name="verbindungsbutton_close_text"> Schließen </string>
-    <string name="bewegungsauswahl_radiobutton1_text"> Arme bewegen</string>
-    <string name="bewegungsauswahl_radiobutton2_text"> Laufen </string>
-    <string name="bewegungsauswahl_radiobutton3_text"> Kopf bewegen </string>
+    <string name="bewegungsauswahl_radiobutton1_text">l. Arm bew.</string>
+    <string name="bewegungsauswahl_radiobutton2_text">r. Arm bew.</string>
+    <string name="bewegungsauswahl_radiobutton3_text">Laufen</string>
+    <string name="bewegungsauswahl_radiobutton4_text">Kopf bewegen</string>
     <string name="bewegungsauswahl_OKbutton_text">" OK "</string>
     
     <string name="specials_button1_text"> Ausruhen </string>

@@ -78,22 +78,28 @@
             android:padding="8dp" >
 
             <RadioButton
-                android:id="@+id/bewa_rbutton_ARME"
+                android:id="@+id/bewa_rbutton_ARM_L"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/bewegungsauswahl_radiobutton1_text" />
 
             <RadioButton
-                android:id="@+id/bewa_rbutton_LAUFEN"
+                android:id="@+id/bewa_rbutton_ARM_R"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/bewegungsauswahl_radiobutton2_text" />
 
             <RadioButton
-                android:id="@+id/bewa_rbutton_KOPF"
+                android:id="@+id/bewa_rbutton_LAUFEN"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/bewegungsauswahl_radiobutton3_text" />
+
+            <RadioButton
+                android:id="@+id/bewa_rbutton_KOPF"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bewegungsauswahl_radiobutton4_text" />
         </RadioGroup>
 
     </RelativeLayout>

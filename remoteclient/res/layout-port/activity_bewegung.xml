@@ -14,8 +14,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_alignLeft="@+id/bew_radioGroup1"
-            android:layout_alignRight="@+id/bew_radioGroup1"
+            android:layout_alignLeft="@+id/bew_radioGroupLayout"
+            android:layout_alignRight="@+id/bew_radioGroupLayout"
             android:background="@android:color/black"
             android:clickable="false"
             android:duplicateParentState="false"
@@ -28,9 +28,9 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_alignLeft="@+id/bew_radioGroup1"
-            android:layout_alignRight="@+id/bew_radioGroup1"
-            android:layout_below="@+id/bew_radioGroup1"
+            android:layout_alignLeft="@+id/bew_radioGroupLayout"
+            android:layout_alignRight="@+id/bew_radioGroupLayout"
+            android:layout_below="@+id/bew_radioGroupLayout"
             android:background="@android:color/black"
             android:clickable="false"
             android:duplicateParentState="false"
@@ -43,9 +43,9 @@
         <LinearLayout
             android:layout_width="1dp"
             android:layout_height="match_parent"
-            android:layout_alignBottom="@+id/bew_radioGroup1"
-            android:layout_alignTop="@+id/bew_radioGroup1"
-            android:layout_toRightOf="@+id/bew_radioGroup1"
+            android:layout_alignBottom="@+id/bew_radioGroupLayout"
+            android:layout_alignTop="@+id/bew_radioGroupLayout"
+            android:layout_toRightOf="@+id/bew_radioGroupLayout"
             android:background="@android:color/black"
             android:clickable="false"
             android:duplicateParentState="false"
@@ -58,8 +58,8 @@
         <LinearLayout
             android:layout_width="1dp"
             android:layout_height="match_parent"
-            android:layout_alignBottom="@+id/bew_radioGroup1"
-            android:layout_alignTop="@+id/bew_radioGroup1"
+            android:layout_alignBottom="@+id/bew_radioGroupLayout"
+            android:layout_alignTop="@+id/bew_radioGroupLayout"
             android:background="@android:color/black"
             android:clickable="false"
             android:duplicateParentState="false"
@@ -69,32 +69,51 @@
             android:orientation="vertical" >
         </LinearLayout>
 
-        <RadioGroup
-            android:id="@+id/bew_radioGroup1"
+        <LinearLayout
+            android:id="@+id/bew_radioGroupLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:padding="8dp" >
-
-            <RadioButton
-                android:id="@+id/bewa_rbutton_ARME"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/bewegungsauswahl_radiobutton1_text" />
-
-            <RadioButton
-                android:id="@+id/bewa_rbutton_LAUFEN"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/bewegungsauswahl_radiobutton2_text" />
-
-            <RadioButton
-                android:id="@+id/bewa_rbutton_KOPF"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/bewegungsauswahl_radiobutton3_text" />
-        </RadioGroup>
+            android:orientation="horizontal"
+            >
+            
+	        <RadioGroup
+	            android:id="@+id/bew_radioGroup1"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:padding="8dp" >
+	
+	            <RadioButton
+	                android:id="@+id/bewa_rbutton_LAUFEN"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="@string/bewegungsauswahl_radiobutton3_text" />
+	
+	            <RadioButton
+	                android:id="@+id/bewa_rbutton_ARM_L"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="@string/bewegungsauswahl_radiobutton1_text" />
+	        </RadioGroup>
+	        
+	        <RadioGroup
+	            android:id="@+id/bew_radioGroup2"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:padding="8dp" >
+	            
+	            <RadioButton
+	                android:id="@+id/bewa_rbutton_KOPF"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="@string/bewegungsauswahl_radiobutton4_text" />
+	            
+	            <RadioButton
+	                android:id="@+id/bewa_rbutton_ARM_R"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="@string/bewegungsauswahl_radiobutton2_text" />
+	        </RadioGroup>
+	    </LinearLayout>
     </RelativeLayout>
     
     <RelativeLayout

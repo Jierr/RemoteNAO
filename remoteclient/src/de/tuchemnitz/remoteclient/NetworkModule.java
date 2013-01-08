@@ -20,8 +20,8 @@ class EventCallback
 
 class RobotInformation
 {
-	int BattState;
-	String SitState;
+	int BattLoad;
+	String State;
 };
 
 public class NetworkModule {
@@ -34,7 +34,7 @@ public class NetworkModule {
 	public static final char MOVE_RIGHT	= 'R';
 	private static NetworkThread NetTData = null;
 	public static final int INFO_BATT = 0;
-	public static final int INFO_SIT = 1;
+	public static final int INFO_STATE = 1;
 	public static final int INFO_CONN = 2;
 	public static final int CONN_CLOSED = 0;
 	public static final int CONN_CONNECTING = 1;
@@ -85,18 +85,25 @@ public class NetworkModule {
 		{
 		case 0:
 			MoveType = NetworkThread.CMDTYPE.MOVE;		// "MOV";
+			CommandStr = String.valueOf(Direction);
 			break;
 		case 1:
-			MoveType = NetworkThread.CMDTYPE.MOVEARM;	// "ARM"
-			break;
 		case 2:
+			MoveType = NetworkThread.CMDTYPE.MOVEARM;	// "ARM"
+			if (Type == 1)
+				CommandStr = "L";
+			else //if (Type == 2)
+				CommandStr = "R";
+			CommandStr = "_" + String.valueOf(Direction);
+			break;
+		case 3:
 			MoveType = NetworkThread.CMDTYPE.MOVEHEAD;	// "HAD"
+			CommandStr = String.valueOf(Direction);
 			break;
 		default:
 			return;
 		}
 		
-		CommandStr = String.valueOf(Direction);
 		NetTData.QueueCommand(MoveType, CommandStr);
 		
 		return;
@@ -170,10 +177,10 @@ public class NetworkModule {
 		switch(Type)
 		{
 		case INFO_BATT:
-			return (int)(Math.random() * 100);
-			//return RoboInfo.BattState;
-		case INFO_SIT:
-			return RoboInfo.SitState;
+			//return (int)(Math.random() * 100);
+			return RoboInfo.BattLoad;
+		case INFO_STATE:
+			return RoboInfo.State;
 		}
 		
 		return 0;
@@ -240,6 +247,16 @@ class NetworkThread extends Thread
 	private final String CMDTYPE_DANCE 	= "DNC";
 	private final String CMDTYPE_BATT	= "BAT";
 	
+	private final String RETCMD_BATT	= "BAT";
+	private final String RETCMD_STATE	= "ZST";
+	private final String STATE_CROUCH	= "CROUCHING";
+	private final String STATE_STAND	= "STANDING";
+	private final String STATE_SIT		= "SITTING";
+	private final String STATE_WALK		= "WALKING";
+	private final String STATE_STOP		= "STOPPING";
+	private final String STATE_MOVE		= "MOVING";
+	private final String STATE_UNKNOWN	= "UNKNOWN";
+	
 	private final String TERMINATE_CHR = "";
 	private final String IP_Addr;
 	private final int Port;
@@ -274,8 +291,8 @@ class NetworkThread extends Thread
 		Port = DestPort;
 		EventList = CBEvtList;
 		RoboInfo = RbInfo;
-		RoboInfo.BattState = 0;
-		RoboInfo.SitState = null;
+		RoboInfo.BattLoad = 0;
+		RoboInfo.State = null;
 		
 		return;
 	}
@@ -412,7 +429,6 @@ class NetworkThread extends Thread
 		
 		String ReceiveStr;
 		String CmdStr;
-		CMDTYPE CmdType;
 		EventCallback DestCB;
 		int ArgInt = 0;
 		Object ArgObj = null;
@@ -431,20 +447,35 @@ class NetworkThread extends Thread
 		if (ReceiveStr.length() == 0)
 			return;
 		
-		if (CmdStr.equals(CMDTYPE_SIT))
+		/*if (CmdStr.equals(CMDTYPE_SIT))
 		{
 			RoboInfo.SitState = ReceiveStr;
 			
 			//Log.v("NetMod.SIT", "returned string: " + ReceiveStr);
-			DestCB = GetCallback(NetworkModule.INFO_SIT);
+			DestCB = GetCallback(NetworkModule.INFO_STATE);
 			ArgObj = RoboInfo.SitState;
-		}
-		else if (CmdStr.equals(CMDTYPE_BATT))
+		}*/
+		if (CmdStr.equals(RETCMD_STATE))
 		{
-			RoboInfo.BattState = (int)ReceiveStr.charAt(0);
+			/*	STATE_CROUCH
+				STATE_STAND
+				STATE_SIT
+				STATE_WALK
+				STATE_STOP
+				STATE_MOVE
+				STATE_UNKNOWN	*/
+			RoboInfo.State = ReceiveStr;
+			
+			//Log.v("NetMod.SIT", "returned string: " + ReceiveStr);
+			DestCB = GetCallback(NetworkModule.INFO_STATE);
+			ArgObj = RoboInfo.State;
+		}
+		else if (CmdStr.equals(RETCMD_BATT))
+		{
+			RoboInfo.BattLoad = (int)ReceiveStr.charAt(0);
 			
 			DestCB = GetCallback(NetworkModule.INFO_BATT);
-			ArgInt = RoboInfo.BattState;
+			ArgInt = RoboInfo.BattLoad;
 			Log.v("NetMod.BAT", Integer.toHexString(ArgInt));
 		}
 		else
