@@ -129,7 +129,7 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 		}		
 		else if (fstr.compare("STP") == 0)
 		{
-			ep.type = CODE_STOP;
+			ep.type = CODE_STOPALL;
 			ep.iparams[0] = MOV_STOP;
 			fstr = "";
 			return false;
@@ -406,7 +406,10 @@ int Manager::decode(const string& toParse)
 					mem.insertData("msg", eventp.sparam);
 					mem.insertData("iparams", (vector<int>)vtemp);
 				mutex->unlock();	*/
-				eventList->addEvent(eventp);
+				if (ttype == CODE_STOPALL)
+					eventList->addFirst(eventp);
+				else
+					eventList->addEvent(eventp);
 			
 				pos = 0;
 				trace = pos;
@@ -471,6 +474,7 @@ void Manager::runExecuter()
 	AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
 	qi::os::msleep(12000);
 	pbehav.stopBehavior("stand");
+	accessExec.exec->initSecure();
 	
 	/*{
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
@@ -497,7 +501,7 @@ void Manager::runExecuter()
 		/*AL::ALRobotPoseProxy rr = AL::ALRobotPoseProxy(MB_IP, MB_PORT);
 		int pose = (int)((float&)mem.getData("robotPose"));
 		cout << "Posture: " << (rr.getPoseNames()[pose]) << endl;*/
-		qi::os::msleep(50);
+		qi::os::msleep(10);
 		try
 		{
 			eventList->removeDone();
