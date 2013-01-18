@@ -122,7 +122,6 @@ public class MainActivity extends SherlockActivity {
     public void onDestroy(){
     	
     	BattTimer.cancel();
-    	NetworkModule.Rest();
     	NetworkModule.CloseConnection();
     	super.onDestroy();
     }
