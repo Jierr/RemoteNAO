@@ -16,6 +16,11 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+/**
+ * 
+ * @author Riko Streller 
+ *
+ */
 public class MainActivity extends SherlockActivity {
 
 	private Timer BattTimer = null;
@@ -29,6 +34,10 @@ public class MainActivity extends SherlockActivity {
 	
 	private Handler EvtHandler = new Handler()
 	{
+		/**
+		 * Handles callback messages from NetworkModule and
+		 * calls the Callbacksplit.
+		 */
 		@Override public void dispatchMessage(Message msg)
 		{
 		    //super.dispatchMessage(msg);
@@ -83,6 +92,9 @@ public class MainActivity extends SherlockActivity {
 		}
 	};
 	
+	/**
+	 * Callback and timer setup.  
+	 */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,14 +130,19 @@ public class MainActivity extends SherlockActivity {
 		Callbacksplit.unsetActiveActivity();
 	}
 	
+	/**
+	 * Kills the timer and closes the connection.
+	 */
 	@Override
     public void onDestroy(){
-    	
+    	super.onDestroy();
     	BattTimer.cancel();
     	NetworkModule.CloseConnection();
-    	super.onDestroy();
     }
 
+	/**
+	 * Draws the ActionBar.
+	 */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -147,6 +164,10 @@ public class MainActivity extends SherlockActivity {
         return true;
     }
     
+    /**
+     * Handles option menu clicks.
+     * Shows other activities or closes the application.
+     */
     @Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -179,8 +200,11 @@ public class MainActivity extends SherlockActivity {
 		return true;
 	}
     
+    /**
+     * Refreshes the ActionBar's network state icon.
+     */
     public void setActBarConnectIcon(){
-    	if(NetworkModule.IsConnected()==0)
+    	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);
     	}
@@ -205,7 +229,7 @@ public class MainActivity extends SherlockActivity {
 			.show();
     	}*/
     	
-    	NetworkModule.net_test();
+    	//NetworkModule.net_test();
     	//NetworkModule.CloseConnection();
     	/*new AlertDialog.Builder(this)
 			.setMessage("Test done.")

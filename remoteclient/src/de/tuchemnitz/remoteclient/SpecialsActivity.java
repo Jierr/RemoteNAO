@@ -12,11 +12,19 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+/**
+ * 
+ * @author Riko Streller
+ *
+ */
 public class SpecialsActivity extends SherlockActivity {
 	
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
 	
+	/**
+	 * Loads/sets up the Activity layout and registers the callback.
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -45,6 +53,10 @@ public class SpecialsActivity extends SherlockActivity {
     	Callbacksplit.registerSpecialsActivity(null);
     }
 
+	/**
+	 * Loads ActionBar, enables Back button and
+	 * gets and refreshes Battery and Connection Icons.
+	 */
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -61,6 +73,10 @@ public class SpecialsActivity extends SherlockActivity {
         return true;
     }
 	
+    /**
+     * Handles option menu clicks.
+     * Shows other activities or closes the application.
+     */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -112,7 +128,7 @@ public class SpecialsActivity extends SherlockActivity {
 		}
 		else if (state.equals("STANDING") || state.equals("WALKING") || state.equals("STOPPING"))
 		{
-			NetworkModule.SitToggle();
+			NetworkModule.Sit();
 			Toast toast = Toast.makeText(SpecialsActivity.this, "setzen", Toast.LENGTH_SHORT);
 	    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
 	    	toast.show();
@@ -163,13 +179,21 @@ public class SpecialsActivity extends SherlockActivity {
     		sitButton_text.setText("Aufstehen");
     }
     
+    /**
+     * Sets the Battery Icon in the ActionBar.
+     * 
+     * @param pic	Drawable of the Battery Icon
+     */
     public void setActBarBatteryIcon(Drawable pic){
     	if(pic!=null)
     		BatteryIcon.setIcon(pic);
     }
     
+    /**
+     * Refreshes the ActionBar's network state icon.
+     */
     public void setActBarConnectIcon(){
-    	if(NetworkModule.IsConnected()==0)
+    	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);
     	}

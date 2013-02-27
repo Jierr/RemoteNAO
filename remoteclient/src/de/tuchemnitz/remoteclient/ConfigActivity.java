@@ -13,6 +13,11 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+/**
+ * 
+ * @author Riko Streller
+ *
+ */
 public class ConfigActivity extends SherlockActivity {
 
 	private TextView text_verbindungsstatus;
@@ -24,6 +29,9 @@ public class ConfigActivity extends SherlockActivity {
 	private MenuItem ConnectIcon;
 	
 	
+	/**
+	 * Loads/sets up the Activity layout and registers the callback.
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -39,15 +47,15 @@ public class ConfigActivity extends SherlockActivity {
 		//setzen von ansichten
 		switch(NetworkModule.IsConnected())
     	{
-    	case 0:
+    	case NetworkModule.CONN_CLOSED:
     		text_verbindungsstatus.setText("nicht verbunden");
         	text_verbindungsstatus.setTextColor(Color.RED);
         	break;
-    	case 1:
+    	case NetworkModule.CONN_CONNECTING:
     		text_verbindungsstatus.setText("verbinden ...");
         	text_verbindungsstatus.setTextColor(Color.YELLOW);
         	break;
-    	case 2:
+    	case NetworkModule.CONN_OPEN:
     		text_verbindungsstatus.setText("verbunden");
         	text_verbindungsstatus.setTextColor(Color.GREEN);
         	button_verbindenbutton.setText("trennen");
@@ -74,6 +82,10 @@ public class ConfigActivity extends SherlockActivity {
     	Callbacksplit.registerConfigActivity(null);
     }
 	
+	/**
+	 * Loads ActionBar, enables Back button and
+	 * gets and refreshes Battery and Connection Icons.
+	 */
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -90,6 +102,10 @@ public class ConfigActivity extends SherlockActivity {
         return true;
     }
 	
+    /**
+     * Handles option menu clicks.
+     * Shows other activities or closes the application.
+     */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -155,6 +171,13 @@ public class ConfigActivity extends SherlockActivity {
 //    	verbindungs_dialog.show();
 //    	*/
 	
+	/**
+	 * Activates when the Connection Button is pressed.
+	 * 
+	 * @param view	ignored
+	 * 
+	 * Opens or closes the network connection.
+	 */
 	public void verbindungsbutton_event(View view)
 	{
 		/*Text aus dem Texteingabefeld*/
@@ -172,6 +195,13 @@ public class ConfigActivity extends SherlockActivity {
     	}
 	}
 	
+	/**
+	 * Activates when the Close button is pressed.
+	 * 
+	 * @param view	ignored
+	 * 
+	 * Closes the application.
+	 */
 	public void cfgbutton_close_event(View view)
 	{
 		finish();
@@ -181,19 +211,24 @@ public class ConfigActivity extends SherlockActivity {
 	/************ Dynamisches Aenderugszeug *****************
      ********************************************************/
     
+	/**
+	 * Refreshes the text of the connection state and button.
+	 * 
+	 * @param state	Connection state (see NetworkModule.CONN_ constants)
+	 */
     public void changeConnectionView(int state){
     	switch(state)
     	{
-    	case 0:
+    	case NetworkModule.CONN_CLOSED:
     		text_verbindungsstatus.setText("nicht verbunden");
         	text_verbindungsstatus.setTextColor(Color.RED);
         	button_verbindenbutton.setText("verbinden");
         	break;
-    	case 1:
+    	case NetworkModule.CONN_CONNECTING:
     		text_verbindungsstatus.setText("verbinden ...");
         	text_verbindungsstatus.setTextColor(Color.YELLOW);
         	break;
-    	case 2:
+    	case NetworkModule.CONN_OPEN:
     		text_verbindungsstatus.setText("verbunden");
         	text_verbindungsstatus.setTextColor(Color.GREEN);
         	button_verbindenbutton.setText("trennen");
@@ -201,13 +236,21 @@ public class ConfigActivity extends SherlockActivity {
     	}
     }
     
+    /**
+     * Sets the Battery Icon in the ActionBar.
+     * 
+     * @param pic	Drawable of the Battery Icon
+     */
     public void setActBarBatteryIcon(Drawable pic){
     	if(pic!=null)
     		BatteryIcon.setIcon(pic);
     }
 	
+    /**
+     * Sets the Connecion Icon depending on the current connection state.
+     */
     public void setActBarConnectIcon(){
-    	if(NetworkModule.IsConnected()==0)
+    	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);
     	}

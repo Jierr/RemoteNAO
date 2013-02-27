@@ -24,6 +24,14 @@ class RobotInformation
 	String State;
 };
 
+/**
+ * 
+ * @file	NetworkModule.java
+ * @author	Peter Küffner
+ *
+ * Handles everything related to the network connection to the robot.
+ * 
+ */
 public class NetworkModule {
 
 	private static String IP_Addr = "134.109.151.142";
@@ -50,6 +58,13 @@ public class NetworkModule {
 	private static ArrayList<EventCallback> EventList = new ArrayList<EventCallback>();
 	private static RobotInformation RoboInfo = new RobotInformation();
 	
+	/**
+	 * Adds a Handler-Object to the NetworkModule's Callback list.
+	 *  
+	 * @param EvtHandler	Handler-Object for Callback-Function
+	 * @param EventType		Event Type for use in Callback-Function
+	 * @param InfoType		Type of returned information (use INFO_ constants)
+	 */
 	public static void RegisterCallback(Handler EvtHandler, int EventType, int InfoType)
 	{
 		if (EventType == -1)
@@ -68,6 +83,11 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Sets the IP address used to connect.
+	 * 
+	 * @param IP_Str	IP address string (xxx.xxx.xxx.xxx)
+	 */
 	public static void SetIPAddress(String IP_Str)
 	{
 		IP_Addr = IP_Str;
@@ -75,11 +95,28 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Returns the current IP address.
+	 * 
+	 * @return	IP address string (xxx.xxx.xxx.xxx)
+	 */
 	public static String GetIPAddress()
 	{
 		return IP_Addr;
 	}
 	
+	/**
+	 * Tells the robot to move his legs/arms/head.
+	 * 
+	 * @param Type		Type of movement
+	 * @param Direction	direction character (use MOVE_ constants)
+	 * 
+	 * Movement types:
+	 * 		0 - walk (move legs)
+	 * 		1 - move left arm
+	 * 		2 - move right arm
+	 * 		3 - move head
+	 */
 	public static void Move(int Type, char Direction)
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -116,6 +153,9 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Tells the robot to stop all current actions.
+	 */
 	public static void Stop()
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -126,7 +166,10 @@ public class NetworkModule {
 		return;
 	}
 	
-	public static void SitToggle()
+	/**
+	 * Tells the robot to sit down.
+	 */
+	public static void Sit()
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
 			return;
@@ -136,6 +179,9 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Tells the robot to stand up.
+	 */
 	public static void StandUp()
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -146,6 +192,9 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Tells the robot to crouch and turn off his motors.
+	 */
 	public static void Rest()
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -156,26 +205,42 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Tells the robot to speak some words.
+	 * 
+	 * @param Text	Text to speak
+	 * 
+	 * Note: Underscores are not allowed.
+	 */
 	public static void Speak(String Text)
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
 			return;
 		
+		Text = Text.replace('_', ' ');	// replace _ with a space
 		NetTData.QueueCommand(NetworkThread.CMDTYPE.SPEAK, Text + "_");
 		
 		return;
 	}
 	
+	/**
+	 * Tells the robot to dance.
+	 * 
+	 * @param Text	reserved
+	 */
 	public static void Dance(String Text)
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
 			return;
 		
-		NetTData.QueueCommand(NetworkThread.CMDTYPE.DANCE, Text);
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.DANCE, "");
 		
 		return;
 	}
 	
+	/**
+	 * Tells the robot to wave.
+	 */
 	public static void Wink()
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -186,6 +251,9 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Tells the robot to wipe.
+	 */
 	public static void Wipe()
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -196,6 +264,9 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Asks the robot for his current battery state.
+	 */
 	public static void RequestBatteryState()
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -206,6 +277,12 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Returns information about the robot's current state.
+	 * 
+	 * @param Type	Type of information to return (see INFO_ constants)
+	 * @return		Object with requested information.
+	 */
 	public static Object GetInfoData(int Type)
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -223,6 +300,9 @@ public class NetworkModule {
 		return 0;
 	}
 	
+	/**
+	 * Starts connecting to the robot.
+	 */
 	public static void OpenConnection()
 	{
 		if (NetTData != null && NetTData.GetConnectionState() != CONN_CLOSED)
@@ -234,6 +314,9 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Closes the connection to the robot.
+	 */
 	public static void CloseConnection()
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
@@ -244,6 +327,11 @@ public class NetworkModule {
 		return;
 	}
 	
+	/**
+	 * Returns the current connection state.
+	 * 
+	 * @return	current connection state (see CONN_ constants)
+	 */
 	public static int IsConnected()
 	{
 		if (NetTData == null)
@@ -252,19 +340,19 @@ public class NetworkModule {
 		return NetTData.GetConnectionState();
 	}
 	
-	public static void net_test()
+	/*public static void net_test()
 	{
 		//DataOutputStream out = new DataOutputStream(outToServer);
 		//DataInputStream in = new DataInputStream(inFromServer);
 		
 		//SendCommand("Hello World");
-		/*System.out.println("Server says " + in.readLine());
+		System.out.println("Server says " + in.readLine());
 		while(in.available() > 0)
-			System.out.println("\t" + in.readLine());*/
+			System.out.println("\t" + in.readLine());
 		//out.writeBytes("QUIT\r\n\r\n");
 		
 		return;
-	}
+	}*/
 }
 
 
@@ -307,6 +395,12 @@ class NetworkThread extends Thread
 		CMDTYPE Type;
 		String Data;
 		
+		/**
+		 * CommandQueue Constructor.
+		 * 
+		 * @param CmdType	Command Type (see CMDTYPE enum)
+		 * @param CmdData	Command Data String
+		 */
 		CommandQueue(CMDTYPE CmdType, String CmdData)
 		{
 			Type = CmdType;
@@ -317,6 +411,14 @@ class NetworkThread extends Thread
 	};
 	Queue<CommandQueue> CmdQueue = new LinkedList<CommandQueue>();
 	
+	/**
+	 * NetworkThread Constructor.
+	 * 
+	 * @param DestIP	Robot IP Address
+	 * @param DestPort	Robot Port
+	 * @param CBEvtList	NetworkModule EventList member
+	 * @param RbInfo	NetworkModule RoboInfo member
+	 */
 	public NetworkThread(String DestIP, int DestPort, ArrayList<EventCallback> CBEvtList,
 						RobotInformation RbInfo)
 	{
@@ -330,6 +432,12 @@ class NetworkThread extends Thread
 		return;
 	}
 	
+	/**
+	 * Robot Network-Thread-Function.
+	 * 
+	 * Does all the important work like connecting, processing the command queue and
+	 * calling send and receive functions.
+	 */
 	@Override public void run()
 	{
 		boolean RetVal;
@@ -429,6 +537,11 @@ class NetworkThread extends Thread
 		return;
 	}
 	
+	/**
+	 * Calls a foreign function to nofity it of the changed connection state.
+	 * 
+	 * @param RetState	connection state send to the callback function
+	 */
 	private void ConnectionCallback(int RetState)
 	{
 		EventCallback DestCB;
@@ -441,6 +554,13 @@ class NetworkThread extends Thread
 		return;
 	}
 	
+	/**
+	 * Returns an EventCallback-object from EventList with the given InfoType
+	 * or null if there is no matching InfoType found.
+	 *  
+	 * @param InfoType	information type of the callback (see INFO_ constants)
+	 * @return			EventCallback-object with InfoType or null
+	 */
 	private EventCallback GetCallback(int InfoType)
 	{
 		int CurEvt;
@@ -456,6 +576,12 @@ class NetworkThread extends Thread
 		return null;
 	}
 	
+	/**
+	 * Handles the robot's responses, if there are any.
+	 * 
+	 * Checks for new received data, evaluates the received commands and
+	 * calls possile callback functions.
+	 */
 	private void HandleAnswer()
 	{
 		try
@@ -489,23 +615,10 @@ class NetworkThread extends Thread
 		if (ReceiveStr.length() == 0)
 			return;
 		
-		/*if (CmdStr.equals(CMDTYPE_SIT))
-		{
-			RoboInfo.SitState = ReceiveStr;
-			
-			//Log.v("NetMod.SIT", "returned string: " + ReceiveStr);
-			DestCB = GetCallback(NetworkModule.INFO_STATE);
-			ArgObj = RoboInfo.SitState;
-		}*/
 		if (CmdStr.equals(RETCMD_STATE))
 		{
-			/*	STATE_CROUCH
-				STATE_STAND
-				STATE_SIT
-				STATE_WALK
-				STATE_STOP
-				STATE_MOVE
-				STATE_UNKNOWN	*/
+			//	STATE_CROUCH, STATE_STAND, STATE_SIT, STATE_WALK,
+			//	STATE_STOP, STATE_MOVE, STATE_UNKNOWN
 			RoboInfo.State = ReceiveStr;
 			
 			Log.v("NetMod.SIT", "returned string: " + ReceiveStr);
@@ -532,6 +645,9 @@ class NetworkThread extends Thread
 		return;
 	}
 	
+	/**
+	 * Requests the thread to stop and close the connection.
+	 */
 	public void StopThread()
 	{
 		CloseConn = true;
@@ -543,16 +659,31 @@ class NetworkThread extends Thread
 		return;
 	}
 	
+	/**
+	 * Returns the current connection state.
+	 *  
+	 * @return	ConnectionState member variable (see CONN_ constants)
+	 */
 	public int GetConnectionState()
 	{
 		return ConnectionState;
 	}
 	
+	/**
+	 * Returns the connection state as a boolean variable.
+	 * 
+	 * @return	true if the connection to the robot is active.
+	 */
 	public boolean HasConnection()
 	{
 		return ConnectionState == NetworkModule.CONN_OPEN && ! Client.isClosed();
 	}
 	
+	/**
+	 * Sends a dummy message to the robot to test, if the connection is still active.
+	 * 
+	 * @return	Returns the connection state after the command was sent.
+	 */
 	public boolean TestConnection()
 	{
 		CommandQueue NewCmd;
@@ -568,6 +699,12 @@ class NetworkThread extends Thread
 		return Client.isConnected();
 	}
 	
+	/**
+	 * Adds a command to the command queue.
+	 * 
+	 * @param Type	Command type (see CMDTYPE enum)
+	 * @param Data	Command data string
+	 */
 	public void QueueCommand(CMDTYPE Type, String Data)
 	{
 		CommandQueue NewCmd;
@@ -582,6 +719,11 @@ class NetworkThread extends Thread
 		return;
 	}
 	
+	/**
+	 * Opens a network connection using the current IP address and port.
+	 * 
+	 * @return	True if the connection was successful, false if not.
+	 */
 	private boolean OpenNet()
 	{
 		try
@@ -632,6 +774,11 @@ class NetworkThread extends Thread
 		}
 	}
 	
+	/**
+	 * Sends the "disconnect" command to the robot and closes the network connection.
+	 * 
+	 * @return	true after successful disconnection, false if there's an error
+	 */
 	private boolean CloseNet()
 	{
 		try
@@ -661,6 +808,11 @@ class NetworkThread extends Thread
 		return true;
 	}
 
+	/**
+	 * Sends a command to the robot.
+	 * 
+	 * @param CommandStr Command string to send
+	 */
 	private void SendCommand(String CommandStr)
 	{
 //		Log.v("NetMod.Send", "isConnected: " + (Client.isConnected() ? "true" : "false"));
@@ -701,6 +853,11 @@ class NetworkThread extends Thread
 		return;
 	}
 	
+	/**
+	 * Receives a command (answer from previous request) from the robot.
+	 * 
+	 * @return	Received Data as String
+	 */
 	private String GetAnswer()
 	{
 		String InStr;
