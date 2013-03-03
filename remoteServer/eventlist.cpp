@@ -183,6 +183,56 @@ void EventList::removeDone()
 	mutex->unlock();
 }
 
+void EventList::removePending()
+{
+	Event* curr;
+	Event* prev;
+	mutex->lock();
+	
+	prev = 0;
+	curr = first;
+	
+	while(curr)
+	{
+		if ((curr->classification == EVT_PENDINGABS) || 
+		    (curr->classification == EVT_PENDINGPAR))
+		{
+			//curr != first
+			if(prev)
+			{
+				prev->next = curr->next;
+				//if curr is the last event, and not
+				//the onliest
+				if (curr == last)
+					last = prev;
+				delete curr;
+				curr = prev->next;
+			}
+			else
+			{
+				first = curr->next;
+				//if curr is the onliest event then
+				if (curr == last)
+				{
+					first = 0;
+					last = 0;
+				}
+				delete curr;
+				curr = first;
+			}
+			
+		}
+		else
+		{		
+			prev = curr;
+			curr = curr->next;
+		}
+		
+	}
+	
+	mutex->unlock();
+}
+
 void EventList::removeAll()
 {
 }

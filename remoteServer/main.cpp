@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 	
 	
 	
-	//qi::os::msleep(5000);
+	qi::os::sleep(2);
 	//kills old BrokerManager Singleton and replaces it with a new one
 	//fBrokerManager is weak pointer and converted to shared ptr via lock
 	//lock additionally checks if there is one reference existing to AlBM
