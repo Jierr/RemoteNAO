@@ -19,13 +19,14 @@
 
 #define IPARAM_LEN 2
 
-
+/*=========== Decoding Stages ============*/
 #define STG_ERROR 0
 #define STG_FETCH 1
 #define STG_PARAM 2
 #define STG_VALID 3
+/*========================================*/
 
-
+/*============ Comand Specfier TOKENs ============*/
 #define CODE_UNKNOWN 0
 #define CODE_INVALID -1
 #define CODE_ABSOLUT 10
@@ -46,6 +47,7 @@
 #define CODE_ARM 1004
 #define CODE_BAT 1100
 #define CODE_STATE 1101
+/*=================================================*/
 
 #define MOV_STOP -1
 #define MOV_FORWARD 1
@@ -55,16 +57,18 @@
 #define ARM_LEFT 11
 #define ARM_RIGHT 12
 
+/*=========== Event Classification ===============*/
 #define EVT_PENDING 1
 #define EVT_PENDINGABS 2
 #define EVT_PENDINGPAR 3
 #define EVT_BUSY 4
 #define EVT_DONE 5
 #define EVT_CONFLICTED 6
+/*================================================*/
 
 typedef int state_t;
 
-enum {
+enum naoStates {
 	STATE_ABSOLUT = 0x00FF,
 	STATE_UNKNOWN = 0x0040,
 	STATE_KNOWN   = 0x0080,

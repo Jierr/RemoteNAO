@@ -60,6 +60,7 @@ class NetNao : public AL::ALModule
 		\brief Listen for incomming connections.
 		
 		Only one connection is allowed on incomming queue.
+		This Call is blocking.
 		
 		\param sockServer returned server socket by bindTcp()
 		*/

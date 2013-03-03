@@ -11,7 +11,6 @@
 #include <alproxies/alrobotposeproxy.h>
 
 #include "manager.h"
-#include "decoder.h"
 #include "executer.h"
 #include "gen.h"
 #include "eventlist.h"
@@ -39,29 +38,8 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	BIND_METHOD(Manager::decode);
 	
 	mem = AL::ALMemoryProxy(broker);
-	//mem.setDescription(string("lastOp"), string("Last Operation"));	
 	
-	//mem.insertData("lastOp", CODE_INVALID);
-	//mem.insertData("msg", string("")); 
-	
-	vector<int> vtemp (2, 0);
-	vector<int> vtemp2 (2, 1);
-	//mem.insertData("iparams", (vector<int>)vtemp);
-	//vtemp2 = mem.getData("iparams");
-	cout << "vtemp2[0] = " << vtemp2[0] << endl;
-	cout << "vtemp2[1] = " << vtemp2[1] << endl;
-	
-	//lastOp = mem.getData("lastOp");
-	cout<< "lastOp Constructor: " << (int&)lastOp << endl;
-	
-	cout<< "Constructor!" << endl;
-	//dec = AL::ALModule::createModule<Decoder>(broker, "RMDecoder");
-	//exec = AL::ALModule::createModule<Executer>(broker, "RMExecuter");
-	
-	//accessExec.exec = exec;
-	//accessExec.pexec = AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0);
 	accessExec.exec->initEventList(eventList);
-	//accessExec.exec->executerRespond();
 }
 
 Manager::~Manager()
@@ -399,13 +377,7 @@ int Manager::decode(const string& toParse)
 			{
 				cout<< "-------------->Decoded Function: " << (int&)eventp.type << ", " << eventp.sparam << endl;
 				int ttype = eventp.type;
-				/*
-				vector<int> vtemp (eventp.iparams, eventp.iparams + sizeof(eventp.iparams)/sizeof(int));
-				mutex->lock();
-					mem.insertData("lastOp", eventp.type);
-					mem.insertData("msg", eventp.sparam);
-					mem.insertData("iparams", (vector<int>)vtemp);
-				mutex->unlock();	*/
+				
 				if (ttype == CODE_STOPALL)
 					eventList->addFirst(eventp);
 				else
@@ -447,8 +419,6 @@ int Manager::decode(const string& toParse)
 
 	return pos;
 
-	//lastOp = code;
-	
 }
 
 void Manager::runExecuter()

@@ -12,8 +12,6 @@ set(_srcs2
 	managerModule.cpp
 	manager.h
 	manager.cpp
-	decoder.h
-	decoder.cpp
 	executer.h
 	executer.cpp
 	eventlist.h
