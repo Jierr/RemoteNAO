@@ -14,7 +14,11 @@ import com.actionbarsherlock.view.MenuItem;
 
 /**
  * 
+ * @file   BewegungActivity.java
+ * 
  * @author Riko Streller
+ * 
+ * Creates a surface to make the robot execute complex motion sequences by pressing one of the buttons
  *
  */
 public class SpecialsActivity extends SherlockActivity {
@@ -113,6 +117,13 @@ public class SpecialsActivity extends SherlockActivity {
 	/*********************** Auswahl ************************
      ********************************************************/
 	
+	/**
+	 * Funktion triggert by restbutton
+	 * Let the Networkmodule send a "RST" -> robot crouches and motors getting limp
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 *  
+	 */
 	public void specials_button1_event(View view) {
     	Toast toast = Toast.makeText(SpecialsActivity.this, "Motoren entspannen", Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
@@ -120,6 +131,14 @@ public class SpecialsActivity extends SherlockActivity {
     	NetworkModule.Rest();    	
     }
 	
+	/**
+	 * Funktion triggert by stand-/sitbutton
+	 * Let the Networkmodule send a "SIT" or "AUF" -> robot stands up or sit down
+	 * Funktionality of the button depending on the last state reported by the robot
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 *  
+	 */
 	public void specials_button2_event(View view) {
 		String state = (String) NetworkModule.GetInfoData(NetworkModule.INFO_STATE);
 		if(state == null)
@@ -142,6 +161,13 @@ public class SpecialsActivity extends SherlockActivity {
     	}
     }
     
+	/**
+	 * Funktion triggert by dancebutton
+	 * Let the Networkmodule send a "DNC" -> robot begins to dance
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 *  
+	 */
     public void specials_button3_event(View view) {
     	Toast toast = Toast.makeText(SpecialsActivity.this, "Tanz", Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
@@ -149,6 +175,13 @@ public class SpecialsActivity extends SherlockActivity {
     	NetworkModule.Dance(null);
     }
     
+    /**
+	 * Funktion triggert by wavebutton
+	 * Let the Networkmodule send a "WNK" -> robot begins to wave with his arm and says hallo
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 *  
+	 */
     public void specials_button4_event(View view) {
     	Toast toast = Toast.makeText(SpecialsActivity.this, "Winken", Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
@@ -156,6 +189,13 @@ public class SpecialsActivity extends SherlockActivity {
     	NetworkModule.Wink();
     }
     
+    /**
+	 * Funktion triggert by wipebutton
+	 * Let the Networkmodule send a "WIP" -> robot wipes his forehead
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 *  
+	 */
     public void specials_button5_event(View view) {
     	NetworkModule.Wipe();
     	Toast toast = Toast.makeText(SpecialsActivity.this, "PUH", Toast.LENGTH_SHORT);
@@ -166,6 +206,11 @@ public class SpecialsActivity extends SherlockActivity {
     /************ Dynamisches Aenderugszeug *****************
      ********************************************************/
     
+    /**
+     * Changes the text on the button
+     * 
+     * @param state	State reported by robot
+     */
     public void changeSitButtonText(String state){
     	final Button sitButton_text = (Button)findViewById(R.id.specials_button2);
     	

@@ -16,7 +16,10 @@ import com.actionbarsherlock.view.MenuItem;
 
 /**
  * 
+ * @file   BewegungActivity.java
  * @author Riko Streller
+ * 
+ * Creates a surface for control simple movement of the robot
  *
  */
 public class BewegungActivity extends SherlockActivity {
@@ -129,6 +132,11 @@ public class BewegungActivity extends SherlockActivity {
 		return true;
 	}
 	
+	/**
+	 * Creates and initialise the listener-functions for Radiobuttons
+	 * 
+	 * This function is used from the onCreate-function of this activity
+	 */
 	private void setListeners(){
 		
 		if (bewart_radiogroupA != null)
@@ -200,7 +208,16 @@ public class BewegungActivity extends SherlockActivity {
 	
 	/************** BEW_BUTTONS ******************
      *********************************************/
-    
+	
+	/**
+	 * Functionality for the Arrow-Up-Button
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 *  
+	 * Depending on what is chosen by the radiobuttons
+	 * the function makes the Networkmodule send a command 
+	 * to the robot to rise the head, one of the arms or to walk foreward
+	 */
     public void bew_button1_event(View view) {
     	int MoveType;
     	String ToastStr;
@@ -230,6 +247,15 @@ public class BewegungActivity extends SherlockActivity {
     	toast.show();
     }
     
+    /**
+	 * Functionality for the Arrow-Left-Button
+	 * 
+	 * @param view		ID of the button, which trigger this function
+	 *  
+	 * Depending on what is chosen by the radiobuttons
+	 * the function makes the Networkmodule send a command 
+	 * to the robot to turn the head left, move one arm left or makes the feet turn the robot left
+	 */
     public void bew_button2_event(View view) {
     	int MoveType;
     	String ToastStr;
@@ -259,6 +285,15 @@ public class BewegungActivity extends SherlockActivity {
     	toast.show();
     }
     
+    /**
+	 * Functionality for the Arrow-Right-Button
+	 * 
+	 * @param view		ID of the button, which trigger this function
+	 *  
+	 * Depending on what is chosen by the radiobuttons
+	 * the function makes the Networkmodule send a command 
+	 * to the robot to turn the head right, move one arm right or makes the feet turn the robot right
+	 */
     public void bew_button3_event(View view) {
     	int MoveType;
     	String ToastStr;
@@ -288,6 +323,15 @@ public class BewegungActivity extends SherlockActivity {
     	toast.show();
     }
     
+    /**
+	 * Functionality for the Arrow-Down-Button
+	 * 
+	 * @param view		ID of the button, which trigger this function
+	 *  
+	 * Depending on what is chosen by the radiobuttons
+	 * the function makes the Networkmodule send a command 
+	 * to the robot to lower the head, lower one of the arms or to walk backwards
+	 */
     public void bew_button4_event(View view) {
     	int MoveType;
     	String ToastStr;
@@ -317,6 +361,13 @@ public class BewegungActivity extends SherlockActivity {
     	toast.show();
     }
     
+    /**
+	 * Functionality for the Arrow-Down-Button
+	 * 
+	 * @param view		ID of the button, which trigger this function
+	 *  
+	 * By pressing this Button a STOP signal is sended and cancels every action of the robot
+	 */
     public void bew_button5_event(View view) {
     	
     	NetworkModule.Stop();

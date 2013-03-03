@@ -14,8 +14,10 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
 /**
- * 
+ * @file   ConfigActivity.java
  * @author Riko Streller
+ * 
+ * Creates a surface, to insert the IP-Adress for the connection to the robot
  *
  */
 public class ConfigActivity extends SherlockActivity {
@@ -174,7 +176,7 @@ public class ConfigActivity extends SherlockActivity {
 	/**
 	 * Activates when the Connection Button is pressed.
 	 * 
-	 * @param view	ignored
+	 * @param view	ignored, ID of the button, which trigger this function
 	 * 
 	 * Opens or closes the network connection.
 	 */
@@ -198,7 +200,7 @@ public class ConfigActivity extends SherlockActivity {
 	/**
 	 * Activates when the Close button is pressed.
 	 * 
-	 * @param view	ignored
+	 * @param view	ignored, ID of the button, which trigger this function
 	 * 
 	 * Closes the application.
 	 */

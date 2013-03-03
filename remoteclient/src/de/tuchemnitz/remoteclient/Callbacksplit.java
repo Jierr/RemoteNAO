@@ -5,7 +5,7 @@ import android.app.AlertDialog;
 import android.graphics.drawable.Drawable;
 
 /**
- * 
+ * @file	Callbacksplit.java
  * @author Riko Streller
  *
  * Does the communication between the Activities.

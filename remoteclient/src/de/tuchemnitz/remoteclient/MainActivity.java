@@ -18,7 +18,12 @@ import com.actionbarsherlock.view.MenuItem;
 
 /**
  * 
+ * @file   MainActivity.java
  * @author Riko Streller 
+ * 
+ * This is the acivity the whole clientprogramm is depending on
+ * All callback-functions and timers are running in this activity and the MainActivity
+ * is the main spot to get to the other activities.
  *
  */
 public class MainActivity extends SherlockActivity {
@@ -243,28 +248,53 @@ public class MainActivity extends SherlockActivity {
     
     /********************** Menu *************************
      *****************************************************/
+    
+    /**
+	 * Opens and starts the BewegngActivity 
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 */
     public void menu_button1_event(View view) {
     	final Intent bewintent = new Intent (this,BewegungActivity.class);
     	//Log.v("main button1", "bewIntent: " + bewintent.toString());
     	startActivity(bewintent);
     }
     
-    
+    /**
+	 * Opens and starts the SprachausgabeActivity 
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 */
     public void menu_button2_event(View view) {
     	final Intent spkintent = new Intent (this,SprachausgabeActivity.class);
     	startActivity(spkintent);
     }
     
+    /**
+	 * Opens and starts the SpecialsActivity 
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 */
     public void menu_button3_event(View view) {
     	final Intent specialsintent = new Intent (this,SpecialsActivity.class);
     	startActivity(specialsintent);
     }
     
+    /**
+	 * Opens and starts the ConfigActivity 
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 */
     public void menu_button4_event(View view) {
     	final Intent cfgintent = new Intent (this,ConfigActivity.class);
     	startActivity(cfgintent);
     }
     
+    /**
+	 * Only shows the about dialoge 
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 */
     public void menu_button5_event(View view) {
     	new AlertDialog.Builder(this)
 		.setMessage("Das ist eine App um den NAO zu steuern")
@@ -272,6 +302,11 @@ public class MainActivity extends SherlockActivity {
 		.show();
     }
     
+    /**
+    * @class BattTmrTask
+    *
+    * Provides functionality of the timer 
+    */ 
 	class BattTmrTask extends TimerTask
 	{
 		public void run()  
