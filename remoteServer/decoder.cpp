@@ -17,7 +17,7 @@ Decoder::Decoder(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 }
 
 Decoder::~Decoder()
-{		
+{	
 }
 
 void Decoder::init()
