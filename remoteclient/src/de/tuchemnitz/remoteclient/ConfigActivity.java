@@ -22,8 +22,8 @@ import com.actionbarsherlock.view.MenuItem;
  */
 public class ConfigActivity extends SherlockActivity {
 
-	private TextView text_verbindungsstatus;
-	private EditText textfeld_ipeingabe;
+	private TextView text_verbindungsstatus; ///< Text that tells the current connection sate
+	private EditText textfeld_ipeingabe; ///< String for holding the input of the ip-input-editfield
 	/*Buttons*/
 	private Button button_verbindenbutton;
 	

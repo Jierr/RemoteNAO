@@ -19,7 +19,7 @@ public class Callbacksplit {
 	private static SpecialsActivity SpecAct = null;
 	private static SprachausgabeActivity SpakAct = null;
 	private static Activity active_Activity = null;
-	private static Drawable BatteryState = null;
+	private static Drawable BatteryState = null; ///< remembers the last picture for battery level suitable to last fill level
 	
 	/**
 	 * Registers the current MainActivity instance.

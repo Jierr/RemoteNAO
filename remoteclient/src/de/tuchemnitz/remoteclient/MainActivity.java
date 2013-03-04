@@ -36,7 +36,11 @@ public class MainActivity extends SherlockActivity {
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
 	
-	
+	/**
+	* @class EvtHandler
+	*
+	* A class to handle the events vom the callback-message-queue
+	*/ 
 	private Handler EvtHandler = new Handler()
 	{
 		/**
