@@ -16,6 +16,16 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+/**
+ * 
+ * @file   MainActivity.java
+ * @author Riko Streller 
+ * 
+ * This is the acivity the whole clientprogramm is depending on
+ * All callback-functions and timers are running in this activity and the MainActivity
+ * is the main spot to get to the other activities.
+ *
+ */
 public class MainActivity extends SherlockActivity {
 
 	private Timer BattTimer = null;
@@ -26,9 +36,17 @@ public class MainActivity extends SherlockActivity {
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
 	
-	
+	/**
+	* @class EvtHandler
+	*
+	* A class to handle the events vom the callback-message-queue
+	*/ 
 	private Handler EvtHandler = new Handler()
 	{
+		/**
+		 * Handles callback messages from NetworkModule and
+		 * calls the Callbacksplit.
+		 */
 		@Override public void dispatchMessage(Message msg)
 		{
 		    //super.dispatchMessage(msg);
@@ -83,6 +101,9 @@ public class MainActivity extends SherlockActivity {
 		}
 	};
 	
+	/**
+	 * Callback and timer setup.  
+	 */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,15 +139,19 @@ public class MainActivity extends SherlockActivity {
 		Callbacksplit.unsetActiveActivity();
 	}
 	
+	/**
+	 * Kills the timer and closes the connection.
+	 */
 	@Override
     public void onDestroy(){
-    	
-    	BattTimer.cancel();
-    	NetworkModule.Rest();
-    	NetworkModule.CloseConnection();
     	super.onDestroy();
+    	BattTimer.cancel();
+    	NetworkModule.CloseConnection();
     }
 
+	/**
+	 * Draws the ActionBar.
+	 */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -148,6 +173,10 @@ public class MainActivity extends SherlockActivity {
         return true;
     }
     
+    /**
+     * Handles option menu clicks.
+     * Shows other activities or closes the application.
+     */
     @Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -180,8 +209,11 @@ public class MainActivity extends SherlockActivity {
 		return true;
 	}
     
+    /**
+     * Refreshes the ActionBar's network state icon.
+     */
     public void setActBarConnectIcon(){
-    	if(NetworkModule.IsConnected()==0)
+    	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);
     	}
@@ -206,7 +238,7 @@ public class MainActivity extends SherlockActivity {
 			.show();
     	}*/
     	
-    	NetworkModule.net_test();
+    	//NetworkModule.net_test();
     	//NetworkModule.CloseConnection();
     	/*new AlertDialog.Builder(this)
 			.setMessage("Test done.")
@@ -220,28 +252,53 @@ public class MainActivity extends SherlockActivity {
     
     /********************** Menu *************************
      *****************************************************/
+    
+    /**
+	 * Opens and starts the BewegngActivity 
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 */
     public void menu_button1_event(View view) {
     	final Intent bewintent = new Intent (this,BewegungActivity.class);
     	//Log.v("main button1", "bewIntent: " + bewintent.toString());
     	startActivity(bewintent);
     }
     
-    
+    /**
+	 * Opens and starts the SprachausgabeActivity 
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 */
     public void menu_button2_event(View view) {
     	final Intent spkintent = new Intent (this,SprachausgabeActivity.class);
     	startActivity(spkintent);
     }
     
+    /**
+	 * Opens and starts the SpecialsActivity 
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 */
     public void menu_button3_event(View view) {
     	final Intent specialsintent = new Intent (this,SpecialsActivity.class);
     	startActivity(specialsintent);
     }
     
+    /**
+	 * Opens and starts the ConfigActivity 
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 */
     public void menu_button4_event(View view) {
     	final Intent cfgintent = new Intent (this,ConfigActivity.class);
     	startActivity(cfgintent);
     }
     
+    /**
+	 * Only shows the about dialoge 
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 */
     public void menu_button5_event(View view) {
     	new AlertDialog.Builder(this)
 		.setMessage("Das ist eine App um den NAO zu steuern")
@@ -249,6 +306,11 @@ public class MainActivity extends SherlockActivity {
 		.show();
     }
     
+    /**
+    * @class BattTmrTask
+    *
+    * Provides functionality of the timer 
+    */ 
 	class BattTmrTask extends TimerTask
 	{
 		public void run()  

@@ -14,6 +14,14 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+/**
+ * 
+ * @file   BewegungActivity.java
+ * @author Riko Streller
+ * 
+ * Creates a surface for control simple movement of the robot
+ *
+ */
 public class BewegungActivity extends SherlockActivity {
 
 	static private int bewegungsart = R.id.bewa_rbutton_LAUFEN;
@@ -27,6 +35,9 @@ public class BewegungActivity extends SherlockActivity {
 	private MenuItem ConnectIcon;
 	
 	
+	/**
+	 * Loads/sets up the Activity layout and registers the callback.
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -65,6 +76,10 @@ public class BewegungActivity extends SherlockActivity {
     	Callbacksplit.registerBewegungActivity(null);
     }
 
+	/**
+	 * Loads ActionBar, enables Back button and
+	 * gets and refreshes Battery and Connection Icons.
+	 */
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -81,6 +96,10 @@ public class BewegungActivity extends SherlockActivity {
         return true;
     }
 	
+    /**
+     * Handles option menu clicks.
+     * Shows other activities or closes the application.
+     */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -113,6 +132,11 @@ public class BewegungActivity extends SherlockActivity {
 		return true;
 	}
 	
+	/**
+	 * Creates and initialise the listener-functions for Radiobuttons
+	 * 
+	 * This function is used from the onCreate-function of this activity
+	 */
 	private void setListeners(){
 		
 		if (bewart_radiogroupA != null)
@@ -184,7 +208,16 @@ public class BewegungActivity extends SherlockActivity {
 	
 	/************** BEW_BUTTONS ******************
      *********************************************/
-    
+	
+	/**
+	 * Functionality for the Arrow-Up-Button
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 *  
+	 * Depending on what is chosen by the radiobuttons
+	 * the function makes the Networkmodule send a command 
+	 * to the robot to rise the head, one of the arms or to walk foreward
+	 */
     public void bew_button1_event(View view) {
     	int MoveType;
     	String ToastStr;
@@ -214,6 +247,15 @@ public class BewegungActivity extends SherlockActivity {
     	toast.show();
     }
     
+    /**
+	 * Functionality for the Arrow-Left-Button
+	 * 
+	 * @param view		ID of the button, which trigger this function
+	 *  
+	 * Depending on what is chosen by the radiobuttons
+	 * the function makes the Networkmodule send a command 
+	 * to the robot to turn the head left, move one arm left or makes the feet turn the robot left
+	 */
     public void bew_button2_event(View view) {
     	int MoveType;
     	String ToastStr;
@@ -243,6 +285,15 @@ public class BewegungActivity extends SherlockActivity {
     	toast.show();
     }
     
+    /**
+	 * Functionality for the Arrow-Right-Button
+	 * 
+	 * @param view		ID of the button, which trigger this function
+	 *  
+	 * Depending on what is chosen by the radiobuttons
+	 * the function makes the Networkmodule send a command 
+	 * to the robot to turn the head right, move one arm right or makes the feet turn the robot right
+	 */
     public void bew_button3_event(View view) {
     	int MoveType;
     	String ToastStr;
@@ -272,6 +323,15 @@ public class BewegungActivity extends SherlockActivity {
     	toast.show();
     }
     
+    /**
+	 * Functionality for the Arrow-Down-Button
+	 * 
+	 * @param view		ID of the button, which trigger this function
+	 *  
+	 * Depending on what is chosen by the radiobuttons
+	 * the function makes the Networkmodule send a command 
+	 * to the robot to lower the head, lower one of the arms or to walk backwards
+	 */
     public void bew_button4_event(View view) {
     	int MoveType;
     	String ToastStr;
@@ -301,6 +361,13 @@ public class BewegungActivity extends SherlockActivity {
     	toast.show();
     }
     
+    /**
+	 * Functionality for the Arrow-Down-Button
+	 * 
+	 * @param view		ID of the button, which trigger this function
+	 *  
+	 * By pressing this Button a STOP signal is sended and cancels every action of the robot
+	 */
     public void bew_button5_event(View view) {
     	
     	NetworkModule.Stop();
@@ -313,13 +380,21 @@ public class BewegungActivity extends SherlockActivity {
     /************ Dynamisches Aenderugszeug *****************
      ********************************************************/
     
+    /**
+     * Sets the Battery Icon in the ActionBar.
+     * 
+     * @param pic	Drawable of the Battery Icon
+     */
     public void setActBarBatteryIcon(Drawable pic){
     	if(pic!=null)
     		BatteryIcon.setIcon(pic);
     }
     
+    /**
+     * Refreshes the ActionBar's network state icon.
+     */
     public void setActBarConnectIcon(){
-    	if(NetworkModule.IsConnected()==0)
+    	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);
     	}

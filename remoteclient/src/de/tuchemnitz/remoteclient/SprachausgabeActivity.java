@@ -22,11 +22,22 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+/**
+ * @file   SprachausgabeActivity.java
+ * 
+ * @author Riko Streller
+ * 
+ * Creates a surface with a editable field for text, which the robot should speak
+ *
+ */
 public class SprachausgabeActivity extends SherlockActivity {
 
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
 	
+	/**
+	 * Loads the Activity layout and registers the callback.
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -51,6 +62,10 @@ public class SprachausgabeActivity extends SherlockActivity {
     	Callbacksplit.registerSprachausgabeActivity(null);
     }
 
+	/**
+	 * Loads ActionBar, enables Back button and
+	 * gets and refreshes Battery and Connection Icons.
+	 */
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -67,6 +82,10 @@ public class SprachausgabeActivity extends SherlockActivity {
         return true;
     }
 	
+    /**
+     * Handles option menu clicks.
+     * Shows other activities or closes the application.
+     */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -100,24 +119,38 @@ public class SprachausgabeActivity extends SherlockActivity {
 	}
 	
 	
+	/**
+	 * Makes the Networkmodule send the text from the editfield as speakmessage to the robot
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 *  
+	 */
 	public void okbutton_event(View view){
 		EditText textfeld = (EditText)findViewById(R.id.spk_editText1);
     	String words = textfeld.getText().toString();
     	NetworkModule.Speak(words);
-    	textfeld.setText(null);    	
+    	textfeld.setText(null);
 	}
 	
 	
     /************ Dynamisches Aenderugszeug *****************
      ********************************************************/
     
+	/**
+	 * Sets the Battery Icon in the ActionBar.
+     * 
+     * @param pic	Drawable of the Battery Icon
+	 */
 	public void setActBarBatteryIcon(Drawable pic){
     	if(pic!=null)
     		BatteryIcon.setIcon(pic);
     }
 	
+	/**
+	 * Refreshes the ActionBar's network state icon.
+	 */
 	public void setActBarConnectIcon(){
-    	if(NetworkModule.IsConnected()==0)
+    	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);
     	}
@@ -127,7 +160,14 @@ public class SprachausgabeActivity extends SherlockActivity {
     	}
     }
 	
-	
+	/**
+	 * Funktion for opening a save/load text dialog
+	 * 
+	 * @param view		ignored, ID of the button, which trigger this function
+	 *  
+	 * Opens a dialog, where text from the editfield in the activity can be saved or loaded
+	 * to a specified place declared by number
+	 */
 	public void saveload(View view){
 		/* Dialogbox erstellen*/
 		final Dialog spk_dialog = new Dialog(SprachausgabeActivity.this);
@@ -138,7 +178,12 @@ public class SprachausgabeActivity extends SherlockActivity {
 		textanzeige.setText(new FileSave().loadshort(1));
 		
 		final EditText numberfield = (EditText) spk_dialog.findViewById(R.id.spkdial_editText_num);
-		numberfield.setOnEditorActionListener(new OnEditorActionListener() {	
+		
+		/**
+		 * Setup the Listener for input in the numberfield
+		 * 
+		 */
+		numberfield.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				final EditText numberfield = (EditText) spk_dialog.findViewById(R.id.spkdial_editText_num);
@@ -155,6 +200,12 @@ public class SprachausgabeActivity extends SherlockActivity {
 
 		/* ------------ Funktion bei - Button ------------ */
 		Button Button_Minus = (Button) spk_dialog.findViewById(R.id.spkdial_minus);
+		/**
+		 * Setup the Listener for the minusbutton
+		 * 
+		 * On click decreases the number of the storage space
+		 * 
+		 */
 		Button_Minus.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -171,6 +222,12 @@ public class SprachausgabeActivity extends SherlockActivity {
 		});
 		/* ------------ Funktion bei + Button ------------ */
 		Button Button_Plus = (Button) spk_dialog.findViewById(R.id.spkdial_plus);
+		/**
+		 * Setup the Listener for the plusbutton
+		 * 
+		 * On click increases the number of the storage space
+		 * 
+		 */
 		Button_Plus.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -186,6 +243,11 @@ public class SprachausgabeActivity extends SherlockActivity {
 			}
 		});
 		Button Button_Save = (Button) spk_dialog.findViewById(R.id.spkdial_save);
+		/**
+		 * By pressing the related buttton this function saves the text in 
+		 * the editfield of the activity, by writing it to the file on the line declared by storage space
+		 * 
+		 */
 		Button_Save.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -200,6 +262,11 @@ public class SprachausgabeActivity extends SherlockActivity {
 			}
 		});
 		Button Button_load = (Button) spk_dialog.findViewById(R.id.spkdial_load);
+		/**
+		 * By pressing the related buttton this function loads the text from the line, 
+		 * declared by storage space, in savefile to the editfield of the activity
+		 * 
+		 */
 		Button_load.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -214,6 +281,10 @@ public class SprachausgabeActivity extends SherlockActivity {
 			}
 		});	
 		Button Button_close = (Button) spk_dialog.findViewById(R.id.spkdial_close);
+		/**
+		 * By pressing the related buttton the save / load dialog will be closed
+		 * 
+		 */
 		Button_close.setOnClickListener(new OnClickListener() {			
 			@Override
 			public void onClick(View v) {		    	
@@ -226,6 +297,11 @@ public class SprachausgabeActivity extends SherlockActivity {
 		spk_dialog.show();		
 	}
 	
+	/**
+	* @class FileSave
+	*
+	* Provides access to a file for saving data
+	*/ 
 	class FileSave {
 		
 		FileOutputStream fos = null;
