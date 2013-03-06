@@ -140,6 +140,7 @@ public class SprachausgabeActivity extends SherlockActivity {
 	 * Sets the Battery Icon in the ActionBar.
      * 
      * @param pic	Drawable of the Battery Icon
+     * 
 	 */
 	public void setActBarBatteryIcon(Drawable pic){
     	if(pic!=null)
@@ -161,7 +162,7 @@ public class SprachausgabeActivity extends SherlockActivity {
     }
 	
 	/**
-	 * Funktion for opening a save/load text dialog
+	 * Function for opening a save/load text dialog
 	 * 
 	 * @param view		ignored, ID of the button, which trigger this function
 	 *  
@@ -282,7 +283,7 @@ public class SprachausgabeActivity extends SherlockActivity {
 		});	
 		Button Button_close = (Button) spk_dialog.findViewById(R.id.spkdial_close);
 		/**
-		 * By pressing the related buttton the save / load dialog will be closed
+		 * By pressing the related buttton the save/load dialog will be closed
 		 * 
 		 */
 		Button_close.setOnClickListener(new OnClickListener() {			

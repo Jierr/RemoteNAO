@@ -118,8 +118,8 @@ public class SpecialsActivity extends SherlockActivity {
      ********************************************************/
 	
 	/**
-	 * Funktion triggert by restbutton
-	 * Let the Networkmodule send a "RST" -> robot crouches and motors getting limp
+	 * Function triggered by Rest-Button
+	 * Makes the Networkmodule send a "RST" -> robot crouches and motors getting limp
 	 * 
 	 * @param view		ignored, ID of the button, which trigger this function
 	 *  
@@ -132,9 +132,9 @@ public class SpecialsActivity extends SherlockActivity {
     }
 	
 	/**
-	 * Funktion triggert by stand-/sitbutton
-	 * Let the Networkmodule send a "SIT" or "AUF" -> robot stands up or sit down
-	 * Funktionality of the button depending on the last state reported by the robot
+	 * Function triggered by Stand-/Sit-Button
+	 * Makes the Networkmodule send a "SIT" or "AUF" -> robot stands up or sit down
+	 * functionality of the button depending on the last state reported by the robot
 	 * 
 	 * @param view		ignored, ID of the button, which trigger this function
 	 *  
@@ -162,8 +162,8 @@ public class SpecialsActivity extends SherlockActivity {
     }
     
 	/**
-	 * Funktion triggert by dancebutton
-	 * Let the Networkmodule send a "DNC" -> robot begins to dance
+	 * Function triggered by Dance-Button
+	 * Makes the Networkmodule send a "DNC" -> robot begins to dance
 	 * 
 	 * @param view		ignored, ID of the button, which trigger this function
 	 *  
@@ -176,8 +176,8 @@ public class SpecialsActivity extends SherlockActivity {
     }
     
     /**
-	 * Funktion triggert by wavebutton
-	 * Let the Networkmodule send a "WNK" -> robot begins to wave with his arm and says hallo
+	 * Function triggered by Wave-Button
+	 * Makes the Networkmodule send a "WNK" -> robot begins to wave with his arm and says hallo
 	 * 
 	 * @param view		ignored, ID of the button, which trigger this function
 	 *  
@@ -190,8 +190,8 @@ public class SpecialsActivity extends SherlockActivity {
     }
     
     /**
-	 * Funktion triggert by wipebutton
-	 * Let the Networkmodule send a "WIP" -> robot wipes his forehead
+	 * Function triggered by Wipe-Button
+	 * Makes the Networkmodule send a "WIP" -> robot wipes his forehead
 	 * 
 	 * @param view		ignored, ID of the button, which trigger this function
 	 *  

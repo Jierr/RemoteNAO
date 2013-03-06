@@ -254,9 +254,9 @@ public class MainActivity extends SherlockActivity {
      *****************************************************/
     
     /**
-	 * Opens and starts the BewegngActivity 
+	 * Opens and starts the BewegungActivity 
 	 * 
-	 * @param view		ignored, ID of the button, which trigger this function
+	 * @param view		ignored, ID of the button, which triggers this function
 	 */
     public void menu_button1_event(View view) {
     	final Intent bewintent = new Intent (this,BewegungActivity.class);
@@ -267,7 +267,7 @@ public class MainActivity extends SherlockActivity {
     /**
 	 * Opens and starts the SprachausgabeActivity 
 	 * 
-	 * @param view		ignored, ID of the button, which trigger this function
+	 * @param view		ignored, ID of the button, which triggers this function
 	 */
     public void menu_button2_event(View view) {
     	final Intent spkintent = new Intent (this,SprachausgabeActivity.class);
@@ -277,7 +277,7 @@ public class MainActivity extends SherlockActivity {
     /**
 	 * Opens and starts the SpecialsActivity 
 	 * 
-	 * @param view		ignored, ID of the button, which trigger this function
+	 * @param view		ignored, ID of the button, which triggers this function
 	 */
     public void menu_button3_event(View view) {
     	final Intent specialsintent = new Intent (this,SpecialsActivity.class);
@@ -287,7 +287,7 @@ public class MainActivity extends SherlockActivity {
     /**
 	 * Opens and starts the ConfigActivity 
 	 * 
-	 * @param view		ignored, ID of the button, which trigger this function
+	 * @param view		ignored, ID of the button, which triggers this function
 	 */
     public void menu_button4_event(View view) {
     	final Intent cfgintent = new Intent (this,ConfigActivity.class);
@@ -297,7 +297,7 @@ public class MainActivity extends SherlockActivity {
     /**
 	 * Only shows the about dialoge 
 	 * 
-	 * @param view		ignored, ID of the button, which trigger this function
+	 * @param view		ignored, ID of the button, which triggers this function
 	 */
     public void menu_button5_event(View view) {
     	new AlertDialog.Builder(this)
