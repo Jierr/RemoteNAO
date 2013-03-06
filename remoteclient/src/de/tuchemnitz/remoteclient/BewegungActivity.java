@@ -216,7 +216,7 @@ public class BewegungActivity extends SherlockActivity {
 	 *  
 	 * Depending on what is chosen by the radiobuttons
 	 * the function makes the Networkmodule send a command 
-	 * to the robot to rise the head, one of the arms or to walk foreward
+	 * to the robot to rise the head, one of the arms or to walk forward
 	 */
     public void bew_button1_event(View view) {
     	int MoveType;
@@ -250,7 +250,7 @@ public class BewegungActivity extends SherlockActivity {
     /**
 	 * Functionality for the Arrow-Left-Button
 	 * 
-	 * @param view		ID of the button, which trigger this function
+	 * @param view		ignored, ID of the button, which trigger this function
 	 *  
 	 * Depending on what is chosen by the radiobuttons
 	 * the function makes the Networkmodule send a command 
@@ -288,7 +288,7 @@ public class BewegungActivity extends SherlockActivity {
     /**
 	 * Functionality for the Arrow-Right-Button
 	 * 
-	 * @param view		ID of the button, which trigger this function
+	 * @param view		ignored, ID of the button, which trigger this function
 	 *  
 	 * Depending on what is chosen by the radiobuttons
 	 * the function makes the Networkmodule send a command 
@@ -326,11 +326,11 @@ public class BewegungActivity extends SherlockActivity {
     /**
 	 * Functionality for the Arrow-Down-Button
 	 * 
-	 * @param view		ID of the button, which trigger this function
+	 * @param view		ignored, ID of the button, which trigger this function
 	 *  
 	 * Depending on what is chosen by the radiobuttons
 	 * the function makes the Networkmodule send a command 
-	 * to the robot to lower the head, lower one of the arms or to walk backwards
+	 * to the robot to lower the head, lower one of the arms or to walk backward
 	 */
     public void bew_button4_event(View view) {
     	int MoveType;
@@ -362,9 +362,9 @@ public class BewegungActivity extends SherlockActivity {
     }
     
     /**
-	 * Functionality for the Arrow-Down-Button
+	 * Functionality for the STOP-Button
 	 * 
-	 * @param view		ID of the button, which trigger this function
+	 * @param view		ignored, ID of the button, which trigger this function
 	 *  
 	 * By pressing this Button a STOP signal is sended and cancels every action of the robot
 	 */

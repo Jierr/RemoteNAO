@@ -176,7 +176,7 @@ public class ConfigActivity extends SherlockActivity {
 	/**
 	 * Activates when the Connection Button is pressed.
 	 * 
-	 * @param view	ignored, ID of the button, which trigger this function
+	 * @param view	ignored, ID of the button, which triggers this function
 	 * 
 	 * Opens or closes the network connection.
 	 */
@@ -249,7 +249,7 @@ public class ConfigActivity extends SherlockActivity {
     }
 	
     /**
-     * Sets the Connecion Icon depending on the current connection state.
+     * Sets the Connection Icon depending on the current connection state.
      */
     public void setActBarConnectIcon(){
     	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)

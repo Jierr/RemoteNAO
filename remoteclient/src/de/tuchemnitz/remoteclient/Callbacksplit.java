@@ -94,18 +94,18 @@ public class Callbacksplit {
 	}
 	
 	/**
-	 * Registers the current SprachausgabeActivity act instance.
+	 * Registers the current SprachausgabeActivity instance.
 	 * 
-	 * @param act	current SprachausgabeActivity act instance
+	 * @param act	current SprachausgabeActivity instance
 	 */
 	public static void registerSprachausgabeActivity(SprachausgabeActivity act){
 		SpakAct = act;
 	}
 	
 	/**
-	 * Returns the current SprachausgabeActivity act instance.
+	 * Returns the current SprachausgabeActivity instance.
 	 * 
-	 * @return	current registered SprachausgabeActivity act instance
+	 * @return	current registered SprachausgabeActivity instance
 	 */
 	public static SprachausgabeActivity getSprachausgabeActivity(){
 		return SpakAct;
