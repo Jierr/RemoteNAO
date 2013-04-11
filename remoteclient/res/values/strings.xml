@@ -51,5 +51,15 @@
     <string name="title_activity_sprachausgabe">Sprachausgabe</string>
     <string name="title_activity_config">Netzwerkverbindung</string>
     <string name="title_activity_specials">SpecialsActivity</string>
+    
+    <string name="About_Headline">Android Remote Steuerung</string>
+    
+    <string name="About_Description">
+        Das ist eine App um den NAO zu steuern.\n
+        Die NAO-Remote-Steuerung wurde im Rahmen des 
+        Softwareengeneering-Praktikums an der TU-Chemnitz entwickelt.\n\n
+        Diese Software ist ausschließlich zur nicht kommerziellen Nutzung gedacht.
+    </string>
+    <string name="About_Button">Aha</string>
 
 </resources>

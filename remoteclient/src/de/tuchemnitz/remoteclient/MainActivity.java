@@ -4,6 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -11,6 +12,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
@@ -300,10 +303,20 @@ public class MainActivity extends SherlockActivity {
 	 * @param view		ignored, ID of the button, which triggers this function
 	 */
     public void menu_button5_event(View view) {
-    	new AlertDialog.Builder(this)
-		.setMessage("Das ist eine App um den NAO zu steuern")
-		.setNeutralButton("Wer weiss?", null)
-		.show();
+    	final Dialog about_dialog = new Dialog(MainActivity.this);
+    	about_dialog.setContentView(R.layout.dialog_about);
+    	Button Button_close = (Button) about_dialog.findViewById(R.id.aboutdial_closebutton);
+		/**
+		 * By pressing the related buttton the about dialog will be closed
+		 * 
+		 */
+		Button_close.setOnClickListener(new OnClickListener() {			
+			@Override
+			public void onClick(View v) {		    	
+		    	about_dialog.dismiss();
+			}
+		});
+    	about_dialog.show();
     }
     
     /**
