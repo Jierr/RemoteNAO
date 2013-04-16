@@ -6,14 +6,22 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 import android.R.drawable;
+import android.accounts.NetworkErrorException;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
+import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.webkit.WebView.FindListener;
 import android.widget.ImageView;
@@ -40,7 +48,13 @@ public class VideoModule {
 		    
 			if(video_dialog != null)
 			{
-				clickpic.setImageResource(R.drawable.stop);
+				//ImageFactroy msg.obj
+				//clickpic.setImageResource(R.drawable.stop);
+				BitmapFactory.Options opt = new BitmapFactory.Options();
+				opt.inDither = true;
+				opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
+				Bitmap bitmap = BitmapFactory.decodeByteArray((byte[])msg.obj, 0, msg.arg2, opt);
+				clickpic.setImageBitmap(bitmap);
 			}
 		    
 		    return;
@@ -62,10 +76,18 @@ public class VideoModule {
     	clickpic.setOnClickListener(new OnClickListener() {			
 			@Override
 			public void onClick(View v) {
-				NetVideo.StopThread();
 				video_dialog.dismiss();
 			}
 		});
+    	
+    	video_dialog.setOnDismissListener(new OnDismissListener() {
+			
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				NetVideo.StopThread();
+			}
+		});
+    	
     	
 		//Register Callback for getting Pic from VideoThread
 		//NetworkModule.RegisterCallback(null,		-1,				0);
@@ -89,6 +111,7 @@ class VideoThread extends Thread {
 	private final int Port = 0x8001;
 	private volatile boolean CloseVideo = false;
 	private Handler RecEvHandler = null;
+	DatagramSocket videosocket = null;
 	
 	public VideoThread(Handler EventHandler){
 		RecEvHandler = EventHandler;
@@ -100,7 +123,6 @@ class VideoThread extends Thread {
 	{
 		//CloseVideo = false;
 		//byte[] inData = new byte[6144]; // Platz für Pakete
-		DatagramSocket videosocket = null;
 		
 		try {
 			videosocket = new DatagramSocket(Port); // Socket binden
@@ -112,43 +134,32 @@ class VideoThread extends Thread {
 		
 		while(!CloseVideo)
 		{
-			synchronized(this)
-			{
-				try
-				{
-					this.wait(400);
-				}
-				catch (InterruptedException e)
-				{
-					e.printStackTrace();
-					CloseVideo = true;
-				}
-			}
 			//---------------------------------------------
 			// UDP-Verbindung
 			
-//			DatagramPacket packet = new DatagramPacket( new byte[6144], 6144 );
-//			try {
-//				videosocket.receive( packet );
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+			DatagramPacket packet = new DatagramPacket( new byte[6144], 6144 );
+			try {
+				videosocket.receive( packet );
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				Log.v("Video.Thread", "Receive Exeption END");
+				e.printStackTrace();
+				return;
+			}
 
 			// Empfänger auslesen
 			//InetAddress address = packet.getAddress();
 			//int         port    = packet.getPort();
-//			int         len     = packet.getLength();
-//			byte[]      data    = packet.getData();
+			int         len     = packet.getLength();
+			byte[]      data    = packet.getData();
 			
-			Log.v("Video.Thread", "run - "+ RecEvHandler.toString());
+			//Log.v("Video.Thread", "run - "+ RecEvHandler.toString());
 			if(RecEvHandler != null)
 			{
-				RecEvHandler.sendMessage(Message.obtain(null, 0, "Hallo"));
+				RecEvHandler.sendMessage(Message.obtain(null,0,0, len, data));
 			}
 			
 		}
-		videosocket.close();
 		Log.v("Video.Thread", "END");
 	}
 	
@@ -156,9 +167,11 @@ class VideoThread extends Thread {
 	{
 		CloseVideo = true;
 		Log.v("Video.Thread", "Finish - " + String.valueOf(CloseVideo));
-		synchronized (this)
+		try{
+			videosocket.close();
+		}catch(Exception e)
 		{
-			this.notify();
+			e.printStackTrace();
 		}
 		
 		return;
