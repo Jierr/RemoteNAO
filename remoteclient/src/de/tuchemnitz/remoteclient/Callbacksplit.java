@@ -120,6 +120,13 @@ public class Callbacksplit {
 		active_Activity = aact;
 	}
 	
+//	/**
+//	 * Returns the currently active Activity.
+//	 */
+//	public static Activity getActiveActivity(){
+//		return active_Activity;
+//	}
+	
 	/**
 	 * Unsets the active Activity.
 	 */

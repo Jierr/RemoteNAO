@@ -39,6 +39,8 @@ public class MainActivity extends SherlockActivity {
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
 	
+	private VideoModule videoscreen = null;
+	
 	/**
 	* @class EvtHandler
 	*
@@ -129,6 +131,8 @@ public class MainActivity extends SherlockActivity {
         BattTimer = new Timer();
 		//BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
         BattTimer.schedule(new BattTmrTask(), 1000, 10000);
+        
+        videoscreen = new VideoModule(MainActivity.this);
     }
     
 	@Override
@@ -188,6 +192,9 @@ public class MainActivity extends SherlockActivity {
 		switch(item.getItemId()){
 		case android.R.id.home:
 			finish();
+			break;
+		case R.id.acb_video:
+			videoscreen.create_dialog();
 			break;
 		case R.id.acb_m_1:
 			break;

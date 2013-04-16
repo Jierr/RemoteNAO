@@ -5,7 +5,7 @@
     <item android:id="@+id/acb_video" android:showAsAction="always"
         android:title="Video"
 		android:checkable="false" android:checked="false"
-		android:icon="@drawable/"/>
+		android:icon="@drawable/camsymbol"/>
     
     <item android:id="@+id/acb_test" android:showAsAction="always"
         android:title="Remoteapp" android:icon="@drawable/drop_menu">
