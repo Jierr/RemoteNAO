@@ -3,7 +3,11 @@ package de.tuchemnitz.remoteclient;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
+
+import de.tuchemnitz.remoteclient.NetworkModule.VIDEOSTATE;
 
 import android.R.drawable;
 import android.accounts.NetworkErrorException;
@@ -30,13 +34,14 @@ public class VideoModule {
 	
 	// A reference of this must be availible as long as the activity is availibile and
 	// a video should showed
-	private Activity ref_activity = null;
-	private Dialog video_dialog = null;
-	private ImageView clickpic = null;
-	private VideoThread NetVideo = null;
+	//private Activity ref_activity = null;
+	private static Dialog video_dialog = null;
+	private static ImageView video_picture = null;
+	private static VideoThread NetVideo = null;
+	private static boolean close_videothread_mark = false;
 	
 	
-	private Handler RecvPicHandler = new Handler()
+	private static Handler RecvPicHandler = new Handler()
 	{
 		/**
 		 * Handles callback messages from VideoThread
@@ -46,7 +51,7 @@ public class VideoModule {
 		{
 		    //super.dispatchMessage(msg);
 		    
-			if(video_dialog != null)
+			if(video_picture != null)
 			{
 				//ImageFactroy msg.obj
 				//clickpic.setImageResource(R.drawable.stop);
@@ -54,26 +59,63 @@ public class VideoModule {
 				opt.inDither = true;
 				opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
 				Bitmap bitmap = BitmapFactory.decodeByteArray((byte[])msg.obj, 0, msg.arg2, opt);
-				clickpic.setImageBitmap(bitmap);
+				video_picture.setImageBitmap(bitmap);
+				Log.v("VideoMod", "Pic changed");
 			}
 		    
 		    return;
 		}
 	};
 	
-	public VideoModule(Activity callingActivity)
+//	public VideoModule(Activity callingActivity)
+//	{
+//		ref_activity = callingActivity;
+//		
+//		//Creating the dialog
+//		video_dialog = new Dialog(ref_activity);
+//		video_dialog.setContentView(R.layout.dialog_video);
+//		clickpic = (ImageView) video_dialog.findViewById(R.id.videodial_pic);
+//		/**
+//		 * By pressing the related Image the about dialog will be closed
+//		 * 
+//		 */
+//    	clickpic.setOnClickListener(new OnClickListener() {			
+//			@Override
+//			public void onClick(View v) {
+//				video_dialog.dismiss();
+//			}
+//		});
+//    	
+//    	video_dialog.setOnDismissListener(new OnDismissListener() {
+//			
+//			@Override
+//			public void onDismiss(DialogInterface dialog) {
+//				NetVideo.StopThread();
+//			}
+//		});
+//    	
+//    	
+//		//Register Callback for getting Pic from VideoThread
+//		//NetworkModule.RegisterCallback(null,		-1,				0);
+//		//NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,		NetworkModule.INFO_CONN);
+//	}
+	
+	
+	
+	public static void create_dialog(Activity ref_activity, boolean closeVideoServerOnDialogDismiss)
 	{
-		ref_activity = callingActivity;
-		
 		//Creating the dialog
 		video_dialog = new Dialog(ref_activity);
 		video_dialog.setContentView(R.layout.dialog_video);
-		clickpic = (ImageView) video_dialog.findViewById(R.id.videodial_pic);
+		video_picture = (ImageView) video_dialog.findViewById(R.id.videodial_pic);
+		
+		close_videothread_mark = closeVideoServerOnDialogDismiss;
+		
 		/**
 		 * By pressing the related Image the about dialog will be closed
 		 * 
 		 */
-    	clickpic.setOnClickListener(new OnClickListener() {			
+		video_picture.setOnClickListener(new OnClickListener() {			
 			@Override
 			public void onClick(View v) {
 				video_dialog.dismiss();
@@ -84,31 +126,78 @@ public class VideoModule {
 			
 			@Override
 			public void onDismiss(DialogInterface dialog) {
-				NetVideo.StopThread();
+				video_dialog = null;
+				video_picture = null;
+				if (close_videothread_mark)
+				{
+					stopVideoServer();
+					close_videothread_mark = false;
+				}
 			}
 		});
-    	
-    	
-		//Register Callback for getting Pic from VideoThread
-		//NetworkModule.RegisterCallback(null,		-1,				0);
-		//NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,		NetworkModule.INFO_CONN);
-	}
-	
-	public void create_dialog()
-	{
-		NetVideo = new VideoThread(RecvPicHandler);
 		
     	video_dialog.show();
-    	
-    	NetVideo.start(); // start the run-function of VideoThread
 	}
-
+	
+	
+	// returns the port on success if error then -1 is returned
+	public static int startVideoServer()
+	{
+		if(NetVideo != null)
+		{
+			stopVideoServer();
+		}
+		
+		NetVideo = new VideoThread(RecvPicHandler);
+		NetVideo.start(); // start the run-function of VideoThread
+		
+		return NetVideo.getServerPort();
+	}
+	
+	public static int getVideoServerPort()
+	{
+		if(NetVideo != null)
+		{
+			return NetVideo.getServerPort();
+		}
+		return -1;
+	}
+	
+	public static void stopVideoServer()
+	{
+		if(NetVideo != null)
+		{
+			NetVideo.StopThread();
+			NetVideo = null;
+			unsetVideoPicture();
+		}
+	}
+	
+	public static boolean isVideoThreadStarted()
+	{
+		if( NetVideo == null)
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public static void setVideoPicture (ImageView active_image)
+	{
+		video_picture = active_image;
+	}
+	
+	public static void unsetVideoPicture()
+	{
+		video_picture = null;
+	}
 }
 
 
 class VideoThread extends Thread {
 	
-	private final int Port = 0x8001;
+	private int Port = 0x8001;
 	private volatile boolean CloseVideo = false;
 	private Handler RecEvHandler = null;
 	DatagramSocket videosocket = null;
@@ -118,6 +207,11 @@ class VideoThread extends Thread {
 		return;
 	}
 	
+	public int getServerPort()
+	{
+		return videosocket.getPort();
+	}
+	
 	@Override
 	public void run()
 	{
@@ -125,12 +219,41 @@ class VideoThread extends Thread {
 		//byte[] inData = new byte[6144]; // Platz für Pakete
 		
 		try {
-			videosocket = new DatagramSocket(Port); // Socket binden
+			videosocket = new DatagramSocket(0x8001); // Socket binden
 		} catch (SocketException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-			return;
+			try {
+				videosocket = new DatagramSocket(0); // Socket binden
+			} catch (SocketException e2) {
+				e2.printStackTrace();
+				return;
+			}
 		}
+		
+		NetworkModule.Video(VIDEOSTATE.ON, getServerPort());
+		
+		//----------------------------------------------------
+			InetAddress ia = null;
+			try {
+				ia = InetAddress.getByName( "134.109.114.10" );
+			} catch (UnknownHostException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+		      String s = "hallo";
+		      byte[] raw = s.getBytes();
+
+		      DatagramPacket packet1 = new DatagramPacket( raw, raw.length, ia, 32770 );
+
+			try {
+				videosocket.send( packet1 );
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		//------------------------------------
 		
 		while(!CloseVideo)
 		{
@@ -147,6 +270,7 @@ class VideoThread extends Thread {
 				return;
 			}
 
+		      
 			// Empfänger auslesen
 			//InetAddress address = packet.getAddress();
 			//int         port    = packet.getPort();
@@ -174,6 +298,7 @@ class VideoThread extends Thread {
 			e.printStackTrace();
 		}
 		
+		NetworkModule.Video(VIDEOSTATE.OFF);
 		return;
 	}
 	

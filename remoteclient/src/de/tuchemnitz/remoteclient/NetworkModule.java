@@ -55,6 +55,8 @@ public class NetworkModule {
 	public static final String STATE_MOVE		= "MOVING";
 	public static final String STATE_UNKNOWN	= "UNKNOWN";
 	
+	public static enum VIDEOSTATE{ OFF, ON	};
+	
 	private static ArrayList<EventCallback> EventList = new ArrayList<EventCallback>();
 	private static RobotInformation RoboInfo = new RobotInformation();
 	
@@ -278,6 +280,44 @@ public class NetworkModule {
 	}
 	
 	/**
+	 * start and stop the videomodule
+	 * extraparameter for port
+	 * 
+	 * @param state	The wante state of the videoconnection (ON or OFF available)
+	 * @param Port Port where the udp-server is listening
+	 */
+	public static void Video(VIDEOSTATE state, int Port)
+	{
+		String text = null;
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		if(state == VIDEOSTATE.OFF) text="OFF";
+		else if(state == VIDEOSTATE.ON && Port!=0) text="ON_"+String.valueOf(Port);
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.VIDEO, text);
+		
+		return;
+	}
+	
+	/**
+	 * only for stop the videomodule
+	 * port is not needed
+	 * 
+	 * @param state	The wante state of the videoconnection (ON or OFF available)
+	 */
+	public static void Video(VIDEOSTATE state)
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		if(state == VIDEOSTATE.OFF)
+		{
+			NetTData.QueueCommand(NetworkThread.CMDTYPE.VIDEO, "OFF");
+		}
+		return;
+	}
+	
+	/**
 	 * Returns information about the robot's current state.
 	 * 
 	 * @param Type	Type of information to return (see INFO_ constants)
@@ -360,7 +400,7 @@ class NetworkThread extends Thread
 {
 	public enum CMDTYPE
 	{
-		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, STANDUP, REST, SPEAK, DANCE, WINK, WIPE, GETBATT
+		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, STANDUP, REST, SPEAK, DANCE, WINK, WIPE, VIDEO, GETBATT
 	};
 	private final String CMDTYPE_MOVE	= "MOV";
 	private final String CMDTYPE_MVARM	= "ARM";
@@ -373,7 +413,9 @@ class NetworkThread extends Thread
 	private final String CMDTYPE_DANCE 	= "DNC";
 	private final String CMDTYPE_WINK 	= "WNK";
 	private final String CMDTYPE_WIPE 	= "WIP";
+	private final String CMDTYPE_VIDEO	= "VID";
 	private final String CMDTYPE_BATT	= "BAT";
+
 	
 	private final String RETCMD_BATT	= "BAT";
 	private final String RETCMD_STATE	= "ZST";
@@ -514,6 +556,9 @@ class NetworkThread extends Thread
 					break;
 				case WIPE:
 					CmdStr = CMDTYPE_WIPE;
+					break;
+				case VIDEO:
+					CmdStr = CMDTYPE_VIDEO;
 					break;
 				case GETBATT:
 					CmdStr = CMDTYPE_BATT;

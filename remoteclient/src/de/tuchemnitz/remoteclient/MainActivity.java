@@ -39,8 +39,6 @@ public class MainActivity extends SherlockActivity {
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
 	
-	private VideoModule videoscreen = null;
-	
 	/**
 	* @class EvtHandler
 	*
@@ -132,7 +130,6 @@ public class MainActivity extends SherlockActivity {
 		//BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
         BattTimer.schedule(new BattTmrTask(), 1000, 10000);
         
-        videoscreen = new VideoModule(MainActivity.this);
     }
     
 	@Override
@@ -154,6 +151,7 @@ public class MainActivity extends SherlockActivity {
     	super.onDestroy();
     	BattTimer.cancel();
     	NetworkModule.CloseConnection();
+    	VideoModule.stopVideoServer();
     }
 
 	/**
@@ -194,7 +192,11 @@ public class MainActivity extends SherlockActivity {
 			finish();
 			break;
 		case R.id.acb_video:
-			videoscreen.create_dialog();
+			VideoModule.create_dialog(MainActivity.this, true);
+			if(!VideoModule.isVideoThreadStarted())
+			{
+				VideoModule.startVideoServer();
+			}
 			break;
 		case R.id.acb_m_1:
 			break;
