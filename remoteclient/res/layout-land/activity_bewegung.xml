@@ -112,6 +112,14 @@
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/relativeLayout1">
         
+        <ImageView
+	  	    android:id="@+id/bew_videoimage"
+	  	    android:layout_width="match_parent"
+	  	    android:layout_height="match_parent"
+	  	    android:layout_alignParentLeft="true"
+	  	    android:layout_alignParentTop="true"
+	  	    android:src="@drawable/tu_chemnitz_de3" />
+        
 	    <ImageButton 
 	        android:id="@+id/bew_button1"
 	        android:layout_width="wrap_content"

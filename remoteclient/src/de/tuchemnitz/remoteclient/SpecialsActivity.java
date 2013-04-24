@@ -108,6 +108,13 @@ public class SpecialsActivity extends SherlockActivity {
 			finish();
 			startActivity(intent);
 			break;
+		case R.id.acb_video:
+			VideoModule.create_dialog(SpecialsActivity.this, true);
+			if(!VideoModule.isVideoThreadStarted())
+			{
+				VideoModule.startVideoServer();
+			}
+			break;
 		}
 		
 		return true;

@@ -292,8 +292,8 @@ public class NetworkModule {
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
 			return;
 		
-		if(state == VIDEOSTATE.OFF) text="OFF";
-		else if(state == VIDEOSTATE.ON && Port!=0) text="ON_"+String.valueOf(Port);
+		if(state == VIDEOSTATE.OFF) text="D";
+		else if(state == VIDEOSTATE.ON && Port!=-1) text="A_"+String.valueOf(Port)+"_";
 		NetTData.QueueCommand(NetworkThread.CMDTYPE.VIDEO, text);
 		
 		return;
@@ -312,7 +312,7 @@ public class NetworkModule {
 		
 		if(state == VIDEOSTATE.OFF)
 		{
-			NetTData.QueueCommand(NetworkThread.CMDTYPE.VIDEO, "OFF");
+			NetTData.QueueCommand(NetworkThread.CMDTYPE.VIDEO, "D");
 		}
 		return;
 	}

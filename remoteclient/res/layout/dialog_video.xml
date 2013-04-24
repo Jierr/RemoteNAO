@@ -5,10 +5,11 @@
 
     <ImageView
         android:id="@+id/videodial_pic"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
         android:clickable="true"
         android:src="@drawable/tu_chemnitz_de3" />
 

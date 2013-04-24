@@ -113,6 +113,13 @@ public class SprachausgabeActivity extends SherlockActivity {
 			finish();
 			startActivity(intent);
 			break;
+		case R.id.acb_video:
+			VideoModule.create_dialog(SprachausgabeActivity.this, true);
+			if(!VideoModule.isVideoThreadStarted())
+			{
+				VideoModule.startVideoServer();
+			}
+			break;
 		}
 		
 		return true;

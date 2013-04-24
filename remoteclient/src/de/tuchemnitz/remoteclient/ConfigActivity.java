@@ -135,7 +135,15 @@ public class ConfigActivity extends SherlockActivity {
 			break;
 		case R.id.acb_m_5:
 			break;
+		case R.id.acb_video:
+			VideoModule.create_dialog(ConfigActivity.this, true);
+			if(!VideoModule.isVideoThreadStarted())
+			{
+				VideoModule.startVideoServer();
+			}
+			break;
 		}
+		
 		
 		return true;
 	}

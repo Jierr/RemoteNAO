@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.Toast;
@@ -56,24 +57,29 @@ public class BewegungActivity extends SherlockActivity {
 		if (bewart_radiogroupA != null)
 			bewart_radiogroupA.check(bewegungsart);
 		setListeners();
-
+		
+		VideoModule.startVideoServer();
 	}
 	
 	@Override
 	protected void onResume(){
 		super.onResume();
 		Callbacksplit.setActiveActivity(this);
+		VideoModule.setVideoPicture((ImageView) findViewById(R.id.bew_videoimage));
+		
 	}
 	@Override
 	protected void onPause(){
 		super.onPause();
 		Callbacksplit.unsetActiveActivity();
+		VideoModule.unsetVideoPicture();
 	}
 	
 	@Override
     public void onDestroy(){
 		super.onDestroy();
     	Callbacksplit.registerBewegungActivity(null);
+    	VideoModule.stopVideoServer();
     }
 
 	/**
@@ -126,6 +132,13 @@ public class BewegungActivity extends SherlockActivity {
 			intent = new Intent(Callbacksplit.getMainActivity(), ConfigActivity.class);
 			finish();
 			startActivity(intent);
+			break;
+		case R.id.acb_video:
+			VideoModule.create_dialog(BewegungActivity.this, false);
+//			if(!VideoModule.isVideoThreadStarted())
+//			{
+//				VideoModule.startVideoServer();
+//			}
 			break;
 		}
 		
