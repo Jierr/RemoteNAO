@@ -39,6 +39,9 @@ public class VideoModule {
 	private static ImageView video_picture = null;
 	private static VideoThread NetVideo = null;
 	private static boolean close_videothread_mark = false;
+	private static Bitmap bitmap = null;
+	private final static BitmapFactory.Options opt = new BitmapFactory.Options();
+	
 	
 	
 	private static Handler RecvPicHandler = new Handler()
@@ -52,10 +55,10 @@ public class VideoModule {
 		    //super.dispatchMessage(msg);
 		    if(video_dialog_picture != null)
 		    {
-		    	BitmapFactory.Options opt = new BitmapFactory.Options();
-				opt.inDither = true;
-				opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
-				Bitmap bitmap = BitmapFactory.decodeByteArray((byte[])msg.obj, 0, msg.arg2, opt);
+//		    	BitmapFactory.Options opt = new BitmapFactory.Options();
+//				opt.inDither = true;
+//				opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
+				bitmap = BitmapFactory.decodeByteArray((byte[])msg.obj, 0, msg.arg2, opt);
 				
 				int h = video_dialog_picture.getHeight();
 				int w = video_dialog_picture.getWidth();
@@ -65,23 +68,25 @@ public class VideoModule {
 //				matrix.postScale( ((float) w / bitmap.getWidth() ),
 //						          ((float) h / bitmap.getHeight()) );
 //				Bitmap resbitmap = Bitmap.createBitmap(bitmap,0,0,bitmap.getWidth(), bitmap.getHeight(),matrix,false);
-				Bitmap resbitmap = Bitmap.createScaledBitmap(bitmap, w, h, false);
+				bitmap = Bitmap.createScaledBitmap(bitmap, w, h, false);
 				
-				video_dialog_picture.setImageBitmap(resbitmap);
+				video_dialog_picture.setImageBitmap(bitmap);
 				Log.v("VideoMod", "Pic changed");
 		    }
 		    else if(video_picture != null)
 			{
 				//ImageFactroy msg.obj
 				//clickpic.setImageResource(R.drawable.stop);
-				BitmapFactory.Options opt = new BitmapFactory.Options();
-				opt.inDither = true;
-				opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
-				Bitmap bitmap = BitmapFactory.decodeByteArray((byte[])msg.obj, 0, msg.arg2, opt);
+//				BitmapFactory.Options opt = new BitmapFactory.Options();
+//				opt.inDither = true;
+//				opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
+				bitmap = BitmapFactory.decodeByteArray((byte[])msg.obj, 0, msg.arg2, opt);
 				video_picture.setImageBitmap(bitmap);
 				
 				Log.v("VideoMod", "Pic changed");
 			}
+		    
+		    //System.gc();
 		    
 		    return;
 		}
@@ -167,6 +172,9 @@ public class VideoModule {
 		{
 			stopVideoServer();
 		}
+		
+		opt.inDither = true;
+		opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
 		
 		NetVideo = new VideoThread(RecvPicHandler);
 		NetVideo.start(); // start the run-function of VideoThread
@@ -258,25 +266,25 @@ class VideoThread extends Thread {
 		NetworkModule.Video(VIDEOSTATE.ON, getServerPort());
 		
 		//----------------------------------------------------
-			InetAddress ia = null;
-			try {
-				ia = InetAddress.getByName( NetworkModule.GetIPAddress() );
-			} catch (UnknownHostException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-
-		      String s = "hallo";
-		      byte[] raw = s.getBytes();
-
-		      DatagramPacket packet1 = new DatagramPacket( raw, raw.length, ia, 21845 );
-
-			try {
-				videosocket.send( packet1 );
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			InetAddress ia = null;
+//			try {
+//				ia = InetAddress.getByName( NetworkModule.GetIPAddress() );
+//			} catch (UnknownHostException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+//
+//		      String s = "hallo";
+//		      byte[] raw = s.getBytes();
+//
+//		      DatagramPacket packet1 = new DatagramPacket( raw, raw.length, ia, 21845 );
+//
+//			try {
+//				videosocket.send( packet1 );
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		//------------------------------------
 		
 		while(!CloseVideo)
@@ -284,7 +292,7 @@ class VideoThread extends Thread {
 			//---------------------------------------------
 			// UDP-Verbindung
 			
-			DatagramPacket packet = new DatagramPacket( new byte[6144], 6144 );
+			DatagramPacket packet = new DatagramPacket( new byte[8192], 8192 );
 			try {
 				videosocket.receive( packet );
 			} catch (IOException e) {
