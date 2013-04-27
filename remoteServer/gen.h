@@ -1,10 +1,27 @@
 #ifndef __GEN__
 #define __GEN__
 
+
+/*=========== Jpeg config ===========*/
+#define JWIDTH 160
+#define JHEIGHT 120
+#define JQUAL 75
+/*===================================*/
+
+/*============ Interprocess via pipe =============*/
+#define VEND 255
+#define VON 254
+#define VOFF 253
+#define VPORT 252
+#define VIP 251
+/*================================================*/
+
 #define SPACE_TORSO 0
 #define SPACE_WORLD 1
 #define SPACE_NAO 2
 
+#define IP_LEN 15
+#define PORT_LEN 5
 #define MB_IP "127.0.0.1"
 #define MB_PORT 9559
 #define CB_IP "127.0.0.1"
@@ -15,6 +32,11 @@
 
 #define SOCK_CLOSED -2
 #define SOCK_LOST	-3
+#define CONN_RESUME 1
+#define CONN_ACTIVE 1
+#define CONN_DISCONNECT 2
+#define CONN_INACTIVE 2
+#define CONN_UNBIND 3
 
 
 #define IPARAM_LEN 2
@@ -27,8 +49,9 @@
 /*========================================*/
 
 /*============ Comand Specfier TOKENs ============*/
-#define CODE_UNKNOWN 0
+#define CODE_VALID -2
 #define CODE_INVALID -1
+#define CODE_UNKNOWN 0
 #define CODE_ABSOLUT 10
 #define INIT_WALK 10
 #define INIT_REST 11
@@ -40,6 +63,7 @@
 #define CODE_MOV 20
 #define CODE_STOP 21
 #define CODE_STOPALL 22
+#define CODE_VID 23
 #define RESET_CONNECTION 42
 #define CODE_PARALLEL 1000
 #define CODE_SPK 1001

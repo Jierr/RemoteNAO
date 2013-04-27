@@ -25,7 +25,9 @@ class NetNao : public AL::ALModule
 	private:
 		int sclient_tcp;	///< Socket of connected client
 		int sserver_tcp;	///< Socket of the server
+		int mode;
 	public:
+		string ip4;
 		//Load the Module in the broker with its correspending name
 		//just extends ALModule
 		/**
@@ -48,6 +50,8 @@ class NetNao : public AL::ALModule
 		*/
 		virtual void init();
 		//returns a socket 
+		
+		void writePipe(const int& writer, const AL::ALValue& buf, const int& len);
 		
 		/**
 		\brief bind the server to specified port
@@ -102,6 +106,7 @@ class NetNao : public AL::ALModule
 		*/
 		int recvData(const int& sockClient, const boost::shared_ptr<char*>& buf, 
 					 const unsigned int& len, const unsigned int& indexStart);
+
 		
 		/**
 		\brief Disconnects the Client.
