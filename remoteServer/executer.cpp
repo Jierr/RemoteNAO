@@ -1082,7 +1082,7 @@ void Executer::sendBatteryStatus()
 		sclient = pNetNao.call<int>("getClient_tcp"); 
 		
 		buf = buf + (char)(value);
-		cout << "buf.length() = " << (int)buf.length() << endl;
+		cout << "[Executer:sendBatteryStatus]buf.length() = " << (int)buf.length() << endl;
 
 		while (sent < buf.length())
 		{
@@ -1140,7 +1140,7 @@ void Executer::sendState()
 	}
 	catch (const AL::ALError& e)
 	{
-		cout<< "ERROR [Executer]<sendBatteryStatus>:" << endl << e.what() << endl;
+		cout<< "ERROR [Executer]<sendState>:" << endl << e.what() << endl;
 	}	
 }
 

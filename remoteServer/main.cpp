@@ -1,50 +1,103 @@
 #include <iostream>
+#include <string.h>
+
+#include <fcntl.h> 
 #include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
 #include "netNao.h"
 #include "manager.h"
+#include "decoder.h"
+#include "eventlist.h"
 #include "gen.h"
 
 #include <alcommon/almodule.h>
+#include <alcommon/almodulecore.h>
 #include <alcommon/albroker.h>
 #include <alcommon/albrokermanager.h>
 #include <alerror/alerror.h>
 #include <alcommon/alproxy.h>
 #include <alproxies/altexttospeechproxy.h>
+#include <alproxies/alvideodeviceproxy.h>
+#include <alvision/alvisiondefinitions.h>
 #include <qi/os.hpp>
+
+#include <jpeglib.h>
 
 
 using namespace std;
+
+#undef REAL
+//#define REAL
+#ifndef REAL
+	#define TEST
+#endif
+
+
+
+struct thread_arg
+{
+	pthread_t id;
+	int tnum;
+	char appIp[IP_LEN+1];
+	unsigned short appPort;
+	int sclient;
+	AL::ALValue image;
+	string nameId;
+};
+bool trun = false;
+
+
+void* tcamSend(void* args);
+
+int udp_create_client_socket(const char* port);
+int udp_bind_host(const char* port);
+
+int procControl(const string& pip, const int& pport, int* pipefd);
+int procCam(const string& pip, const int& pport, int* pipefd);
+
+
 
 
 int main(int argc, char* argv[])
 {
 	int pport = MB_PORT;
 	string pip = MB_IP;
+	bool validCon = false;
+	bool enableCam = false;
+	
+	#ifdef TEST
+	cout<< "[MAIN] TEST-Build" << endl;
+	#endif
+	#ifdef REAL
+	cout<< "[MAIN] REAL-Build" << endl;
+	#endif
 
 	if(argc > 2)
 	{
-		if(string(argv[1]) == "--pip")
+		if(!string(argv[1]).compare("--pip"))
 		{
 			pip = argv[2];
 			if (argc > 4)
 			{
-				if(string(argv[3]) == "--pport")
+				if(!string(argv[3]).compare("--pport"))
+				{
 					pport = atoi(argv[4]);
+				}
 			} 
 		}
-		else if (string(argv[1]) == "--pport")
+		else if (!string(argv[1]).compare("--pport"))
 		{
 			pport = atoi(argv[2]);
 			if (argc > 4)
 			{
-				if(string(argv[3]) == "--pip")
+				if(!string(argv[3]).compare("--pip"))
 					pip = argv[4];
 			} 
 		}
@@ -53,8 +106,89 @@ int main(int argc, char* argv[])
 	{
 		pport = MB_PORT;
 		pip = MB_IP;
+		enableCam = false;
+	}
+	
+	if (argc > 1)
+	{
+		for (int a = 1; a<argc; ++a)
+		{
+			if (!string(argv[a]).compare("--cam"))
+				enableCam = true;
+			if (!string(argv[a]).compare("--help") || !string(argv[a]).compare("-h") || 
+			    !string(argv[a]).compare("--h") || !string(argv[a]).compare("-?"))
+			{
+				cout<< "Usage: remoteServer [--pip <ip>] [--pport <port>] [--cam] [--help]" << endl
+					<< "	pip: Ip of the Parent Broker (default naoqi: 127.0.0.1)" << endl
+					<< "	pport: Port of the Parent Broker (default naoqi: 9559)" << endl
+					<< "	cam: Activates Camera module for video streaming" <<  endl;
+			}
+		}
 	}	
+	
+	
+	int pipefd[2];
+	pid_t cpid;
+	char buf;
 
+
+	if (pipe(pipefd) == -1) 
+	{
+		perror("pipe");
+		exit(EXIT_FAILURE);
+	}
+	
+	cout<< "[MAIN] Leser = " << pipefd[0] << endl
+		<< "[MAIN] Schreiber = " << pipefd[1] << endl;
+
+	cpid = fork();
+	if (cpid == -1) 
+	{
+		cerr<< "Fork failed!";
+		exit(EXIT_FAILURE);
+	}
+
+	if (cpid == 0) 
+	{
+
+		if (enableCam)
+		{
+			cout<< "Camera module will be stated..." << endl;
+			procCam(pip, pport, pipefd);
+		}
+		else
+		{
+			cout<< "Camera module won't be started..." << endl;
+		}
+		_exit(EXIT_SUCCESS);
+
+	} 
+	else 
+	{       
+		cout<< "Control module will be started..." << endl;
+		procControl(pip, pport, pipefd);
+		wait(NULL);                /* Wait for child */
+
+	}
+
+
+	
+	exit(0);
+	
+
+}
+
+//==============================================================================
+//===================== PROCCONTROL ============================================
+//==============================================================================
+int procControl(const string& pip, const int& pport, int* pipefd)
+{	
+	
+	Decoder dec;
+	int pipeWrite = pipefd[1];
+	close(pipefd[0]);
+	
+	char hallo[] = "Hallo Welt!";
 
 	//for SOAP serializations of floats
 	//The call to setlocale is very important. Due to SOAP issues, you must make
@@ -93,6 +227,10 @@ int main(int argc, char* argv[])
 	AL::ALBrokerManager::setInstance(broker->fBrokerManager.lock());
 	//Add Broker to the map!
 	AL::ALBrokerManager::getInstance()->addBroker(broker);
+	
+
+	cout<< "[CONTROL] Control-Server gestartet..." << endl
+		<< "[CONTROL] Schreiber = " << pipeWrite << endl;
 
 	cout<< "connect to Broker naoqi" << endl;
 	static boost::shared_ptr<NetNao> net = 
@@ -105,68 +243,33 @@ int main(int argc, char* argv[])
 	int sserver = 0;
 	int sclient = 0;
 	char buf[1024] = {0,};
-	char last = 0;
 	int bytesRead = 0; 
 	int recvd = 0;
-	unsigned int bytesSent = 0;
-	unsigned int len;
+	int dresult = 0;
+	int mresult = 0;
+	event_params_t ep;
 	
 	// connect to local module RMManager
 	
 	cout << "Establish Proxy to RMManager"<< endl;
 	AL::ALProxy proxyManager = AL::ALProxy(broker, string("RMManager")/*, pip, MB_PORT*/);
 	cout << "Proxy to RMManager established" << endl;
-	/*taskID = proxyManager.pCall(string("localRespond")); //callVoid("localRespond");
-	cout<<"ID of Thread = " << taskID << endl;
-	if (!proxyManager.wait(taskID, 0))
-		cout<< "localRespond wurde abgeschlossen" << endl;
-	else
-		cout<< "localRespond timed out!" << endl;
-
-	*/
-		
 				
 	taskID = proxyManager.pCall(string("runExecuter")); //callVoid("runExecuter");
-	cout<<"ID of Thread = " << taskID << endl;
-	/*if (!proxyManager.wait(taskID, 0))
-		cout<< "runExecuter wurde abgeschlossen" << endl;
-	else
-		cout<< "runExecuter timed out!" << endl;
-		
+	cout<<"ID of Thread[runExecuter] = " << taskID << endl;
 
-	
-	/*AL::ALProxy proxyExecuter = AL::ALProxy(string("RMExecuter"), pip, 9559);
-	proxyExecuter.callVoid<int>(string("setPosture"), 0);
-	proxyExecuter.destroyConnection();*/
-	
-	/*taskID = proxyManager.pCall<string>(string("decode"), "SPK_Test_"); //callVoid("runExecuter");
-	cout<<"ID of Thread = " << taskID << endl;
-	if (!proxyManager.wait(taskID, 0))
-		cout<< "decode wurde abgeschlossen" << endl;
-	else
-		cout<< "decode timed out!" << endl;*/
-	
-	const std::string msg = "Hello there, everything is initialized.";
-	boost::shared_ptr<char*> buffer(new char*(buf));
+
+	boost::shared_ptr<char*> buffer(new char*(buf));	
 	sserver = net->bindTcp(port);
 	while(1)
 	{
 		net->singleListen(sserver);
 		sclient = net->acceptClient(sserver);
-		
-					/*
-					strcpy(buf, "[Remote NAO] Willkommen!\r\n");
-					cout<< "Sende Daten\r\n";
-					//send(sclient, buf, strlen(buf), 0);		
-					bytesSent = 0;
-					len = strlen(buf);
-					do 
-					{
-						bytesSent += net->sendData(sclient, buffer, len, 0);
-					}
-					while (bytesSent < len);		
-					cout<< "Sende Daten beendet\r\n";
-					*/
+		proxyManager.callVoid<string>("initIp4", net->ip4);
+		cout << "Connected from " << net->ip4 << endl;
+		dec.setIp4(net->ip4);
+		dec.setPipe(pipeWrite);
+		dec.setManager(&proxyManager);
 		
 		try 
 		{
@@ -178,26 +281,34 @@ int main(int argc, char* argv[])
 			cerr<< "EXCEPTION: " << e.what() << endl;
 		}
 		buf[0] = 0;
-		
-		//bytesRead = recv(sclient, buf, 1, 0);
 		cout<< "receive...\r\n";
 		bytesRead = 0;
 		do
 		{
-			recvd = net->recvData(sclient, buffer, 1023, bytesRead);
+			recvd = net->recvData(sclient, buffer, 1, 0);
 			if ((recvd == SOCK_CLOSED) || (recvd == SOCK_LOST))
 			{
-				proxyManager.call<int, string>("decode", string("DIS"));	
+				char dis[] = "DIS";
+				for (int i = 0; i<3; ++i)
+					dec.decode(dis[i], &ep);
+				mresult = dec.manage(&ep);	
 			}
 			else
 			{
-				bytesRead+=recvd;
-				buf[bytesRead] = 0;
+				int i = 0;
 				cout<< "receive done: [BUFFER] = " << string(buf) << endl;
-				bytesRead = proxyManager.call<int, string>("decode", string(buf));	
+				do 
+				{
+					dresult = dec.decode(buf[i], &ep);
+					if (dresult == CODE_VALID)
+						mresult = dec.manage(&ep);		
+					else 
+						mresult = CONN_RESUME;
+					++i;
+				} while((i < recvd) && (mresult == CONN_RESUME));
 			}
 		}
-		while ((recvd > 0) && (bytesRead>=0));
+		while ((recvd > 0) && (mresult == CONN_RESUME));
 					
 			
 		if (recvd > 0)
@@ -212,6 +323,7 @@ int main(int argc, char* argv[])
 				cerr<< "EXCEPTION: " << e.what() << endl;
 			}	
 			net->disconnect(sclient);
+			mresult = CONN_DISCONNECT;
 		}
 		else 
 		{
@@ -230,71 +342,455 @@ int main(int argc, char* argv[])
 	
 	net->unbind(sserver);
 	//todo kill the proxy manager
+	close(pipefd[1]);
 	proxyManager.destroyConnection();
 	broker->shutdown();
 	//AL::ALBrokerManager::removeBroker(broker);
-	
-	exit(0);
-	
-	
-	
-	//delete net;
 
-	/*while(1)
-		qi::os::sleep(1);
-	*/
+}
+//==============================================================================
+//===================== PROCCONTROL END ========================================
+//==============================================================================
+
+//==============================================================================
+//===================== PROCCAM ================================================
+//==============================================================================
+int procCam(const string& pip, const int& pport, int* pipefd)
+{
+
+	int pipeRead = pipefd[0];
+	close(pipefd[1]);
+	//for SOAP serializations of floats
+	//The call to setlocale is very important. Due to SOAP issues, you must make
+	//sure your client and your server are using the same LC_NUMERIC settings
 	
+	
+	setlocale(LC_NUMERIC, "C");	
+	
+	const string brokerName = "CAM_BROKER";
+	//assign open port via port 0 from os
+	//will be the port of the newly created broker
+	int brokerPort = 50001;
+	//ANYIP
+	const string brokerIp = "0.0.0.0";
+	boost::shared_ptr<AL::ALBroker> broker;
+	try
+	{
+		broker = AL::ALBroker::createBroker(
+			brokerName,
+			brokerIp,
+			brokerPort,
+			pip,
+			pport);
+	}
+	catch(...)
+	{
+		AL::ALBrokerManager::getInstance()->killAllBroker();
+		//Reset the ALBrokerManager singleton
+		AL::ALBrokerManager::kill();
+	}
+	
+	
+	
+	qi::os::sleep(2);
+	//kills old BrokerManager Singleton and replaces it with a new one
+	//fBrokerManager is weak pointer and converted to shared ptr via lock
+	//lock additionally checks if there is one reference existing to AlBM
+	AL::ALBrokerManager::setInstance(broker->fBrokerManager.lock());
+	//Add Broker to the map!
+	AL::ALBrokerManager::getInstance()->addBroker(broker);
+
+	cout<< "[CAM] Cam-Client gestartet..." <<endl
+		<< "[CAM] Leser = " << pipeRead << endl;
+
+	//================ VIDEO DEVICE INITIALIZATION ======================================	
+	
+#ifdef REAL
+	
+	AL::ALVideoDeviceProxy proxyCam(pip, pport);
+	//AL::ALProxy proxyCam = AL::ALProxy(broker, string("ALVideoDevice"))
+	
+	
+	
+	// First you have to choose a name for your Vision Module
+	string nameId = "camVM";
+
+	// Then specify the resolution among : kQQVGA (160x120), kQVGA (320x240),
+	// kVGA (640x480) or k4VGA (1280x960, only with the HD camera).
+	// (Definitions are available in alvisiondefinitions.h)
+	int resolution = AL::kQQVGA;
+
+	// Then specify the color space desired among : kYuvColorSpace, kYUVColorSpace,
+	// kYUV422InterlacedColorSpace, kRGBColorSpace, etc.
+	// (Definitions are available in alvisiondefinitions.h)
+	int colorSpace = AL::kRGBColorSpace;
+
+	// Finally, select the minimal number of frames per second (fps) that your
+	// vision module requires up to 30fps.
+	int fps = 20;
+
+	// You only have to call the "subscribe" function with those parameters and
+	// ALVideoDevice will be in charge of driver initialisation and buffer's management.
+	nameId = proxyCam.subscribe(nameId, resolution, colorSpace, fps);
+	
+	AL::ALValue image;
+	image.arraySetSize(12);
+	image = proxyCam.getImageRemote(nameId);
+	
+	int width = (int) image[0];
+	int height = (int) image[1];
+	int nbLayers = (int) image[2];
+	int color = (int) image[3];
+	// image[4] is the number of seconds, image[5] the number of microseconds
+	long long timeStamp = (long long)((int)image[4])*1000000LL + (int)image[5];
+	// You can get the pointer to the image data and its size
+	const unsigned char* bmp =  (unsigned char*)(image[6].GetBinary()); //<--------
+	int size = image[6].getSize();
+	
+	cout<< "Bildweite: " << width << endl
+		<< "Bildhöhe: " << height << endl
+		<< "Anzahl Layer: " << nbLayers << endl
+		<< "Farbraum: " << color << endl
+		<< "Timestamp in microseconds: " << timeStamp << endl
+		<< "Datengröße: " << size << endl;
+#endif
+	//================ VIDEO DEVICE INITIALIZATION ======================================	
+		
+    //================= Initiate Connection ============================================================
+    bool end = false;
+    bool vIp = false;
+    bool vPort = false;
+    bool restart = false;
+    bool stop = false;
+    string appIp;
+    unsigned short appPort = 0;
+    unsigned char buf[256] = {0,};
+    int s = 0;
+    int f = 0;
+    int c = 0;
+    int state = STG_FETCH;
+    int rcom = VEND;
+    int res = 0;
+    
+
+    int sclient = 0;
+	sclient = udp_create_client_socket("32772");
+    	
+	struct thread_arg targ;
+	cout<< "[CAM] Starte CAM-Controler" << endl;
+    while (!end) 
+    {	
+		   res =  read(pipeRead, &buf[f], 1);
+		   if (res)	
+		   		cout << "[CAM] " << buf[f] << endl;
+		   else 
+		   		stop = true;
+	   			   
+			if (state == STG_FETCH)
+			{
+				switch(buf[f])
+				{
+					case VON:
+						rcom = buf[f];
+						restart = true;
+						break;
+					case VOFF:
+						rcom = buf[f];
+						stop = true;
+						break;
+					case VIP:
+						rcom = buf[f];
+						state = STG_PARAM;
+						s = f;
+						break;
+					case VPORT:
+						rcom = buf[f];
+						state = STG_PARAM;
+						s = f;
+						break;
+					case VEND:
+						rcom = buf[f];
+						end = true;
+						break;
+					default:
+						break;
+			
+				};
+			}
+			
+			if (state == STG_PARAM)
+			{
+				switch(rcom)
+				{
+					case VPORT:   
+						c = -1;    
+						do
+						{
+							++c;
+							res = read(pipeRead, &buf[c], 1);
+
+						} while ((buf[c] != 0) && res && (c <= PORT_LEN));
+						if (c <= PORT_LEN)
+						{
+							vPort = true;
+							appPort = atoi((char*)buf);
+							cout<< "Port für neue Bildübertragung = " << appPort << endl;
+						}
+						else 
+						{
+							vPort = false;
+						}
+						state = STG_FETCH;
+						f = s = 0;
+						break;
+					case VIP: 
+						c = -1;    
+						do
+						{
+							++c;
+							res = read(pipeRead, &buf[c], 1);
+
+						} while ((buf[c] != 0) && res && (c <= IP_LEN));
+						if (c <= IP_LEN)
+						{
+							vIp = true;
+							appIp = (char*)buf;
+							cout<< "IP für neue Bildübertragung = " << appIp << endl;
+						}
+						else
+						{
+							vIp = false;
+						}
+						state = STG_FETCH;
+						f = s = 0;
+						break;
+					default: 
+						state = STG_FETCH;
+						f = s = 0;
+						break;
+				};
+			}
+
+		   if(stop)
+		   {
+				if (trun)
+				{
+					cout<< "[CAM] Warte auf Thread Terminierung ..." << endl;
+					trun = false;
+					pthread_join(targ.id, 0);
+				}		   
+		   }
+		   
+		   if (restart && vIp && vPort)
+		   {	
+		   		targ.tnum = 0;
+				strcpy(targ.appIp, appIp.c_str());
+				targ.appPort = appPort;
+				targ.sclient = sclient;    
+				
+#ifdef REAL
+				targ.image = image;		//<------
+				targ.nameId = nameId;	//<------
+#endif
+				if (trun)
+				{
+					cout<< "[CAM] Warte auf Thread Terminierung ..." << endl;
+					trun = false;
+					pthread_join(targ.id, 0);
+				}
+				
+				trun = true;
+				pthread_create(&targ.id, 0, &tcamSend, &targ);
+					
+				restart = false;
+				vIp = false;
+				vPort = false;						   
+		   }
+		    
+    }	  
+    
+	cout<< "[CAM] Beende CAM-Controler" << endl;
+	if (trun)
+	{
+		trun = false;
+		pthread_join(targ.id, 0);	
+	}
+	
+    //================= Initiate Connection ============================================================
 
 
 
-/*	
-	char msg[255]={0,};
+	close(sclient);
+	close(pipefd[0]);
+		
+#ifdef REAL		
+	proxyCam.unsubscribe(nameId);
+#endif
+
+
+
+
+
+	broker->shutdown();
+	//AL::ALBrokerManager::removeBroker(broker);
+}
+//==============================================================================
+//===================== PROCCAM END ============================================
+//==============================================================================
+
+int udp_create_client_socket(const char* port)
+{
 	int status = 0;
-	struct in_addr ip;
-	char ipStr[20]= {0,};
-	unsigned short int port = 0;
 	struct addrinfo hints;
 	struct addrinfo *servinfo;
-	struct sockaddr_storage incomming;
-	socklen_t addr_size;
-
-	int sserver = 0;
-	int sclient = 0;
 	int optval = 1;
-
+	int sclient;
+	
 	memset (&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_flags = AI_PASSIVE;
 	
-	status = getaddrinfo(NULL, "32768", &hints, &servinfo);
-//	printf("IP Address for host:\r\n");
-	ip = ((struct sockaddr_in*)servinfo->ai_addr)->sin_addr;
-	port = ((struct sockaddr_in*)servinfo->ai_addr)->sin_port;
-	inet_ntop(servinfo->ai_family, &ip, ipStr, 20);
-//	printf("%s:%d\r\n", ipStr, ntohs(port));
-//	printf("Get a Socket...\r\n");
+	status = getaddrinfo(NULL, port, &hints, &servinfo);
+	sclient = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+	freeaddrinfo(servinfo);
+	
+	return sclient;
+}
+
+int udp_bind_host(const char* port)
+{
+	int status = 0;
+	struct addrinfo hints;
+	struct addrinfo *servinfo;
+	int optval = 1;
+	int sserver;
+	
+	memset (&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_PASSIVE;
+	
+	status = getaddrinfo(NULL, port, &hints, &servinfo);
 	sserver = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
 	setsockopt(sserver, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
-//	printf("Bind to Port...\r\n");
-	bind(sserver, servinfo->ai_addr, servinfo->ai_addrlen);
-
-	while (1)
-	{
-//		printf("Listen...\r\n");
-		listen(sserver, 1);
-		addr_size = sizeof(incomming);
-		sclient = accept(sserver, (struct sockaddr*)&incomming, &addr_size);
-//		printf("Verbindung akzeptiert...\r\n");
-//		printf("Sende Message...\r\n");
-		strcpy(msg, "[Remote Server NAO] Willkommen\r\n");
-		send(sclient, msg, strlen(msg),0);
-		strcpy(msg, "[Remote Server NAO] Tschueß\r\n");
-		send(sclient, msg, strlen(msg),0);
-		close(sclient);
-	}
-	close(sserver);
+	status = bind(sserver, servinfo->ai_addr, servinfo->ai_addrlen);	
 	freeaddrinfo(servinfo);
-	return 0;
-*/
+	
+	return sserver;
+}
+
+
+void* tcamSend(void* args)
+{
+	cout<< "Neuer Cam Thread gestartet..." << endl;
+	struct thread_arg* aarg = (struct thread_arg*)args;
+	
+	struct sockaddr_in server;
+	server.sin_family = AF_INET;
+	server.sin_port = (htons(aarg->appPort)); 
+	inet_pton(AF_INET, aarg->appIp, &(server.sin_addr));
+	
+	int& sclient = aarg->sclient;
+	AL::ALValue& image = aarg->image;
+	string& nameId = aarg->nameId;
+	
+	
+	unsigned char* bmp = 0;
+	unsigned char* jpeg = 0;
+	unsigned int len = JHEIGHT * JWIDTH * 3;
+
+	FILE* src;
+	FILE* dst;
+	FILE* jmem; 
+	int written = 0;
+	int count = 0;
+	int offset = 0;
+
+	struct jpeg_compress_struct cinfo;
+	struct jpeg_error_mgr       jerr;
+	JSAMPROW row_pointer;          /* pointer to a single row */
+
+	bmp = (unsigned char*)malloc(JHEIGHT * JWIDTH * 3);
+	jpeg = (unsigned char*)malloc(JHEIGHT * JWIDTH * 3);
+	
+	jmem = fmemopen(jpeg, len, "wb");
+	//jmem = fopen(argv[2], "wb");
+	//jmem = fdopen(pipefd[1], "wb");
+
+#ifdef TEST
+	unsigned char turn[3] = {0,128,255};
+#endif
+	while(trun)
+	{
+#ifdef TEST
+		turn[0]+=5;
+		turn[1]+=3;
+		turn[2]-=5;
+		for (int i = 0; i< (JHEIGHT * JWIDTH * 3); i+=3)
+			bmp[i] = turn[0];
+		for (int i = 1; i< (JHEIGHT * JWIDTH * 3); i+=3)
+			bmp[i] = turn[1];
+		for (int i = 2; i< (JHEIGHT * JWIDTH * 3); i+=3)
+			bmp[i] = turn[2];
+#endif
+
+#ifdef REAL
+		image = proxyCam.getImageRemote(nameId); 		//<------
+		bmp =  (unsigned char*)(image[6].GetBinary());	//<------
+		size = image[6].getSize();						//<------
+#endif
+			
+		cinfo.err = jpeg_std_error(&jerr);
+		jpeg_create_compress(&cinfo);
+		jpeg_stdio_dest(&cinfo, jmem);
+
+		cinfo.image_width      = JWIDTH;
+		cinfo.image_height     = JHEIGHT;
+		cinfo.input_components = 3;
+		cinfo.in_color_space   = JCS_RGB;
+
+		jpeg_set_defaults(&cinfo);
+		/*set the quality [0..100]  */
+		jpeg_set_quality (&cinfo, JQUAL, true);
+		jpeg_start_compress(&cinfo, true);
+
+		count = 0;
+		written = 0;
+		int line = 0;
+		while (cinfo.next_scanline < cinfo.image_height) 
+		{
+			line++;
+			//printf("%d:%d\n",line, count);
+			row_pointer = (JSAMPROW) &(bmp+offset)[cinfo.next_scanline*JWIDTH*3];
+			count = jpeg_write_scanlines(&cinfo, &row_pointer, 1);
+		}
+		
+		jpeg_finish_compress(&cinfo);
+	
+		fflush(jmem);
+		len = ftell(jmem);
+		printf("Size of the jpeg file is %d bytes\n", len);	
+	
+	
+		//================ SEND JPEG ======================================
+	
+		sendto(sclient, jpeg, len, 0, (const sockaddr*)(&server), sizeof(struct sockaddr_storage));
+		//================ SEND JPEG ======================================
+		
+#ifdef REAL
+		proxyCam.releaseImage(nameId);//<------
+#endif
+		qi::os::msleep(50);
+		rewind(jmem); 
+	}
+	
+//	dst = fopen("test.jpg", "wb");
+//	fwrite(jpeg, len, 1, dst);
+//	fclose(dst);
+
+	free(bmp);
+	free(jpeg);
+	fclose(jmem);
+	
 }

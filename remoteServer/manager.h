@@ -55,6 +55,8 @@ class Manager:public AL::ALModule
 		boost::shared_ptr<AL::ALMutex> mutex; ///< reserved.
 		AcessExec accessExec; ///< \see AcessExec
 		boost::shared_ptr<EventList> eventList; ///< Pointer to instance of EventList, queueing valid comands.
+		int pipeWrite;
+		string ip4;
 		
 		/**
 		\brief First step of parsing: Looks for valid comand specifier in given string.
@@ -119,6 +121,11 @@ class Manager:public AL::ALModule
 		\return Returns current scanning position or -1, when the Connection is to be closed.
 		*/
 		int decode(const string& toParse);
+		
+		void addCom(const int& type, const int& ip1, const int& ip2, const string& sp, const int& prio);
+		
+		void initPipe(const int& writer);
+		void initIp4(const string& ip);
 		
 		/**
 		\brief Initialises the starting position of the robot and schedules valid events afterwards.

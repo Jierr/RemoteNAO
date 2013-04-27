@@ -10,6 +10,8 @@
 #include <qi/os.hpp>
 #include <alproxies/alrobotposeproxy.h>
 
+#include <stdio.h>
+
 #include "manager.h"
 #include "executer.h"
 #include "gen.h"
@@ -36,6 +38,22 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	addParam("toParse", "const string&: the symbol to be decoded");
 	setReturn("int", "sucess: return pos parsed, failure: return 0");
 	BIND_METHOD(Manager::decode);
+		
+	functionName("initPipe", getName(), "initialize Pipe to communicate with cam module");
+	addParam("writer", "filedescriptor for the writing end");
+	BIND_METHOD(Manager::initPipe)	
+		
+	functionName("initIp4", getName(), "Init the ip for manager");
+	addParam("ip4", "ip4 string");
+	BIND_METHOD(Manager::initIp4)	
+		
+	functionName("addCom", getName(), "add a Event to be executed");
+	addParam("type", "");
+	addParam("ip1", "");
+	addParam("ip2", "");
+	addParam("sp", "");
+	addParam("prio", "");
+	BIND_METHOD(Manager::addCom)
 	
 	mem = AL::ALMemoryProxy(broker);
 	
@@ -47,8 +65,26 @@ Manager::~Manager()
 	accessExec.exec->exit();
 }
 
+
+
+
 void Manager::init()
 {	
+}
+
+void Manager::addCom(const int& type, const int& ip1, const int& ip2, const string& sp, const int& prio)
+{
+	event_params_t eventp = {CODE_UNKNOWN, {0,0}, ""};
+	
+	eventp.type = type;
+	eventp.iparams[0] = ip1;
+	eventp.iparams[1] = ip2;
+	eventp.sparam = sp;
+	
+	if (prio == 0)
+		eventList->addFirst(eventp);
+	else
+		eventList->addEvent(eventp);
 }
 
 void Manager::localRespond()
@@ -58,6 +94,17 @@ void Manager::localRespond()
 	//lastOp = mem.getData("lastOp");
 	cout<< (int&)lastOp << endl;
 	//dec->decoderRespond();
+}
+
+void Manager::initPipe(const int& writer)
+{
+	pipeWrite = writer;
+}
+
+
+void Manager::initIp4(const string& ip)
+{
+	ip4 = ip;
 }
 
 bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
@@ -154,6 +201,8 @@ bool Manager::fetch(const string& toParse, int& pos, event_params_t& ep)
 			ep.type = CODE_HEAD;
 		else if (fstr.compare("ARM") == 0)
 			ep.type = CODE_ARM;
+		else if (fstr.compare("VID") == 0)
+			ep.type = CODE_VID;
 		else 
 			ep.type = CODE_INVALID;	
 		fstr = "";	
@@ -170,11 +219,11 @@ bool Manager::getParams(const string& toParse, int& pos, event_params_t& ep, int
 	{
 		case CODE_SPK:
 		{
-			cout<< "getParams:" << toParse[pos] << endl;
+			//cout<< "getParams:" << toParse[pos] << endl;
 			if ((toParse[pos] != '_') && (paramCount==1))
 			{
 				ep.sparam+=toParse[pos];
-				cout<< "getParams:		" << ep.sparam << endl;
+				//cout<< "getParams:		" << ep.sparam << endl;
 			}
 			else if (toParse[pos] == '_')
 			{
@@ -301,6 +350,103 @@ bool Manager::getParams(const string& toParse, int& pos, event_params_t& ep, int
 				++paramCount;
 				++pos;
 			}			
+			break;
+			
+		case CODE_VID:
+			if (paramCount == 1)
+			{
+				switch (toParse[pos])
+				{
+					case 'A':
+						ep.iparams[0] = VON;
+						break;
+					case 'D':
+					{
+						ep.iparams[0] = VOFF;				
+						unsigned char com = (char)(ep.iparams[0]);
+						char comStr[2] = {0,};
+						ep.type = CODE_INVALID;
+						try
+						{		
+							AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), CB_IP, CB_PORT);
+
+							comStr[0] = VOFF;
+							pNetNao.callVoid<int, AL::ALValue, int>(
+								   "writePipe", pipeWrite, (const char*)comStr, 1);
+		
+						}
+						catch (const AL::ALError& e)
+						{
+							cout<< "ERROR" << endl << e.what() << endl;
+						}	
+						++pos;
+						return false;
+						break;
+					}
+					default:
+						ep.type = CODE_INVALID;
+						break;
+				};
+				++pos;
+			}
+			else if (paramCount == 2)
+			{
+				if ((toParse[pos] != '_'))
+				{
+					ep.sparam+=toParse[pos];
+					cout<< "getParams:		" << ep.sparam << endl;
+				}
+				++pos;		
+			}			
+			
+			if (toParse[pos] == '_')
+			{
+				++paramCount;
+				++pos;
+			}	
+			
+			if(paramCount == 3)
+			{		
+				cout<< "[PARSER] Übertage Port und Ip zum CAM-Modul" << endl;
+				cout<< "[PARSER] IP = " << ip4 << ":" << ep.sparam << endl;
+				unsigned char com = (char)(ep.iparams[0]);
+				ep.type = CODE_INVALID;
+				char comStr[2] = {0,};
+				
+				if (com == VON)
+				{
+					cout<< "[PARSER] com == VON" << endl
+						<< "[PARSER] Schreiber = " << pipeWrite << endl;
+						
+					try
+					{		
+						AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), CB_IP, CB_PORT);
+
+						comStr[0] = VON;
+						pNetNao.callVoid<int, AL::ALValue, int>(
+							   "writePipe", pipeWrite, (const char*)comStr, 1);
+					    comStr[0] = VIP;						    
+					    pNetNao.callVoid<int, AL::ALValue, int>(
+							   "writePipe", pipeWrite, (const char*)comStr, 1);							   
+						pNetNao.callVoid<int, AL::ALValue, int>(
+							   "writePipe", pipeWrite, ip4.c_str(), ip4.length()+1);
+						comStr[0] = VPORT;
+					    pNetNao.callVoid<int, AL::ALValue, int>(
+							   "writePipe", pipeWrite, (const char*)comStr, 1);
+					    pNetNao.callVoid<int, AL::ALValue, int>(
+							   "writePipe", pipeWrite, ep.sparam.c_str(), ep.sparam.length()+1);
+		
+					}
+					catch (const AL::ALError& e)
+					{
+						cout<< "ERROR" << endl << e.what() << endl;
+					}				
+				}
+
+				
+				return false;	
+			}
+			
 			break;
 		default:
 			ep.type = CODE_INVALID;
