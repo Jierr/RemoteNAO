@@ -130,6 +130,7 @@ public class MainActivity extends SherlockActivity {
 		//BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
         BattTimer.schedule(new BattTmrTask(), 1000, 10000);
         
+        VideoModule.init();
         VideoModule.startVideoServer();
         
     }

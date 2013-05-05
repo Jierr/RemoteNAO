@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Message;
+import android.text.GetChars;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -33,6 +34,7 @@ public class VideoModule {
 	private static Bitmap bitmap = null;
 	private final static BitmapFactory.Options opt = new BitmapFactory.Options();
 	
+	public static int Videotransparency_bewact = 100;
 	
 	
 	private static Handler RecvPicHandler = new Handler()
@@ -55,6 +57,10 @@ public class VideoModule {
 				int w = video_dialog_picture.getWidth();
 				if(w > h) w = (4*h)/3;
 				else      h = (3*w)/4;
+				if(w<=0)
+				{
+					return;
+				}
 //				Matrix matrix = new Matrix();
 //				matrix.postScale( ((float) w / bitmap.getWidth() ),
 //						          ((float) h / bitmap.getHeight()) );
@@ -81,45 +87,16 @@ public class VideoModule {
 		    
 		    return;
 		}
-	};
-	
-//	public VideoModule(Activity callingActivity)
-//	{
-//		ref_activity = callingActivity;
-//		
-//		//Creating the dialog
-//		video_dialog = new Dialog(ref_activity);
-//		video_dialog.setContentView(R.layout.dialog_video);
-//		clickpic = (ImageView) video_dialog.findViewById(R.id.videodial_pic);
-//		/**
-//		 * By pressing the related Image the about dialog will be closed
-//		 * 
-//		 */
-//    	clickpic.setOnClickListener(new OnClickListener() {			
-//			@Override
-//			public void onClick(View v) {
-//				video_dialog.dismiss();
-//			}
-//		});
-//    	
-//    	video_dialog.setOnDismissListener(new OnDismissListener() {
-//			
-//			@Override
-//			public void onDismiss(DialogInterface dialog) {
-//				NetVideo.StopThread();
-//			}
-//		});
-//    	
-//    	
-//		//Register Callback for getting Pic from VideoThread
-//		//NetworkModule.RegisterCallback(null,		-1,				0);
-//		//NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,		NetworkModule.INFO_CONN);
-//	}
-	
+	};	
 	
 	
 	public static void create_dialog(Activity ref_activity, boolean closeVideoServerOnDialogDismiss)
 	{
+		if(NetVideo == null)
+		{
+			return;
+		}
+		NetVideo.pause_on(); // stop updating window while dialog is created
 		//Creating the dialog
 		video_dialog = new Dialog(ref_activity);
 		video_dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -156,12 +133,25 @@ public class VideoModule {
 		
     	NetworkModule.Video(VIDEOSTATE.ON, getVideoServerPort());
     	video_dialog.show();
+    	
+    	NetVideo.pause_off();
 	}
 	
+	// resets all the variables
+	public static void init()
+	{
+		video_dialog = null;
+		video_dialog_picture = null;
+		video_picture = null;
+		NetVideo = null;
+		close_videothread_mark = false;
+		bitmap = null;
+	}
 	
 	// returns the port on success if error then -1 is returned
 	public static int startVideoServer()
 	{
+		
 		if(NetVideo != null)
 		{
 			stopVideoServer();
@@ -189,7 +179,12 @@ public class VideoModule {
 	{
 		if(NetVideo != null)
 		{
-			NetVideo.StopThread();
+			try {
+				NetVideo.StopThread();
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.gc();
+			}
 			NetVideo = null;
 			unsetVideoPicture();
 		}
@@ -223,6 +218,7 @@ class VideoThread extends Thread {
 	private volatile boolean CloseVideo = false;
 	private Handler RecEvHandler = null;
 	DatagramSocket videosocket = null;
+	private volatile boolean receive_pause = false; 
 	
 	public VideoThread(Handler EventHandler){
 		RecEvHandler = EventHandler;
@@ -235,6 +231,16 @@ class VideoThread extends Thread {
 			return videosocket.getLocalPort();
 		else
 			return -1;
+	}
+	
+	public void pause_on()
+	{
+		receive_pause = true;
+	}
+	
+	public void pause_off()
+	{
+		receive_pause = false;
 	}
 	
 	@Override
@@ -281,11 +287,14 @@ class VideoThread extends Thread {
 //			}
 		//------------------------------------
 		
+		
+		
 		while(!CloseVideo)
 		{
 			//---------------------------------------------
 			// UDP-Verbindung
 			
+			// Space for UDP-Packet
 			DatagramPacket packet = new DatagramPacket( new byte[8192], 8192 );
 			try {
 				videosocket.receive( packet );
@@ -304,7 +313,7 @@ class VideoThread extends Thread {
 			byte[]      data    = packet.getData();
 			
 			//Log.v("Video.Thread", "run - "+ RecEvHandler.toString());
-			if(RecEvHandler != null)
+			if(RecEvHandler != null && receive_pause == false)
 			{
 				RecEvHandler.sendMessage(Message.obtain(null,0,0, len, data));
 			}

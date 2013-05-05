@@ -63,5 +63,8 @@
         Diese Software ist ausschließlich zur nicht kommerziellen Nutzung gedacht.
     </string>
     <string name="About_Button">Aha</string>
+    <string name="config_videobewalpha_text">Video-Sichtbarkeit Bew.-Act.:</string>
+    <string name="config_head1">Einstellngen</string>
+    <string name="config_video_on_text">Video</string>
 
 </resources>

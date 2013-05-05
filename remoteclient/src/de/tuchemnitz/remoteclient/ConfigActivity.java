@@ -4,10 +4,14 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
@@ -29,6 +33,8 @@ public class ConfigActivity extends SherlockActivity {
 	
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
+	private SeekBar seekbar_videosichtbarkeit = null;
+	private ToggleButton video_toggle_OnOff = null;
 	
 	
 	/**
@@ -64,6 +70,11 @@ public class ConfigActivity extends SherlockActivity {
         	break;
     	}
     	textfeld_ipeingabe.setText(NetworkModule.GetIPAddress());
+    	
+    	init_seekbar_videotransparency();
+    	
+    	video_toggle_OnOff = (ToggleButton) findViewById(R.id.config_video_toggle);
+    	video_toggle_OnOff.setChecked(VideoModule.isVideoThreadStarted());
     	
 	}
 	
@@ -211,6 +222,48 @@ public class ConfigActivity extends SherlockActivity {
 	public void cfgbutton_close_event(View view)
 	{
 		finish();
+	}
+	
+	public void cfg_videotoggle_on_off(View view)
+	{
+		if(VideoModule.isVideoThreadStarted())
+		{
+			VideoModule.stopVideoServer();
+		}
+		else
+		{
+			VideoModule.startVideoServer();
+		}
+		video_toggle_OnOff.setChecked(VideoModule.isVideoThreadStarted());
+	}
+	
+	
+	private void init_seekbar_videotransparency()
+	{
+		seekbar_videosichtbarkeit = (SeekBar) findViewById(R.id.config_videobewalpha_seekBar);
+    	seekbar_videosichtbarkeit.setProgress(VideoModule.Videotransparency_bewact);
+    	
+    	seekbar_videosichtbarkeit.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				VideoModule.Videotransparency_bewact = seekbar_videosichtbarkeit.getProgress();
+				Log.v("ConfigAct", "Videotransparency_bewact="+String.valueOf(VideoModule.Videotransparency_bewact));
+			}
+			
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 	}
 	
 	

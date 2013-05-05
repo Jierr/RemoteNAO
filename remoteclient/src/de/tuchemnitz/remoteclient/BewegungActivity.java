@@ -46,6 +46,9 @@ public class BewegungActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_bewegung);
 		
+		final ImageView videopic = (ImageView) findViewById(R.id.bew_videoimage);
+		videopic.setAlpha(VideoModule.Videotransparency_bewact);
+		
 		Callbacksplit.registerBewegungActivity(this);
 		
 		Log.v("BewAct", "init BewActivity");
@@ -60,7 +63,10 @@ public class BewegungActivity extends SherlockActivity {
 			bewart_radiogroupA.check(bewegungsart);
 		setListeners();
 		
-		NetworkModule.Video(VIDEOSTATE.ON, VideoModule.getVideoServerPort());
+		if(VideoModule.Videotransparency_bewact != 0)
+		{
+			NetworkModule.Video(VIDEOSTATE.ON, VideoModule.getVideoServerPort());
+		}
 	}
 	
 	@Override
