@@ -57,7 +57,9 @@
     <string name="About_Description">
         Das ist eine App um den NAO zu steuern.\n
         Die NAO-Remote-Steuerung wurde im Rahmen des 
-        Softwareengeneering-Praktikums an der TU-Chemnitz entwickelt.\n\n
+        Softwareengeneering-Praktikums an der TU-Chemnitz entwickelt und im Rahmen des
+        „Differenziertes Mentoring- und Betreuungsprogramm zur Verbesserung der Studienbedingungen 
+        und der Qualität in der Lehre an der TU Chemnitz“ gefördert\n\n
         Diese Software ist ausschließlich zur nicht kommerziellen Nutzung gedacht.
     </string>
     <string name="About_Button">Aha</string>

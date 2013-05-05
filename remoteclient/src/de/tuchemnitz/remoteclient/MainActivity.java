@@ -3,7 +3,6 @@ package de.tuchemnitz.remoteclient;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -12,6 +11,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
@@ -130,6 +130,8 @@ public class MainActivity extends SherlockActivity {
 		//BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
         BattTimer.schedule(new BattTmrTask(), 1000, 10000);
         
+        VideoModule.startVideoServer();
+        
     }
     
 	@Override
@@ -192,11 +194,7 @@ public class MainActivity extends SherlockActivity {
 			finish();
 			break;
 		case R.id.acb_video:
-			VideoModule.create_dialog(MainActivity.this, true);
-			if(!VideoModule.isVideoThreadStarted())
-			{
-				VideoModule.startVideoServer();
-			}
+			VideoModule.create_dialog(MainActivity.this, false);
 			break;
 		case R.id.acb_m_1:
 			break;
@@ -313,6 +311,7 @@ public class MainActivity extends SherlockActivity {
 	 */
     public void menu_button5_event(View view) {
     	final Dialog about_dialog = new Dialog(MainActivity.this);
+    	about_dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
     	about_dialog.setContentView(R.layout.dialog_about);
     	Button Button_close = (Button) about_dialog.findViewById(R.id.aboutdial_closebutton);
 		/**

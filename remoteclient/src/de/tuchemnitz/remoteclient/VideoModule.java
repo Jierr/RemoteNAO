@@ -3,10 +3,7 @@ package de.tuchemnitz.remoteclient;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-
 import de.tuchemnitz.remoteclient.NetworkModule.VIDEOSTATE;
 
 import android.app.Activity;
@@ -15,18 +12,12 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
-import android.view.View.OnKeyListener;
-import android.view.View.OnLongClickListener;
-import android.webkit.WebView.FindListener;
+import android.view.Window;
 import android.widget.ImageView;
 
 public class VideoModule {
@@ -131,6 +122,7 @@ public class VideoModule {
 	{
 		//Creating the dialog
 		video_dialog = new Dialog(ref_activity);
+		video_dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		video_dialog.setContentView(R.layout.dialog_video);
 		video_dialog_picture = (ImageView) video_dialog.findViewById(R.id.videodial_pic);
 		
@@ -158,9 +150,11 @@ public class VideoModule {
 					stopVideoServer();
 					close_videothread_mark = false;
 				}
+				NetworkModule.Video(VIDEOSTATE.OFF);
 			}
 		});
 		
+    	NetworkModule.Video(VIDEOSTATE.ON, getVideoServerPort());
     	video_dialog.show();
 	}
 	
@@ -263,7 +257,7 @@ class VideoThread extends Thread {
 		}
 		
 		Log.v("Video.Thread", "socket - " + videosocket.toString() + " Port=" + String.valueOf(getServerPort() ));
-		NetworkModule.Video(VIDEOSTATE.ON, getServerPort());
+		
 		
 		//----------------------------------------------------
 //			InetAddress ia = null;
@@ -330,7 +324,6 @@ class VideoThread extends Thread {
 			e.printStackTrace();
 		}
 		
-		NetworkModule.Video(VIDEOSTATE.OFF);
 		return;
 	}
 	

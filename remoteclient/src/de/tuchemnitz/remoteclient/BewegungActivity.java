@@ -15,6 +15,8 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+import de.tuchemnitz.remoteclient.NetworkModule.VIDEOSTATE;
+
 /**
  * 
  * @file   BewegungActivity.java
@@ -58,7 +60,7 @@ public class BewegungActivity extends SherlockActivity {
 			bewart_radiogroupA.check(bewegungsart);
 		setListeners();
 		
-		VideoModule.startVideoServer();
+		NetworkModule.Video(VIDEOSTATE.ON, VideoModule.getVideoServerPort());
 	}
 	
 	@Override
@@ -79,7 +81,7 @@ public class BewegungActivity extends SherlockActivity {
     public void onDestroy(){
 		super.onDestroy();
     	Callbacksplit.registerBewegungActivity(null);
-    	VideoModule.stopVideoServer();
+    	NetworkModule.Video(VIDEOSTATE.OFF);
     }
 
 	/**
@@ -135,10 +137,6 @@ public class BewegungActivity extends SherlockActivity {
 			break;
 		case R.id.acb_video:
 			VideoModule.create_dialog(BewegungActivity.this, false);
-//			if(!VideoModule.isVideoThreadStarted())
-//			{
-//				VideoModule.startVideoServer();
-//			}
 			break;
 		}
 		
