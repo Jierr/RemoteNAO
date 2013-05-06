@@ -1,11 +1,22 @@
 package de.tuchemnitz.remoteclient;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import android.R.array;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -37,6 +48,25 @@ public class SpecialsActivity extends SherlockActivity {
 		Callbacksplit.registerSpecialsActivity(this);
 		
 		changeSitButtonText( (String)NetworkModule.GetInfoData(NetworkModule.INFO_STATE) );
+		
+		final LinearLayout linlist = (LinearLayout) findViewById(R.id.spec_linLayout_list);
+		
+		
+		// ------------ add Buttons dynamicly -------
+		Button btn = new Button(this);
+		btn.setText("TestButton");
+		btn.setWidth(LayoutParams.MATCH_PARENT);
+		btn.setHeight(LayoutParams.WRAP_CONTENT);
+		btn.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Toast toast = Toast.makeText(SpecialsActivity.this, "Testiii", Toast.LENGTH_SHORT);
+		    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
+		    	toast.show();
+			}
+		});
+		linlist.addView(btn);
+		// ------------------------------------------
 		
 	}
 	
@@ -251,4 +281,89 @@ public class SpecialsActivity extends SherlockActivity {
     	}
     }
 
+    ///_____________________________________________________
+    
+    public String[] getMakroList()
+	{
+    	FileInputStream fis = null;
+    	String collected = null;
+		
+		try {
+			fis = openFileInput("MakroListe.txt");
+			byte[] readData = new byte [fis.available()];
+			while(fis.read(readData) != -1)
+			{
+				collected = new String(readData);
+			}
+		}
+		catch (FileNotFoundException e)
+		{
+			e.printStackTrace();
+			collected = null;
+			fis = null;
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			collected = null;
+		}
+		finally
+		{
+			if(fis != null)
+			{
+				try{
+					fis.close();
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				fis = null;
+			}
+		}
+		
+		if(collected==null)
+			return null;
+
+		return collected.split("\r#\n");		
+	}
+	
+	
+    public void newMakroToList()
+	{
+		FileOutputStream fos = null;
+		
+		try {
+			fos = openFileOutput("MakroListe.txt", Context.MODE_PRIVATE);
+			fos.close();
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+    
+	public void addMakroToList(String neutext)
+	{
+		FileOutputStream fos = null;
+		
+		try {
+			fos = openFileOutput("MakroListe.txt", Context.MODE_APPEND);
+			fos.write( (neutext+"\r#\n").getBytes() );
+			fos.close();
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
 }
+
+
+
