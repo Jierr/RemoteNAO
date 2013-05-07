@@ -959,39 +959,40 @@ class NetworkThread extends Thread
 		try
 		{
 			Log.v("NetMod.Receive", "Waiting for data...");
-			Data = new byte[16];
-			DataLen = inFromServer.read(Data);
-			Log.v("NetMod.Receive", "Received " + Integer.toString(DataLen) + " bytes");
+			Data = new byte[1];
+			char ChrData[] = new char[1];
+			InStr = "";
+			while(true)
+			{
+				DataLen = inFromServer.read(Data);
+				if (DataLen <= 0 || Data[0]==-1)
+					break;
+				
+				ChrData[0] = (char)(Data[0] & 0x00FF);
+				InStr = InStr.concat(new String(ChrData));
+			}
 //			String DebugStr = "";
 //			for (int i=0; i < DataLen; i ++)
 //				DebugStr += Integer.toHexString(Data[i]) + " ";
 //			DebugStr += "[" + Integer.toHexString(Data[DataLen]) + "]";
 //			Log.v("NetMod.Receive", DebugStr);
-			if (DataLen > 0)
-			{
+			
 				//InStr = new String(Data).substring(0, DataLen);
-				char ChrArr[] = new char[DataLen]; 
-				for (int i = 0; i < DataLen; i ++)
-					ChrArr[i] = (char)Data[i];
-				InStr = new String(ChrArr);
+//				char ChrArr[] = new char[DataLen]; 
+//				for (int i = 0; i < DataLen; i ++)
+//					ChrArr[i] = (char)Data[i];
+//				InStr = new String(ChrArr);
 			//	String DebugStr = "";
 			//	for (int i=0; i < InStr.length(); i ++)
 			//		DebugStr += Integer.toHexString(InStr.charAt(i)) + " ";
 			//	Log.v("NetMod.Receive", DebugStr);
-			}
-			//BufferedReader in = new BufferedReader(new InputStreamReader(inFromServer));
-			//inMessage = in.readLine();
-			
-			// Clear buffer
-			//Log.v("NetMod.Receive", "Remaining bytes: " + Integer.toString(inFromServer.available()));
-			while(inFromServer.available() > 0)
-				DataLen = inFromServer.read(Data);
+				
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		
+		Log.v("NetMod.Receive", "Received " + InStr.length() + " bytes");
 		return InStr;
 	}
 }

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -54,21 +55,24 @@ public class SpecialsActivity extends SherlockActivity {
 		
 		// ------------ add Buttons dynamicly -------
 		String[] makrobehaviors = getMakroList();
-		int anzahl_behaviors = makrobehaviors.length;
-		for(int i=0; i<anzahl_behaviors;i++)
+		if(makrobehaviors!=null)
 		{
-			final String makroname = makrobehaviors[i];
-			Button btn = new Button(this);
-			btn.setText(makroname);
-			btn.setWidth(LayoutParams.MATCH_PARENT);
-			btn.setHeight(LayoutParams.WRAP_CONTENT);
-			btn.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					NetworkModule.ExecMakro(makroname);
-				}
-			});
-			linlist.addView(btn);
+			int anzahl_behaviors = makrobehaviors.length;
+			for(int i=0; i<anzahl_behaviors;i++)
+			{
+				final String makroname = makrobehaviors[i];
+				Button btn = new Button(this);
+				btn.setText(makroname);
+				btn.setWidth(LayoutParams.MATCH_PARENT);
+				btn.setHeight(LayoutParams.WRAP_CONTENT);
+				btn.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						NetworkModule.ExecMakro(makroname);
+					}
+				});
+				linlist.addView(btn);
+			}
 		}
 		// ------------------------------------------
 	}
@@ -294,7 +298,7 @@ public class SpecialsActivity extends SherlockActivity {
 		try {
 			fis = openFileInput("MakroListe.txt");
 			byte[] readData = new byte [fis.available()];
-			while(fis.read(readData) != -1)
+			while(fis.read(readData) > 0)
 			{
 				collected = new String(readData);
 			}
@@ -328,7 +332,7 @@ public class SpecialsActivity extends SherlockActivity {
 		if(collected==null)
 			return null;
 
-		return collected.split("\n");		
+		return collected.split("\n");
 	}
 	
 	
