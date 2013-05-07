@@ -142,7 +142,14 @@ public class BewegungActivity extends SherlockActivity {
 			startActivity(intent);
 			break;
 		case R.id.acb_video:
-			VideoModule.create_dialog(BewegungActivity.this, false);
+			if(VideoModule.Videotransparency_bewact != 0)
+			{
+				VideoModule.create_dialog(BewegungActivity.this, false);
+			}
+			else
+			{
+				VideoModule.create_dialog(BewegungActivity.this, true);
+			}
 			break;
 		}
 		

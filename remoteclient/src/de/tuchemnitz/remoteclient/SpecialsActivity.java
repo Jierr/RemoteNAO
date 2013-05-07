@@ -53,21 +53,24 @@ public class SpecialsActivity extends SherlockActivity {
 		
 		
 		// ------------ add Buttons dynamicly -------
-		Button btn = new Button(this);
-		btn.setText("TestButton");
-		btn.setWidth(LayoutParams.MATCH_PARENT);
-		btn.setHeight(LayoutParams.WRAP_CONTENT);
-		btn.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Toast toast = Toast.makeText(SpecialsActivity.this, "Testiii", Toast.LENGTH_SHORT);
-		    	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
-		    	toast.show();
-			}
-		});
-		linlist.addView(btn);
+		String[] makrobehaviors = getMakroList();
+		int anzahl_behaviors = makrobehaviors.length;
+		for(int i=0; i<anzahl_behaviors;i++)
+		{
+			final String makroname = makrobehaviors[i];
+			Button btn = new Button(this);
+			btn.setText(makroname);
+			btn.setWidth(LayoutParams.MATCH_PARENT);
+			btn.setHeight(LayoutParams.WRAP_CONTENT);
+			btn.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					NetworkModule.ExecMakro(makroname);
+				}
+			});
+			linlist.addView(btn);
+		}
 		// ------------------------------------------
-		
 	}
 	
 	@Override
@@ -139,7 +142,7 @@ public class SpecialsActivity extends SherlockActivity {
 			startActivity(intent);
 			break;
 		case R.id.acb_video:
-			VideoModule.create_dialog(SpecialsActivity.this, false);
+			VideoModule.create_dialog(SpecialsActivity.this, true);
 			break;
 		}
 		
@@ -281,7 +284,7 @@ public class SpecialsActivity extends SherlockActivity {
     	}
     }
 
-    ///_____________________________________________________
+    ///__________________ Makros _______________________
     
     public String[] getMakroList()
 	{
@@ -325,44 +328,13 @@ public class SpecialsActivity extends SherlockActivity {
 		if(collected==null)
 			return null;
 
-		return collected.split("\r#\n");		
+		return collected.split("\n");		
 	}
 	
 	
-    public void newMakroToList()
-	{
-		FileOutputStream fos = null;
-		
-		try {
-			fos = openFileOutput("MakroListe.txt", Context.MODE_PRIVATE);
-			fos.close();
-		}
-		catch(FileNotFoundException e){
-			e.printStackTrace();
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
     
-	public void addMakroToList(String neutext)
-	{
-		FileOutputStream fos = null;
-		
-		try {
-			fos = openFileOutput("MakroListe.txt", Context.MODE_APPEND);
-			fos.write( (neutext+"\r#\n").getBytes() );
-			fos.close();
-		}
-		catch(FileNotFoundException e){
-			e.printStackTrace();
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
+    
+	
 }
 
 

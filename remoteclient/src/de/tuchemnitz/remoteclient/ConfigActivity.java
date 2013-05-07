@@ -17,6 +17,8 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+import de.tuchemnitz.remoteclient.NetworkModule.VIDEOSTATE;
+
 /**
  * @file   ConfigActivity.java
  * @author Riko Streller
@@ -147,7 +149,7 @@ public class ConfigActivity extends SherlockActivity {
 		case R.id.acb_m_5:
 			break;
 		case R.id.acb_video:
-			VideoModule.create_dialog(ConfigActivity.this, false);
+			VideoModule.create_dialog(ConfigActivity.this, true);
 			break;
 		}
 		

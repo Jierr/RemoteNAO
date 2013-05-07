@@ -44,6 +44,7 @@ public class NetworkModule {
 	public static final int INFO_BATT = 0;
 	public static final int INFO_STATE = 1;
 	public static final int INFO_CONN = 2;
+	public static final int INFO_MAKRO = 3;
 	public static final int CONN_CLOSED = 0;
 	public static final int CONN_CONNECTING = 1;
 	public static final int CONN_OPEN = 2;
@@ -267,6 +268,37 @@ public class NetworkModule {
 	}
 	
 	/**
+	 * Send a signal to the robot to ask for the makros on it available
+	 */
+	public static void AskForMakros()
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.GETMAKROS, null);
+		
+		return;
+	}
+	
+	/**
+	 * Tells the robot to execute the following movement
+	 * 
+	 * @param makroname	name of the makro which the robot should execute
+	 * 
+	 * Note: Underscores are not allowed.
+	 */
+	public static void ExecMakro(String makroname)
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		//makroname = makroname.replace('_', ' ');	// replace _ with a space // gibt kein unterstrich
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.EXECMAKRO, makroname + "_");
+		
+		return;
+	}
+	
+	/**
 	 * Asks the robot for his current battery state.
 	 */
 	public static void RequestBatteryState()
@@ -400,7 +432,8 @@ class NetworkThread extends Thread
 {
 	public enum CMDTYPE
 	{
-		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, STANDUP, REST, SPEAK, DANCE, WINK, WIPE, VIDEO, GETBATT
+		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, STANDUP, REST, SPEAK, DANCE, WINK, WIPE, VIDEO,
+		GETBATT, GETMAKROS, EXECMAKRO
 	};
 	private final String CMDTYPE_MOVE	= "MOV";
 	private final String CMDTYPE_MVARM	= "ARM";
@@ -415,10 +448,13 @@ class NetworkThread extends Thread
 	private final String CMDTYPE_WIPE 	= "WIP";
 	private final String CMDTYPE_VIDEO	= "VID";
 	private final String CMDTYPE_BATT	= "BAT";
+	private final String CMDTYPE_MAKRO	= "GEN";
+	private final String CMDTYPE_EMAKRO = "EXE";
 
 	
 	private final String RETCMD_BATT	= "BAT";
 	private final String RETCMD_STATE	= "ZST";
+	private final String RETCMD_MAKRO	= "GEN";
 	
 	private final String TERMINATE_CHR = "";
 	private final String IP_Addr;
@@ -461,8 +497,7 @@ class NetworkThread extends Thread
 	 * @param CBEvtList	NetworkModule EventList member
 	 * @param RbInfo	NetworkModule RoboInfo member
 	 */
-	public NetworkThread(String DestIP, int DestPort, ArrayList<EventCallback> CBEvtList,
-						RobotInformation RbInfo)
+	public NetworkThread(String DestIP, int DestPort, ArrayList<EventCallback> CBEvtList, RobotInformation RbInfo)
 	{
 		IP_Addr = DestIP;
 		Port = DestPort;
@@ -562,6 +597,12 @@ class NetworkThread extends Thread
 					break;
 				case GETBATT:
 					CmdStr = CMDTYPE_BATT;
+					break;
+				case GETMAKROS:
+					CmdStr = CMDTYPE_MAKRO;
+					break;
+				case EXECMAKRO:
+					CmdStr = CMDTYPE_EMAKRO;
 					break;
 				default:
 					CmdStr = "";
@@ -677,6 +718,11 @@ class NetworkThread extends Thread
 			DestCB = GetCallback(NetworkModule.INFO_BATT);
 			ArgInt = RoboInfo.BattLoad;
 			Log.v("NetMod.BAT", Integer.toHexString(ArgInt));
+		}
+		else if (CmdStr.equals(RETCMD_MAKRO))
+		{
+			DestCB = GetCallback(NetworkModule.INFO_MAKRO);
+			ArgObj = (ReceiveStr.split("_",2))[0];
 		}
 		else
 		{

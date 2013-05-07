@@ -1,9 +1,13 @@
 package de.tuchemnitz.remoteclient;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -35,9 +39,12 @@ public class MainActivity extends SherlockActivity {
 	private final int EVENT_BATT = 0;
 	private final int EVENT_STATE = 1;
 	private final int EVENT_CONN = 2;
+	private final int EVENT_MAKRO = 3;
 	
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
+	
+	private boolean askfor_Makros_once = true;
 	
 	/**
 	* @class EvtHandler
@@ -69,6 +76,14 @@ public class MainActivity extends SherlockActivity {
 			    	
 			    	Callbacksplit.setActBarConnectIcon();
 		    	}
+		    	if(askfor_Makros_once)
+		    	{
+		    		if(msg.arg1 == NetworkModule.CONN_OPEN)
+		    		{
+		    			askfor_Makros_once = false;
+		    			NetworkModule.AskForMakros();
+		    		}
+		    	}
 		    	break;
 		    case EVENT_STATE:
 				final String SitStatus = (String)msg.obj;
@@ -98,8 +113,10 @@ public class MainActivity extends SherlockActivity {
 			    Callbacksplit.setActBarBatteryIcon(batt_icon_r);
 			    
 			    break;
+		    case EVENT_MAKRO:
+		    	addMakroToList( (String)msg.obj );
+		    	break;
 		    }
-		    
 		    return;
 		}
 	};
@@ -124,6 +141,7 @@ public class MainActivity extends SherlockActivity {
 		NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,		NetworkModule.INFO_CONN);
 		NetworkModule.RegisterCallback(EvtHandler,	EVENT_STATE,	NetworkModule.INFO_STATE);
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,		NetworkModule.INFO_BATT);
+        NetworkModule.RegisterCallback(EvtHandler,	EVENT_MAKRO,	NetworkModule.INFO_MAKRO);
         
         Log.v("MainAct", "Activity started.");
         BattTimer = new Timer();
@@ -132,6 +150,8 @@ public class MainActivity extends SherlockActivity {
         
         VideoModule.init();
         VideoModule.startVideoServer();
+        
+        newMakroToList();
         
     }
     
@@ -195,7 +215,7 @@ public class MainActivity extends SherlockActivity {
 			finish();
 			break;
 		case R.id.acb_video:
-			VideoModule.create_dialog(MainActivity.this, false);
+			VideoModule.create_dialog(MainActivity.this, true);
 			break;
 		case R.id.acb_m_1:
 			break;
@@ -338,6 +358,43 @@ public class MainActivity extends SherlockActivity {
 		public void run()  
 		{
 			NetworkModule.RequestBatteryState();
+		}
+	}
+	
+	//______ Funktions for Makros _________
+	
+	private void addMakroToList(String neutext)
+	{
+		FileOutputStream fos = null;
+		
+		try {
+			fos = openFileOutput("MakroListe.txt", Context.MODE_APPEND|Context.MODE_PRIVATE);
+			fos.write( (neutext+"\n").getBytes() );
+			fos.close();
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void newMakroToList()
+	{
+		FileOutputStream fos = null;
+		
+		try {
+			fos = openFileOutput("MakroListe.txt", Context.MODE_PRIVATE);
+			fos.close();
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
 }

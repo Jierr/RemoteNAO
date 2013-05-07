@@ -30,7 +30,7 @@ public class VideoModule {
 	private static ImageView video_dialog_picture = null;
 	private static ImageView video_picture = null;
 	private static VideoThread NetVideo = null;
-	private static boolean close_videothread_mark = false;
+	private static boolean video_networkcommand_send_onoff = false;
 	private static Bitmap bitmap = null;
 	private final static BitmapFactory.Options opt = new BitmapFactory.Options();
 	
@@ -90,7 +90,7 @@ public class VideoModule {
 	};	
 	
 	
-	public static void create_dialog(Activity ref_activity, boolean closeVideoServerOnDialogDismiss)
+	public static void create_dialog(Activity ref_activity, boolean startstop_naovideoserver)
 	{
 		if(NetVideo == null)
 		{
@@ -103,7 +103,7 @@ public class VideoModule {
 		video_dialog.setContentView(R.layout.dialog_video);
 		video_dialog_picture = (ImageView) video_dialog.findViewById(R.id.videodial_pic);
 		
-		close_videothread_mark = closeVideoServerOnDialogDismiss;
+		video_networkcommand_send_onoff = startstop_naovideoserver;
 		
 		/**
 		 * By pressing the related Image the about dialog will be closed
@@ -122,16 +122,19 @@ public class VideoModule {
 			public void onDismiss(DialogInterface dialog) {
 				video_dialog = null;
 				video_dialog_picture = null;
-				if (close_videothread_mark)
+				if (video_networkcommand_send_onoff)
 				{
-					stopVideoServer();
-					close_videothread_mark = false;
+					NetworkModule.Video(VIDEOSTATE.OFF);
+					video_networkcommand_send_onoff = false;
 				}
-				NetworkModule.Video(VIDEOSTATE.OFF);
+				
 			}
 		});
 		
-    	NetworkModule.Video(VIDEOSTATE.ON, getVideoServerPort());
+    	if(video_networkcommand_send_onoff)
+    	{
+    		NetworkModule.Video(VIDEOSTATE.ON, getVideoServerPort());
+    	}
     	video_dialog.show();
     	
     	NetVideo.pause_off();
@@ -144,7 +147,7 @@ public class VideoModule {
 		video_dialog_picture = null;
 		video_picture = null;
 		NetVideo = null;
-		close_videothread_mark = false;
+		video_networkcommand_send_onoff = false;
 		bitmap = null;
 	}
 	
