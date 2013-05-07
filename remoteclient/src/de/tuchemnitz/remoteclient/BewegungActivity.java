@@ -63,7 +63,7 @@ public class BewegungActivity extends SherlockActivity {
 			bewart_radiogroupA.check(bewegungsart);
 		setListeners();
 		
-		if(VideoModule.Videotransparency_bewact != 0)
+		if(VideoModule.Videotransparency_bewact != 0 && VideoModule.isVideoThreadStarted())
 		{
 			NetworkModule.Video(VIDEOSTATE.ON, VideoModule.getVideoServerPort());
 		}

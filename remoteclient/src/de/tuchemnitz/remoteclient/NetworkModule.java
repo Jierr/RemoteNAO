@@ -326,6 +326,7 @@ public class NetworkModule {
 		
 		if(state == VIDEOSTATE.OFF) text="D";
 		else if(state == VIDEOSTATE.ON && Port!=-1) text="A_"+String.valueOf(Port)+"_";
+		else return;
 		NetTData.QueueCommand(NetworkThread.CMDTYPE.VIDEO, text);
 		
 		return;
