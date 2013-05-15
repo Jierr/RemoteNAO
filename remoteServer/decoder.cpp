@@ -2,12 +2,74 @@
 #include "eventlist.h"
 #include "gen.h"
 
+#include <alproxies/almemoryproxy.h>
+#include <alproxies/albatteryproxy.h>
+#include <alproxies/dcmproxy.h>
+#include <alproxies/albehaviormanagerproxy.h>
+#include <qi/os.hpp>
 #include <string>
 #include <iostream>
 
+#include <time.h>
 
 using namespace std;
 
+
+void* Decoder::timer(void* args)
+{
+	int oldstate;
+	int oldtype;
+	
+	time_t told = time(0);
+	time_t tnew = told;
+	bool newConn = true;
+		 
+	struct timer_arg* aargs = (struct timer_arg*)args;
+	boost::shared_ptr<int>& bat_count = aargs->bat_count;
+	boost::shared_ptr<NetNao>& net = aargs->net;
+	
+	
+	
+	if(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype) != 0)	
+		cerr<< "[Executer]<execute> pthread_setcanceltype failed" << endl;
+	if(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate) != 0)
+		cerr<< "[Executer]<execute> pthread_setcancelstate failed" << endl;
+	
+	while(1)
+	{
+		qi::os::sleep(1);
+		cout<< "[Decoder]<timer>:" << tnew - told << ", bat_count = " << *bat_count << endl;
+		tnew = time(0);
+		if(net->getMode() == CONN_ACTIVE)
+		{
+			if(newConn)
+			{
+				cout<< "[Decoder]<timer> Neue Verbindung" << endl;
+				told = time(0);
+				newConn = false;
+			}
+			if((tnew - told >= 20))
+			{
+				if (*bat_count < 1)
+					net->disconnect(net->getClient_tcp());
+				else 
+				{
+					told = time(0);
+					*bat_count = 0;
+				}
+			}
+		}
+		else
+		{
+			if(!newConn)
+				cout<< "[Decoder]<timer> Verbindung getrennt" << endl;
+			newConn = true;
+			*bat_count = 0;
+		}
+	}
+	
+	
+}
 
 
 void Decoder::setIp4(const string& ip)
@@ -49,6 +111,7 @@ bool Decoder::fetch(const char& toParse, int& pos, event_params_t& ep)
 		++pos;
 	}
 	
+	cout << "BEFEHL[" << fstr << "]" << endl;
 	if (pos == 3)
 	{
 		if (fstr.compare("INI") == 0)
@@ -126,6 +189,13 @@ bool Decoder::fetch(const char& toParse, int& pos, event_params_t& ep)
 			//return <ingnore params>
 			return false;
 		}
+		else if (fstr.compare("GEN") == 0)
+		{
+			ep.type = CODE_GEN;
+			fstr = "";
+			//return <ingnore params>
+			return false;
+		}
 		else if (fstr.compare("MOV") == 0)
 			ep.type = CODE_MOV;
 		else if (fstr.compare("SPK") == 0)
@@ -136,6 +206,8 @@ bool Decoder::fetch(const char& toParse, int& pos, event_params_t& ep)
 			ep.type = CODE_ARM;
 		else if (fstr.compare("VID") == 0)
 			ep.type = CODE_VID;
+		else if (fstr.compare("EXE") == 0)
+			ep.type = CODE_EXE;
 		else 
 			ep.type = CODE_INVALID;
 			
@@ -160,6 +232,32 @@ bool Decoder::getParams(const char& toParse, int& pos, event_params_t& ep, int& 
 	switch (ep.type)
 	{
 		case CODE_SPK:
+		{
+			//cout<< "getParams:" << toParse[pos] << endl;
+			if ((toParse != '_') && (paramCount==1))
+			{
+				ep.sparam+=toParse;
+				//cout<< "getParams:		" << ep.sparam << endl;
+			}
+			else if (toParse == '_')
+			{
+				++paramCount;
+				if (paramCount >= 2)
+				{
+					++pos;
+					return false;
+				}
+			}
+			else 
+			{
+				pos = 0;
+				ep.type = CODE_INVALID;
+				return false;
+			}			
+			++pos;
+			break;
+		}
+		case CODE_EXE:
 		{
 			//cout<< "getParams:" << toParse[pos] << endl;
 			if ((toParse != '_') && (paramCount==1))
@@ -252,7 +350,13 @@ bool Decoder::getParams(const char& toParse, int& pos, event_params_t& ep, int& 
 			}			
 			break;
 		case CODE_ARM:
-			if (paramCount == 1)
+		
+			if (toParse == '_')
+			{
+				++paramCount;
+				++pos;
+			}	
+			else if (paramCount == 1)
 			{
 				switch (toParse)
 				{
@@ -295,12 +399,7 @@ bool Decoder::getParams(const char& toParse, int& pos, event_params_t& ep, int& 
 				++pos;
 				return false;
 			}
-			
-			if (toParse == '_')
-			{
-				++paramCount;
-				++pos;
-			}			
+					
 			break;
 			
 		case CODE_VID:					
@@ -331,6 +430,7 @@ bool Decoder::getParams(const char& toParse, int& pos, event_params_t& ep, int& 
 					default:
 						pos = 0;
 						ep.type = CODE_INVALID;
+						return false;
 						break;
 				};
 				++pos;
@@ -450,8 +550,9 @@ int Decoder::decode(const char& toParse, event_params_t* ep)
 }
 
 
-int Decoder::manage(event_params_t* ep)
+int Decoder::manage(event_params_t* ep, boost::shared_ptr<NetNao> net, int& bat_count)
 {
+	int ms = 100;
 	switch (ep->type)
 	{
 		case CODE_INVALID:
@@ -459,6 +560,9 @@ int Decoder::manage(event_params_t* ep)
 		case CODE_VID:
 		{
 			char combuf[2] = {0,};
+			
+			if (pipeWrite < 0)
+				return CONN_RESUME;
 			combuf[0] = (char)ep->iparams[0]; 
 			if (ep->iparams[0] == VON)
 			{
@@ -483,6 +587,7 @@ int Decoder::manage(event_params_t* ep)
 			{		
 				pproxyManager->callVoid<int, int, int, string, int>
 				("addCom", ep->type, ep->iparams[0], ep->iparams[1], ep->sparam, 1);	
+				qi::os::msleep(ms);
 			}
 			catch (const AL::ALError& e)
 			{
@@ -490,11 +595,33 @@ int Decoder::manage(event_params_t* ep)
 			}
 			return CONN_DISCONNECT;
 			break;
+		case CODE_BAT:
+			bat_count++;
+			sendBatteryStatus(net);
+			break;
+		case CODE_STATE:
+			break;
+		case CODE_STOPALL:
+			try
+			{		
+				pproxyManager->callVoid<int, int, int, string, int>
+				("addCom", ep->type, ep->iparams[0], ep->iparams[1], ep->sparam, 0);	
+				qi::os::msleep(ms);
+			}
+			catch (const AL::ALError& e)
+			{
+				cout<< "ERROR[manage]: " << endl << e.what() << endl;
+			}			
+			break;
+		case CODE_GEN:
+			sendBehaviours(net);
+			break;
 		default:
 			try
 			{		
 				pproxyManager->callVoid<int, int, int, string, int>
 				("addCom", ep->type, ep->iparams[0], ep->iparams[1], ep->sparam, 1);	
+				qi::os::msleep(ms);
 			}
 			catch (const AL::ALError& e)
 			{
@@ -505,3 +632,70 @@ int Decoder::manage(event_params_t* ep)
 	return CONN_RESUME;
 }
 
+
+
+void Decoder::sendBatteryStatus(boost::shared_ptr<NetNao> net)
+ {
+ 	int sclient;
+	int value = 0;
+	int sent= 0;
+	string buf = "BAT_";
+	char str[15];
+	AL::ALMemoryProxy mem = AL::ALMemoryProxy(MB_IP, MB_PORT);
+	
+	try
+	{
+		AL::ALBatteryProxy pbat = AL::ALBatteryProxy(MB_IP, MB_PORT);
+		AL::DCMProxy dcm = AL::DCMProxy(MB_IP, MB_PORT);
+	
+		value=(int)((float&)mem.getData("Device/SubDeviceList/Battery/Charge/Sensor/Value") * 100);
+	
+		sclient = net->getClient_tcp(); 
+		
+		buf = buf + (char)(value) + (char)(255);
+		cout << "[Decoder]<sendBatteryStatus>: buf.length() = " << (int)buf.length() << endl;
+
+		while (sent < buf.length())
+		{
+			sent += net->sendString(sclient, buf, buf.length(), 0);
+		}
+	}
+	catch (const AL::ALError& e)
+	{
+		cout<< "ERROR [Decoder]<sendBatteryStatus>:" << endl << e.what() << endl;
+	}
+ }
+
+
+void Decoder::sendBehaviours(boost::shared_ptr<NetNao> net)
+{
+		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+		AL::ALValue behav;
+		string com = "GEN_";
+	 	int sclient;
+		int size = 0;	
+		
+		sclient = net->getClient_tcp();
+		//behav = pbehav.getDefaultBehaviors();
+		behav = pbehav.getInstalledBehaviors();
+		size = behav.getSize();
+		for (int i = 0; i < size; ++i)
+		{
+			if ((((string&)behav[i])[0] != '.') && 
+				(((string&)behav[i]).compare("stand") != 0) && 
+				(((string&)behav[i]).compare("sit") != 0)	&& 
+				(((string&)behav[i]).compare("hello") != 0) && 
+				(((string&)behav[i]).compare("wipe") != 0)  && 
+				(((string&)behav[i]).compare("stand") != 0) && 
+				(((string&)behav[i]).compare("dance") != 0)  && 
+				(((string&)behav[i]).compare("falldetector") != 0)) 
+			{	
+				com = "GEN_";
+				com += (string&)behav[i];
+				com += "_";
+				com += (char)(255);
+				net->sendString(sclient, com, com.length(), 0);
+	}
+		}
+		//behav = pbehav.getBehaviorNames();
+}

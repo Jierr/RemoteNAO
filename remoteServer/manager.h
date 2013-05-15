@@ -56,7 +56,16 @@ class Manager:public AL::ALModule
 		AcessExec accessExec; ///< \see AcessExec
 		boost::shared_ptr<EventList> eventList; ///< Pointer to instance of EventList, queueing valid comands.
 		int pipeWrite;
+		int threadcount;
 		string ip4;
+		int stateAbs;
+		int inTransition;
+		int blockGen;
+		bool block[NUM_CODES];
+		bool parblock[NUM_CODES];
+		bool stateDisrupt;
+		event_params_t absTransition[NUM_ABS_STATES][NUM_ABS_STATES];
+		int genAllowed[NUM_GEN_STATES][NUM_ABS_STATES];
 		
 		/**
 		\brief First step of parsing: Looks for valid comand specifier in given string.
@@ -82,6 +91,22 @@ class Manager:public AL::ALModule
 		*/
 		bool getParams(const string& toParse, int& pos, event_params_t& ep, int& paramCount);
 		//void setEventParams(const );
+		
+		void initAbsTransition();
+		void initGenAllowed();
+		int retrieveTrans(const int& from, const int& to, event_params_t* ep);
+		int isGenAllowed(const int& gen, const int& abs);
+		int processConflicts(Event* event);
+		int resolveConflict(Event* event, const int& from, const int& to);
+		int adaptEventList(const int& confresult, Event* event);
+		int blockfor(const int& code);
+		bool isblocked(const int& code);
+		bool isblocked(Event* event);
+		
+		int new_thread(struct exec_arg* targ[MAX_THREADS], Event* event, boost::shared_ptr<EventList> eL);
+		int delete_thread(struct exec_arg* targ[MAX_THREADS], int t);
+		int free_done_threads(struct exec_arg* targ[MAX_THREADS]);
+		int catch_dangling_threads(struct exec_arg* targ[MAX_THREADS]);
 		
 	public:
 		//always get a shared_ptr from this via lock()		
@@ -120,7 +145,7 @@ class Manager:public AL::ALModule
 		\param toParse String to be scanned and translated.
 		\return Returns current scanning position or -1, when the Connection is to be closed.
 		*/
-		int decode(const string& toParse);
+//		int decode(const string& toParse);
 		
 		void addCom(const int& type, const int& ip1, const int& ip2, const string& sp, const int& prio);
 		

@@ -79,6 +79,7 @@ class EventList
 		int order; ///< specifies the priority to execute the events, hence retreiving them via hasPending()
 		Event* first; ///< Pointer to the first Event in the list
 		Event* last; ///< Pointer to the last Event in the list 
+		Event* inspect;
 		
 	public:
 		/// Constructor: Creates empty event list.
@@ -153,19 +154,21 @@ class EventList
 		/**
 		\brief Get the first event.
 		*/
-		Event getFirst();
+		Event* getFirst();
 		/**
 		\brief Get the last event.
 		*/
-		Event getLast();	
+		Event* getLast();	
 		///Get the first Event of the list fulfilling the conditions of #order, hence a given priority.
-		Event* getPending();
+		Event* getPending(const bool& restart);
 		
 		/**
 		\brief Get the event with coresponding id. 
 		\param iid
 		*/ 
 		Event withID(const void* const iid);
+		
+		bool reduceLastWalking();
 			
 };
 

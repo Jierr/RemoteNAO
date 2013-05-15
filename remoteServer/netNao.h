@@ -131,6 +131,8 @@ class NetNao : public AL::ALModule
 		*/
 		int getServer_tcp();
 		
+		int getMode();
+		
 };
 
 

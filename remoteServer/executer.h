@@ -11,6 +11,15 @@
 using namespace std;
 
 
+struct exec_arg
+{
+	pthread_t id;
+	int tnum;
+	Event* event;
+	boost::shared_ptr<EventList> eventList;
+	boost::shared_ptr<AL::ALMutex> mutex;	
+};
+
 /**
 \brief Resolves Conflicts between Events and executes them
 
@@ -26,10 +35,22 @@ class Executer:public AL::ALModule
 		boost::shared_ptr<AL::ALMutex> sync; 
 		boost::shared_ptr<EventList> eventList; ///< contains events to be executed
 		state_t state;	///< logical state of the robot, set through executed functions in process()
-		state_t cbstate;	///< physical state of the robot, set through sensors, hence a callback --> cbPoseChanged()
 		string mpose;	///< physical state of the robot as string, also retrieved through the callback --> cbPoseChanged()
 		AL::ALMemoryProxy mem; ///< Proxy to the atomic memory management of the framework.
+		
+		int* stateAbs;
+		int* inTransition;
+		int* blockGen;
+		bool* block;
+		bool* parblock;
+		
+		int unblockfor(const int& code);
 	public:
+		bool cbcall;
+		bool cbinc;
+		state_t cbstate;	///< physical state of the robot, set through sensors, hence a callback --> cbPoseChanged()
+		static Executer* self;
+		void setStateMan(int* abs, int* itrans, int* gblock, bool* b, bool* pb);
 		//always get a shared_ptr from this via lock()	
 		
 		/**
@@ -62,7 +83,7 @@ class Executer:public AL::ALModule
 		
 		It is called as thread per event by Manager::runExecuter()
 		*/
-		void process();
+		//void process();
 		
 		/**
 		\brief Finds and manages conflicting events and/or states in the #eventList and adapts/resolves the current event.
@@ -99,6 +120,7 @@ class Executer:public AL::ALModule
 		void behave_hello(); ///< lets the roboter wave and say hello
 		void behave_dance(); ///< lets the roboter dance
 		void behave_wipe(); ///< roboter wipes out the world, after that he wipes his forehead
+		void behave_gen(const string& com);
 		
 		/**
 		\brief The roboter will walk.
@@ -130,6 +152,9 @@ class Executer:public AL::ALModule
 		\param event holds the moving mode.
 		*/
 		void moveArm(const Event& event);
+		
+		static void mark_thread_done(struct exec_arg* aargs);
+		static void* execute(void* args);
 		
 		/**
 		\brief send remaining battery power to Android App

@@ -7,6 +7,7 @@ EventList::EventList()
 {
 	first = 0; 
 	last = 0;
+	inspect = 0;
 }
 
 EventList::~EventList()
@@ -21,6 +22,7 @@ EventList::~EventList()
 	} 
 	first = 0;
 	last = 0;
+	inspect = 0;
 	mutex->unlock();
 }
 
@@ -35,9 +37,7 @@ bool EventList::hasPending()
 	Event* curr;
 	mutex->lock();
 	curr = first;
-	while (curr && 
-		  	((curr->classification != EVT_PENDINGABS) &&
-		  	 (curr->classification != EVT_PENDINGPAR)))
+	while (curr && (curr->classification != EVT_PENDING))
 	{
 		curr = curr->next;
 	}
@@ -61,10 +61,8 @@ void EventList::addFirst(event_params_t ep)
 	first->ep = ep;
 	first->taskID = 0;	
 	
-	if (ep.type >= CODE_PARALLEL)
-		first->classification = EVT_PENDINGPAR;
-	else
-		first->classification = EVT_PENDINGABS;
+	inspect = first;
+	first->classification = EVT_PENDING;
 	mutex->unlock();
 }
 
@@ -82,10 +80,7 @@ void EventList::addEvent(event_params_t ep)
 		last = last->next;	
 	}
 	
-	if (ep.type >= CODE_PARALLEL)
-		last->classification = EVT_PENDINGPAR;
-	else
-		last->classification = EVT_PENDINGABS;
+	last->classification = EVT_PENDING;
 	last->ep = ep;
 	last->taskID = 0;
 	last->next = 0;
@@ -107,8 +102,10 @@ void EventList::removeEvent(const void* const iid)
 	}
 	
 	//is found?
-	if(curr && !curr->taskID)
+	if(curr)
 	{
+		if (curr == inspect)
+			inspect = curr->next;
 		//curr != first
 		if(prev)
 		{
@@ -147,6 +144,8 @@ void EventList::removeDone()
 	{
 		if (curr->classification == EVT_DONE)
 		{
+			if (curr == inspect)
+				inspect = curr->next;
 			//curr != first
 			if(prev)
 			{
@@ -194,8 +193,7 @@ void EventList::removePending()
 	
 	while(curr)
 	{
-		if ((curr->classification == EVT_PENDINGABS) || 
-		    (curr->classification == EVT_PENDINGPAR))
+		if (curr->classification == EVT_PENDING)
 		{
 			//curr != first
 			if(prev)
@@ -230,6 +228,7 @@ void EventList::removePending()
 		
 	}
 	
+	inspect = first;
 	mutex->unlock();
 }
 
@@ -245,7 +244,7 @@ void EventList::list()
 	while (curr)
 	{
 		cout<< "Event[" << n << "] = " << curr->ep.type 
-			<< ", valid? -> " << (curr == curr->id) << endl;
+			<< ", valid? -> " << (curr == curr->id) << ", Classification: " << curr->classification << endl;
 		++n;
 		curr = curr->next;	
 	} 
@@ -300,27 +299,16 @@ void EventList::setTask(const void* const iid, const int& tid)
 }
 
 
-Event* EventList::getPending()
+Event* EventList::getPending(const bool& restart)
 {	
 	Event* curr;
-	int evt_state;
 	
 	mutex->lock();
 	
-	if (order == ORD_ABS)
-		evt_state = EVT_PENDINGABS;
-	else if (order == ORD_PAR)
-		evt_state = EVT_PENDINGPAR;
-	else 
-		evt_state = EVT_PENDING;
-	
-	curr = first;
-	while (curr && 
-	       	((	(evt_state != EVT_PENDING) && 
-	       		(curr->classification != evt_state)) || 
-	        (	(evt_state == EVT_PENDING) && 
-	        	(curr->classification != EVT_PENDINGPAR) && 
-	        	(curr->classification != EVT_PENDINGABS) )))
+	if (restart || !inspect)
+		inspect = first;
+	curr = inspect;
+	while (curr && (curr->classification != EVT_PENDING))
 	{
 		curr = curr->next;
 	}
@@ -329,6 +317,7 @@ Event* EventList::getPending()
 	if (curr)
 	{
 		//Event result(*curr);
+		inspect = curr->next;
 		mutex->unlock();
 		return curr;
 	}
@@ -363,34 +352,122 @@ Event EventList::withID(const void* const iid)
 
 }
 
-Event EventList::getFirst()
+Event* EventList::getFirst()
 {
 	mutex->lock();
-	Event result(*first);
+	inspect = first;
 	mutex->unlock();
-	return result;
+	return first;
 }
 
 
-Event EventList::getLast()
+Event* EventList::getLast()
 {	
 	mutex->lock();
-	Event result(*last);
+	inspect = last;
 	mutex->unlock();
-	return result;
+	return last;
 }
 
 
 void EventList::setOrder(int ord)
 {
-	mutex->lock();
-	if ((ord == EVT_PENDINGABS) || (ord == EVT_PENDINGPAR) )
-		order = ord;
-	else 
-		order = EVT_PENDING;
-	mutex->unlock();
+//	mutex->lock();
+//	if ((ord == EVT_PENDINGABS) || (ord == EVT_PENDINGPAR) )
+//		order = ord;
+//	else 
+//		order = EVT_PENDING;
+//	mutex->unlock();
 }
 
+
+bool EventList::reduceLastWalking()
+{
+	Event* start;
+	Event* end;
+	Event* curr;
+	Event* prev;
+	mutex->lock();
+	
+	start = first;
+	end = 0;
+	prev = 0;
+	curr = first;
+	
+	while (start && !((start->ep.type == CODE_MOV) && (start->classification == EVT_BUSY)))
+	{
+		start = start->next;
+	}
+	cout<< "[Eventlist] Start found!" << endl;
+	if (!start)
+	{
+		mutex->unlock();
+		return false;
+	}
+	
+	end = 0;	
+	prev = start;
+	start = start->next;
+	curr = start;
+	while(curr && ((curr->ep.type == CODE_MOV) || (curr->classification == EVT_BUSY) || (curr->classification == EVT_DONE)) )
+	{
+		if ((curr->ep.type == CODE_MOV) && (curr->classification == EVT_PENDING)) 
+		{
+			end = curr;
+		}
+		curr = curr->next;
+	}
+	cout<< "[Eventlist] End found!" << endl;
+	
+	if (!end)
+	{
+		mutex->unlock();
+		return false;
+	}
+	
+	cout<< "[Eventlist] Start deleting!" << endl;
+	while (start != end)
+	{
+		curr = start->next;
+		if ((start->ep.type == CODE_MOV) && (start->classification == EVT_PENDING))
+		{		
+			cout<< "[Eventlist] Delete start" << endl;
+			if(start)
+			{
+				if (start == inspect)
+					inspect = start->next;
+				//curr != first
+				if(prev)
+				{
+					prev->next = start->next;
+					//if curr is the last event, and not
+					//the onliest
+					if (start == last)
+						last = prev;
+					delete start;
+				}
+				else
+				{
+					first = start->next;
+					//if curr is the onliest event then
+					if (start == last)
+					{
+						first = 0;
+						last = 0;
+					}
+					delete start;
+				}
+			}
+		}
+		else 
+		{
+			prev = start;
+		}
+		start = curr;
+	}	
+	mutex->unlock();
+	return true;
+}
 
 
 

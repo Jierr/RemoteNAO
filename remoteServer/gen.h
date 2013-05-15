@@ -30,6 +30,8 @@
 #define RM_PORT "32768"
 #define RAD (2*3.1415926535897932384626/360.0)
 
+#define MAX_THREADS 10
+
 #define SOCK_CLOSED -2
 #define SOCK_LOST	-3
 #define CONN_RESUME 1
@@ -47,6 +49,32 @@
 #define STG_PARAM 2
 #define STG_VALID 3
 /*========================================*/
+
+
+#define NUM_CODES 19
+
+enum codes{
+	C_UNKNOWN = 0,
+	C_UP,
+	C_REST,
+	C_SIT,
+	C_WALK,
+	C_WAVE,
+	C_WIPE,
+	C_DANCE,
+	C_STOP,
+	C_STOPALL,
+	C_MOV,
+	C_VID,
+	C_SPK,
+	C_HEAD,
+	C_ARM,
+	C_BAT,
+	C_STATE,
+	C_RESET,
+	C_GEN,
+	C_EXE
+};
 
 /*============ Comand Specfier TOKENs ============*/
 #define CODE_VALID -2
@@ -71,6 +99,8 @@
 #define CODE_ARM 1004
 #define CODE_BAT 1100
 #define CODE_STATE 1101
+#define CODE_GEN 1102
+#define CODE_EXE 1103
 /*=================================================*/
 
 #define MOV_STOP -1
@@ -111,6 +141,27 @@ enum naoStates {
 	STATE_ARMMOVE  = 0x2000,
 	STATE_REFUSING,
 	STATE_ALL = 0xFFFF 
+};
+
+#define NUM_ABS_STATES 6
+#define NUM_GEN_STATES 6
+
+enum state_abs{
+	ABS_STANDING = 0,
+	ABS_SITTING,
+	ABS_CROUCHING,
+	ABS_LIEING,
+	ABS_WALKING,
+	ABS_UNKNOWN,
+};
+
+enum state_gen{
+	GEN_SPEAK = 0,
+	GEN_ARM,
+	GEN_HEAD,
+	GEN_DANCE,
+	GEN_WIPE,
+	GEN_HELLO
 };
 
 enum{

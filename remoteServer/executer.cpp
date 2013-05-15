@@ -22,6 +22,8 @@
 
 using namespace std;
 	
+	
+Executer* Executer::self = 0;
 Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 : 	AL::ALModule(broker, name),
 	mutex(AL::ALMutex::createALMutex()),
@@ -66,11 +68,11 @@ Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	functionName("sendBatteryStatus", getName(), "Will send the Battery status, to the remote host(App),\n\
 												  which the Network module RMNetNao is connected to.");
 	BIND_METHOD(Executer::sendBatteryStatus);
-	
-	functionName("process", getName(), "Execute a given event");
-	//addParam("event", "The event to be processed");
-	BIND_METHOD(Executer::process);
-	
+//	
+//	functionName("process", getName(), "Execute a given event");
+//	//addParam("event", "The event to be processed");
+//	BIND_METHOD(Executer::process);
+//	
 	functionName("cbPoseChanged", getName(), "callback");
 	addParam("eventName", "The event to be processed");
 	addParam("postureName", "The name of posture");
@@ -80,11 +82,15 @@ Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 
 Executer::~Executer()
 {
+	Executer::self = 0;
 }
 
 void Executer::init()
 {
-	cbstate = STATE_KNOWN;
+	cbstate = STATE_UNKNOWN;
+	self = this;
+	cbinc = false;
+	cbcall = false;
 	mem = AL::ALMemoryProxy(getParentBroker());
 	mpose = (string&)mem.getData("robotPoseChanged");
 	mem.subscribeToEvent("robotPoseChanged", "RMExecuter", "cbPoseChanged");
@@ -94,6 +100,110 @@ void Executer::init()
 void Executer::initEventList(boost::shared_ptr<EventList> eL)
 {
 	eventList = eL;
+}
+
+void Executer::setStateMan(int* abs, int* itrans, int* gblock, bool* b, bool* pb)
+{
+	stateAbs = abs;
+	inTransition = itrans;
+	blockGen = gblock;
+	block = b;
+	parblock = pb;
+}
+
+
+int Executer::unblockfor(const int& code)
+{	
+	int c = 0;
+	switch(code){		
+		case C_UP:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
+			break;
+		case C_REST:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
+			break;
+		case C_SIT:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
+			break;
+		case C_WALK:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
+			break;
+		case C_EXE:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
+			break;
+		case C_WAVE:
+			parblock[C_DANCE] = false;
+			parblock[C_UP] = false;
+			parblock[C_SIT] = false;
+			parblock[C_REST] = false;
+			parblock[C_WAVE] = false;
+			parblock[C_WIPE] = false;
+			parblock[C_ARM] = false;
+			parblock[C_HEAD] = false;
+			parblock[C_STOPALL] = false;
+			break;
+		case C_WIPE:
+			parblock[C_DANCE] = false;
+			parblock[C_UP] = false;
+			parblock[C_SIT] = false;
+			parblock[C_REST] = false;
+			parblock[C_WAVE] = false;
+			parblock[C_WIPE] = false;
+			parblock[C_ARM] = false;
+			parblock[C_HEAD] = false;
+			parblock[C_STOPALL] = false;
+			break;
+		case C_DANCE:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
+			break;
+		case C_STOP:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
+			block[C_MOV] = false;
+			block[C_STOP] = false;
+			block[C_STOPALL] = false;
+			break;
+		case C_STOPALL:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
+			break;
+		case C_MOV:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
+			break;
+		case C_VID:
+			break;
+		case C_SPK:
+			parblock[C_SPK] = false;
+			break;
+		case C_HEAD:
+			parblock[C_HEAD] = false;
+			break;
+		case C_ARM:
+			parblock[C_ARM] = false;
+			parblock[C_WAVE] = false;
+			parblock[C_WIPE] = false;
+			break;
+		case C_BAT:
+			break;
+		case C_STATE:
+			break;
+		case C_RESET:
+			break;		
+		default:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
+			break;
+	};
+	
+	block[C_STATE] = false; 
+	parblock[C_STATE] = false; 
 }
 
 
@@ -130,407 +240,590 @@ state_t Executer::getState(int type)
 }
 
 
-int Executer::processConflicts(const Event& event)
+//int Executer::processConflicts(const Event& event)
+//{
+//	mutex->lock();
+//	//eventList->list();
+//	event_params_t ep;
+//	int classf = EVT_BUSY;
+//	static time_t obat = time(0);
+//	time_t nbat = time(0);
+//	
+//	
+//	eventList->setOrder(ORD_STRICT);
+//	state_t stateAbs = state & STATE_ABSOLUT;
+//	state_t statePar = state & STATE_PARALLEL;
+//	//If currently everything is to be stopped do not queue new events
+//	if (stateAbs == STATE_STOPPINGALL)
+//	{
+//		classf = EVT_DONE;
+//		mutex->unlock();
+//		return classf;
+//	}
+//	switch (event.ep.type)
+//	{
+//		case INIT_WALK:	
+//			if (stateAbs != STATE_CROUCHING)
+//			{
+//				classf = EVT_DONE;
+//			}		
+//			break;
+//		case INIT_REST:
+//			if (stateAbs != STATE_STANDING)
+//			{
+//				classf = EVT_DONE;
+//			}		
+//			break;
+//		case INIT_SIT:
+//			if (stateAbs == STATE_WALKING)
+//			{
+//				ep.type = CODE_STOP;
+//				ep.iparams[0] = MOV_STOP;
+//				eventList->addFirst(ep);
+//				classf = EVT_PENDINGABS;
+//			}		
+//			else if (stateAbs == STATE_STOPPING)
+//			{
+//				classf = EVT_PENDINGABS;
+//				eventList->setOrder(ORD_PAR);
+//			}
+//			else if ((stateAbs != STATE_STANDING) &&
+//					 (stateAbs != STATE_CROUCHING)&&
+//					 (stateAbs != STATE_STOPPED))
+//			{
+//				classf = EVT_DONE;
+//			}		
+//			break;
+//		case INIT_UP:
+//			if ((stateAbs == STATE_MOVING) 	|| 
+//				(stateAbs == STATE_STOPPING))
+//			{
+//				classf = EVT_DONE;
+//			}	
+//			else if((stateAbs == STATE_WALKING))
+//			{
+//				classf = EVT_PENDINGABS;
+//			}		
+//			break;
+//		case INIT_WIPE:
+//		case INIT_WAVE:
+//			if ((stateAbs == STATE_MOVING) ||
+//			    (stateAbs == STATE_STOPPED) )
+//			{
+//				classf = EVT_DONE;
+//			}	
+//			else if((stateAbs == STATE_WALKING)	|| 
+//			        (stateAbs == STATE_STOPPING))
+//			{
+//				classf = EVT_PENDINGABS;
+//			}		
+//			break;
+//		case INIT_DANCE:
+//			if (stateAbs != STATE_STANDING)
+//			{
+//				classf = EVT_DONE;
+//			}	
+//			break;
+//		case CODE_SPK:
+//			break;
+//		case CODE_MOV:
+//			if (stateAbs == STATE_CROUCHING)
+//			{
+//				ep.type = INIT_WALK;
+//				eventList->addFirst(ep);
+//				classf = EVT_PENDINGABS;
+//			}
+//			else if (stateAbs == STATE_SITTING)
+//			{
+//				ep.type = INIT_UP;
+//				eventList->addFirst(ep);
+//				classf = EVT_PENDINGABS;
+//			}
+//			else if (stateAbs == STATE_WALKING)
+//			{
+//				ep.type = CODE_STOP;
+//				ep.iparams[0] = MOV_STOP;
+//				eventList->addFirst(ep);
+//				classf = EVT_PENDINGABS;
+//			}
+//			else if ((stateAbs == STATE_MOVING) 	||
+//					 (stateAbs == STATE_STOPPING))
+//			{
+//				classf = EVT_PENDINGABS;
+//				eventList->setOrder(ORD_PAR);
+//			}
+//			else if (stateAbs != STATE_STANDING)
+//			{
+//				classf = EVT_DONE;
+//			}
+//			break;
+//		case CODE_HEAD:
+//			if (statePar == STATE_HEADMOVE)
+//			{
+//				classf = EVT_PENDINGPAR;
+//			}
+//			if ((stateAbs == STATE_UNKNOWN) ||
+//			    (stateAbs == STATE_STOPPED))
+//				classf = EVT_DONE;
+//			break;
+//		case CODE_ARM:
+//			if (statePar == STATE_ARMMOVE)
+//			{
+//				classf = EVT_PENDINGPAR;
+//			}
+//			if ((stateAbs == STATE_UNKNOWN) ||
+//			    (stateAbs == STATE_STOPPED))
+//				classf = EVT_DONE;
+//			break;
+//		case CODE_STOP:
+//			if (stateAbs != STATE_WALKING)
+//				classf = EVT_DONE;
+//			break;
+//		case CODE_STOPALL:
+//			break;
+//		case CODE_BAT:
+//			{
+//				nbat = time(0);
+//				if ((nbat - obat) > 15)
+//				{	
+//					ep.type = RESET_CONNECTION;
+//					//eventList->addFirst(ep);
+//				}
+//				break;
+//			}
+//		case CODE_STATE:
+//			break;
+//		case RESET_CONNECTION:
+//			if (stateAbs == STATE_WALKING)
+//			{
+//				cout<< "DIS: first stop Movement" << endl;
+//				ep.type = CODE_STOP;
+//				ep.iparams[0] = MOV_STOP;
+//				eventList->addFirst(ep);
+//				classf = EVT_PENDINGABS;
+//			}			
+//			else if (stateAbs == STATE_STANDING)
+//			{
+//				cout<< "DIS: Now Rest" << endl;
+//				ep.type = INIT_REST;
+//				eventList->addFirst(ep);
+//				classf = EVT_PENDINGABS;
+//			}
+//			else if ((stateAbs == STATE_STOPPING) || (stateAbs == STATE_MOVING))
+//				classf = EVT_PENDINGABS;
+//			else if(stateAbs != STATE_CROUCHING)
+//				classf = EVT_DONE;
+//			break;
+//		case CODE_INVALID:
+//		default:
+//				classf = EVT_DONE;
+//			//cout<< "Nothing to do" << endl;
+//			break;		
+//	};
+//	mutex->unlock();
+//	return classf;
+//}
+
+
+
+
+void Executer::mark_thread_done(struct exec_arg* aargs)
 {
-	mutex->lock();
-	//eventList->list();
-	event_params_t ep;
-	int classf = EVT_BUSY;
-	static time_t obat = time(0);
-	time_t nbat = time(0);
+	aargs->event = 0;
+}
+
+
+void* Executer::execute(void* args)
+{
+	struct exec_arg* aargs = (struct exec_arg*)args;
+	int oldstate;
+	int oldtype;
 	
+	if(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype) != 0)	
+		cerr<< "[Executer]<execute> pthread_setcanceltype failed" << endl;
+	if(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate) != 0)
+		cerr<< "[Executer]<execute> pthread_setcancelstate failed" << endl;
 	
-	eventList->setOrder(ORD_STRICT);
-	state_t stateAbs = state & STATE_ABSOLUT;
-	state_t statePar = state & STATE_PARALLEL;
-	//If currently everything is to be stopped do not queue new events
-	if (stateAbs == STATE_STOPPINGALL)
+	if (!self)	
+		return 0;
+	cout<< "[Executer]<execute> " << endl 
+		<< "ID: " << aargs->id << endl
+		<< "Nummer: " << aargs->tnum << endl
+		<< "Event.type: " << aargs->event->ep.type << endl
+		<< "Event.ip1: " << aargs->event->ep.iparams[0] << endl
+		<< "Event.ip2: " << aargs->event->ep.iparams[1] << endl
+		<< "Event.string: " << aargs->event->ep.sparam << endl;
+	
+	switch(aargs->event->ep.type)
 	{
-		classf = EVT_DONE;
-		mutex->unlock();
-		return classf;
-	}
-	switch (event.ep.type)
-	{
-		case INIT_WALK:	
-			if (stateAbs != STATE_CROUCHING)
-			{
-				classf = EVT_DONE;
-			}		
+		case INIT_WALK:
+			self->initWalk();
+			aargs->mutex->lock();
+			if (!self->cbinc)
+				*self->stateAbs = ABS_STANDING;
+			self->unblockfor(C_WALK);
+			*self->inTransition = 0;
+			aargs->mutex->unlock();
 			break;
 		case INIT_REST:
-			if (stateAbs != STATE_STANDING)
-			{
-				classf = EVT_DONE;
-			}		
+			self->initSecure();
+			aargs->mutex->lock();
+			if (!self->cbinc)
+				*self->stateAbs = ABS_CROUCHING;
+			self->unblockfor(C_REST);
+			*self->inTransition = 0;
+			aargs->mutex->unlock();
 			break;
 		case INIT_SIT:
-			if (stateAbs == STATE_WALKING)
-			{
-				ep.type = CODE_STOP;
-				ep.iparams[0] = MOV_STOP;
-				eventList->addFirst(ep);
-				classf = EVT_PENDINGABS;
-			}		
-			else if (stateAbs == STATE_STOPPING)
-			{
-				classf = EVT_PENDINGABS;
-				eventList->setOrder(ORD_PAR);
-			}
-			else if ((stateAbs != STATE_STANDING) &&
-					 (stateAbs != STATE_CROUCHING)&&
-					 (stateAbs != STATE_STOPPED))
-			{
-				classf = EVT_DONE;
-			}		
+			self->behave_sit();
+			aargs->mutex->lock();
+			*self->stateAbs = ABS_SITTING;
+			self->cbinc = false;
+			self->unblockfor(C_SIT);
+			*self->inTransition = 0;
+			aargs->mutex->unlock();
 			break;
 		case INIT_UP:
-			if ((stateAbs == STATE_MOVING) 	|| 
-				(stateAbs == STATE_STOPPING))
-			{
-				classf = EVT_DONE;
-			}	
-			else if((stateAbs == STATE_WALKING))
-			{
-				classf = EVT_PENDINGABS;
-			}		
+			self->behave_stand();
+			aargs->mutex->lock();
+			*self->stateAbs = ABS_STANDING;
+			self->cbinc = false;
+			self->unblockfor(C_UP);
+			*self->inTransition = 0;
+			aargs->mutex->unlock();
 			break;
-		case INIT_WIPE:
 		case INIT_WAVE:
-			if ((stateAbs == STATE_MOVING) ||
-			    (stateAbs == STATE_STOPPED) )
-			{
-				classf = EVT_DONE;
-			}	
-			else if((stateAbs == STATE_WALKING)	|| 
-			        (stateAbs == STATE_STOPPING))
-			{
-				classf = EVT_PENDINGABS;
-			}		
+			self->behave_hello();
+			aargs->mutex->lock();
+			self->unblockfor(C_WAVE);
+			*self->inTransition = 0;
+			aargs->mutex->unlock();
 			break;
 		case INIT_DANCE:
-			if (stateAbs != STATE_STANDING)
-			{
-				classf = EVT_DONE;
-			}	
+			self->behave_dance();
+			aargs->mutex->lock();
+			if (!self->cbinc)
+				*self->stateAbs = ABS_STANDING;
+			self->unblockfor(C_DANCE);
+			*self->inTransition = 0;
+			aargs->mutex->unlock();
 			break;
-		case CODE_SPK:
+		case INIT_WIPE:
+			self->behave_wipe();
+			aargs->mutex->lock();
+			self->unblockfor(C_WIPE);
+			aargs->mutex->unlock();
 			break;
-		case CODE_MOV:
-			if (stateAbs == STATE_CROUCHING)
+		case CODE_MOV:		
+			cout<< "[Executer]<execute>: MOV" << endl;
+			aargs->mutex->lock();
+			if (!aargs->eventList->reduceLastWalking())
 			{
-				ep.type = INIT_WALK;
-				eventList->addFirst(ep);
-				classf = EVT_PENDINGABS;
+				if (!self->cbinc)
+				{
+					*self->stateAbs = ABS_WALKING;
+					aargs->mutex->unlock();
+					self->walk(*aargs->event);
+					aargs->mutex->lock();
+					if ((!self->cbinc) && (*self->stateAbs == ABS_WALKING))
+						*self->stateAbs = ABS_STANDING;
+					self->unblockfor(C_MOV);
+					*self->inTransition = 0;
+					aargs->mutex->unlock();
+				}
+				else
+				{
+					self->unblockfor(C_MOV);
+					*self->inTransition = 0;
+					aargs->mutex->unlock();					
+				}
 			}
-			else if (stateAbs == STATE_SITTING)
+			else
 			{
-				ep.type = INIT_UP;
-				eventList->addFirst(ep);
-				classf = EVT_PENDINGABS;
+				self->unblockfor(C_MOV);
+				*self->inTransition = 0;
+				aargs->mutex->unlock();					
 			}
-			else if (stateAbs == STATE_WALKING)
-			{
-				ep.type = CODE_STOP;
-				ep.iparams[0] = MOV_STOP;
-				eventList->addFirst(ep);
-				classf = EVT_PENDINGABS;
-			}
-			else if ((stateAbs == STATE_MOVING) 	||
-					 (stateAbs == STATE_STOPPING))
-			{
-				classf = EVT_PENDINGABS;
-				eventList->setOrder(ORD_PAR);
-			}
-			else if (stateAbs != STATE_STANDING)
-			{
-				classf = EVT_DONE;
-			}
-			break;
-		case CODE_HEAD:
-			if (statePar == STATE_HEADMOVE)
-			{
-				classf = EVT_PENDINGPAR;
-			}
-			if ((stateAbs == STATE_UNKNOWN) ||
-			    (stateAbs == STATE_STOPPED))
-				classf = EVT_DONE;
-			break;
-		case CODE_ARM:
-			if (statePar == STATE_ARMMOVE)
-			{
-				classf = EVT_PENDINGPAR;
-			}
-			if ((stateAbs == STATE_UNKNOWN) ||
-			    (stateAbs == STATE_STOPPED))
-				classf = EVT_DONE;
+					
 			break;
 		case CODE_STOP:
-			if (stateAbs != STATE_WALKING)
-				classf = EVT_DONE;
+			cout<< "[Executer]<execute>: STOP" << endl;
+			aargs->mutex->lock();
+			aargs->eventList->reduceLastWalking();
+			self->walk(*aargs->event);
+//			if (!self->cbinc)
+//				*self->stateAbs = ABS_STANDING;
+			self->unblockfor(C_STOP);
+			aargs->mutex->unlock();
 			break;
 		case CODE_STOPALL:
-			break;
-		case CODE_BAT:
+			aargs->mutex->lock();
+			aargs->eventList->removePending();
+			if (*self->stateAbs == ABS_WALKING)
 			{
-				nbat = time(0);
-				if ((nbat - obat) > 15)
-				{	
-					ep.type = RESET_CONNECTION;
-					//eventList->addFirst(ep);
-				}
-				break;
+				self->walk(*aargs->event);
+				*self->stateAbs = ABS_STANDING; 
 			}
-		case CODE_STATE:
+			self->killBehaviors();
+			self->unblockfor(C_STOPALL);
+			*self->inTransition = 0;
+			aargs->mutex->unlock();
 			break;
-		case RESET_CONNECTION:
-			if (stateAbs == STATE_WALKING)
-			{
-				cout<< "DIS: first stop Movement" << endl;
-				ep.type = CODE_STOP;
-				ep.iparams[0] = MOV_STOP;
-				eventList->addFirst(ep);
-				classf = EVT_PENDINGABS;
-			}			
-			else if (stateAbs == STATE_STANDING)
-			{
-				cout<< "DIS: Now Rest" << endl;
-				ep.type = INIT_REST;
-				eventList->addFirst(ep);
-				classf = EVT_PENDINGABS;
-			}
-			else if ((stateAbs == STATE_STOPPING) || (stateAbs == STATE_MOVING))
-				classf = EVT_PENDINGABS;
-			else if(stateAbs != STATE_CROUCHING)
-				classf = EVT_DONE;
+		case CODE_SPK:
+			self->speak(aargs->event->ep.sparam);
+			aargs->mutex->lock();
+			self->unblockfor(C_SPK);
+			aargs->mutex->unlock();
 			break;
-		case CODE_INVALID:
+		case CODE_ARM:
+			self->moveArm(*aargs->event);
+			aargs->mutex->lock();
+			self->unblockfor(C_ARM);
+			aargs->mutex->unlock();
+			break;
+		case CODE_HEAD:
+			self->moveHead(*aargs->event);
+			aargs->mutex->lock();
+			self->unblockfor(C_HEAD);
+			aargs->mutex->unlock();
+			break;
+		case CODE_EXE:
+			self->behave_gen(aargs->event->ep.sparam);
+			aargs->mutex->lock();
+			*self->stateAbs = ABS_UNKNOWN;
+			self->unblockfor(C_EXE);
+			*self->inTransition = 0;
+			aargs->mutex->unlock();
+			break;
+			
 		default:
-				classf = EVT_DONE;
-			//cout<< "Nothing to do" << endl;
-			break;		
+			cout<< "[Executer]<execute>Not specified Comand executed" << endl;
+			break;
 	};
-	mutex->unlock();
-	return classf;
-}
-
-
-void Executer::process()
-{
-	//cout<<"----->Process Event" << endl;
-	int classf;	
-	//cout << "PROCESS pevent = " << pevent.toString() << endl;
-	//Event* event = & (eventList->withID((const void*)(*(const void**)(pevent.getObject()))));
-	//const void* const id = pevent;
-	//Event event(eventList->withID(id));
 	
-	mutex->lock();
-	Event* event = eventList->getPending();
-	if (!event)
-	{
-		mutex->unlock();
-		return;
-	}
-	eventList->setClassf(event->id, EVT_BUSY);
-	mutex->unlock();
-	//cout<< "[PROCESS] ID: " << event->id << ", TYPE: " << event->ep.type << endl;	
-	classf = processConflicts(*event);
-	eventList->setClassf(event->id, classf);
-	if (classf == EVT_BUSY)
-	{
-		switch (event->ep.type)
-		{
-			case INIT_WALK:
-				setState(getState(STATE_PARALLEL) | STATE_MOVING);
-				initWalk();
-				setState(getState(STATE_PARALLEL) | STATE_STANDING);
-				//cout << "Done initWalk()" << endl;
-				break;
-			case INIT_REST:
-				setState(getState(STATE_PARALLEL) | STATE_MOVING);
-				initSecure();
-				setState(getState(STATE_PARALLEL) | STATE_CROUCHING);
-				break;
-			case INIT_SIT:
-				{
-					setState(getState(STATE_PARALLEL) | STATE_MOVING);
-					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
-					pexec.pCall("behave_sit");
-					qi::os::msleep(10000);
-					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
-					pbehav.stopBehavior("sit");
-					setState(getState(STATE_PARALLEL) | STATE_SITTING);
-					break;
-				}
-			case INIT_UP:
-				{
-					int stateAbs = getState(STATE_ABSOLUT); 
-					setState(getState(STATE_PARALLEL) | STATE_MOVING);
-					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
-					pexec.pCall("behave_stand");
-					if ((stateAbs == STATE_CROUCHING) || (stateAbs == STATE_STANDING))
-						qi::os::msleep(3000);
-					else if (stateAbs != STATE_STANDING)
-						qi::os::msleep(12000);
-					
-
-						AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
-						//while (pbehav.isBehaviorRunning("stand"));
-							//qi::os::msleep(50);
-						pbehav.stopBehavior("stand");
-					setState(getState(STATE_PARALLEL) | STATE_STANDING);
-					break;
-				}
-			case INIT_WAVE:
-				{
-					int stateAbs = getState(STATE_ABSOLUT);
-					setState(getState(STATE_PARALLEL) | STATE_MOVING);
-					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
-					pexec.pCall("behave_hello");
-					qi::os::msleep(5000);
-					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
-					pbehav.stopBehavior("hello");
-					if (getState(STATE_ABSOLUT) == STATE_STOPPED)
-					{
-						mutex->lock();
-						state = getState(STATE_PARALLEL) | stateAbs;
-						mutex->unlock();
-						setState(getState());
-					}
-					else
-						setState(getState(STATE_PARALLEL) | stateAbs);
-					break;
-				}
-			case INIT_WIPE:
-				{
-					int stateAbs = getState(STATE_ABSOLUT);  
-					setState(getState(STATE_PARALLEL) | STATE_MOVING);
-					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
-					pexec.pCall("behave_wipe");
-					qi::os::msleep(5000);
-					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
-					pbehav.stopBehavior("wipe");
-					if (getState(STATE_ABSOLUT) == STATE_STOPPED)
-					{
-						mutex->lock();
-						state = stateAbs;
-						mutex->unlock();
-						setState(getState());
-					}
-					else
-						setState(getState(STATE_PARALLEL) | stateAbs);
-					break;
-				}
-			case INIT_DANCE:
-				{
-					
-					setState(getState(STATE_PARALLEL) | STATE_MOVING);
-					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
-					pexec.pCall("behave_dance");
-					qi::os::sleep(50);
-					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
-					pbehav.stopBehavior("dance");
-					setState(getState(STATE_PARALLEL) | STATE_STANDING);
-					break;
-				}
-			case CODE_SPK:
-				speak(event->ep.sparam);
-				break;
-			case CODE_MOV:
-				setState(getState(STATE_PARALLEL) | STATE_WALKING);
-				walk(*event);
-				sync->lock();
-				setState(getState(STATE_PARALLEL) | STATE_STANDING);
-				sync->unlock();
-				break;
-			case CODE_HEAD:
-				setState(getState(STATE_ALL) | STATE_HEADMOVE);
-				moveHead(*event);
-				setState(getState(STATE_ALL) & ~STATE_HEADMOVE);
-				break;
-			case CODE_ARM:
-				setState(getState(STATE_ALL) | STATE_ARMMOVE);
-				moveArm(*event);
-				setState(getState(STATE_ALL) & ~STATE_ARMMOVE);
-				break;
-			//TODO: Stopping can trigger while walking before acutally walking
-			//		Stop would be done before the walking started --> 
-			//  	Stop would have no actual result
-			case CODE_STOP:
-			{
-				//event.ep.iparams[0] = MOV_STOP;
-				sync->lock();
-				setState(getState(STATE_PARALLEL) | STATE_STOPPING);
-				walk(*event);
-				setState(getState(STATE_PARALLEL) | STATE_STANDING);
-				sync->unlock();
-				cout<< "STP: NOW STANDING" << endl;
-				break;
-			}
-			case CODE_STOPALL:
-			{
-				//save old state the Robo is in.
-				int stateAbs = getState(STATE_ABSOLUT);
-				setState(STATE_STOPPINGALL);
-				AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-				//tts.say("Stop1");
-				mutex->lock();
-					//tts.say("Stop2");
-					eventList->removePending();
-					killBehaviors();
-					//stop walking --> stop controlled
-					if((stateAbs != STATE_STOPPING) && 
-					   (stateAbs != STATE_MOVING)   &&
-					   (stateAbs != STATE_STOPPED))
-					{
-						event_params_t ep;
-						ep.type = CODE_STOP;
-						ep.iparams[0] = MOV_STOP;
-						Event ev;
-						ev.ep = ep;
-						walk(ev);
-						stateAbs = STATE_STANDING;
-					}
-					else if (stateAbs == STATE_MOVING)
-						stateAbs = STATE_STOPPED;
-					qi::os::msleep(10);
-					killRemainingTasks();
-				mutex->unlock();	
-				setState(stateAbs);
-				//tts.say("DONE");
-							
-				break;
-			}
-			case CODE_BAT:			
-				sendBatteryStatus();
-				break;
-			case CODE_STATE:			
-				sendState();
-				break;
-			case RESET_CONNECTION:
-				//setState(getState(STATE_PARALLEL) | STATE_CROUCHING);
-				break;
-			case CODE_INVALID:
-				//cout<< "Nothing to do" << endl;
-				break;
-			default:
-			{
-				try
-				{
-					AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-					tts.say("Unknown command!");
-				}	
-				catch(const AL::ALError& e)
-				{
-					cout<< "Error [Executer]<process(event)>: " << endl << e.what() << endl;
-				}
-				break;
-			}
-		};
-				
-		eventList->setClassf(event->id, EVT_DONE);	
-	}
+	self->sendState();
+	
+	aargs->eventList->setClassf(aargs->event->id, EVT_DONE);	
+	Executer::mark_thread_done(aargs);	
+	return 0;
 }
+
+//void Executer::process()
+//{
+//	//cout<<"----->Process Event" << endl;
+//	int classf;	
+//	//cout << "PROCESS pevent = " << pevent.toString() << endl;
+//	//Event* event = & (eventList->withID((const void*)(*(const void**)(pevent.getObject()))));
+//	//const void* const id = pevent;
+//	//Event event(eventList->withID(id));
+//	
+//	mutex->lock();
+//	Event* event = eventList->getPending();
+//	if (!event)
+//	{
+//		mutex->unlock();
+//		return;
+//	}
+//	eventList->setClassf(event->id, EVT_BUSY);
+//	mutex->unlock();
+//	//cout<< "[PROCESS] ID: " << event->id << ", TYPE: " << event->ep.type << endl;	
+//	classf = processConflicts(*event);
+//	eventList->setClassf(event->id, classf);
+//	if (classf == EVT_BUSY)
+//	{
+//		switch (event->ep.type)
+//		{
+//			case INIT_WALK:
+//				setState(getState(STATE_PARALLEL) | STATE_MOVING);
+//				initWalk();
+//				setState(getState(STATE_PARALLEL) | STATE_STANDING);
+//				//cout << "Done initWalk()" << endl;
+//				break;
+//			case INIT_REST:
+//				setState(getState(STATE_PARALLEL) | STATE_MOVING);
+//				initSecure();
+//				setState(getState(STATE_PARALLEL) | STATE_CROUCHING);
+//				break;
+//			case INIT_SIT:
+//				{
+//					setState(getState(STATE_PARALLEL) | STATE_MOVING);
+//					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
+//					pexec.pCall("behave_sit");
+//					qi::os::msleep(10000);
+//					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+//					pbehav.stopBehavior("sit");
+//					setState(getState(STATE_PARALLEL) | STATE_SITTING);
+//					break;
+//				}
+//			case INIT_UP:
+//				{
+//					int stateAbs = getState(STATE_ABSOLUT); 
+//					setState(getState(STATE_PARALLEL) | STATE_MOVING);
+//					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
+//					pexec.pCall("behave_stand");
+//					if ((stateAbs == STATE_CROUCHING) || (stateAbs == STATE_STANDING))
+//						qi::os::msleep(3000);
+//					else if (stateAbs != STATE_STANDING)
+//						qi::os::msleep(12000);
+//					
+
+//						AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+//						//while (pbehav.isBehaviorRunning("stand"));
+//							//qi::os::msleep(50);
+//						pbehav.stopBehavior("stand");
+//					setState(getState(STATE_PARALLEL) | STATE_STANDING);
+//					break;
+//				}
+//			case INIT_WAVE:
+//				{
+//					int stateAbs = getState(STATE_ABSOLUT);
+//					setState(getState(STATE_PARALLEL) | STATE_MOVING);
+//					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
+//					pexec.pCall("behave_hello");
+//					qi::os::msleep(5000);
+//					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+//					pbehav.stopBehavior("hello");
+//					if (getState(STATE_ABSOLUT) == STATE_STOPPED)
+//					{
+//						mutex->lock();
+//						state = getState(STATE_PARALLEL) | stateAbs;
+//						mutex->unlock();
+//						setState(getState());
+//					}
+//					else
+//						setState(getState(STATE_PARALLEL) | stateAbs);
+//					break;
+//				}
+//			case INIT_WIPE:
+//				{
+//					int stateAbs = getState(STATE_ABSOLUT);  
+//					setState(getState(STATE_PARALLEL) | STATE_MOVING);
+//					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
+//					pexec.pCall("behave_wipe");
+//					qi::os::msleep(5000);
+//					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+//					pbehav.stopBehavior("wipe");
+//					if (getState(STATE_ABSOLUT) == STATE_STOPPED)
+//					{
+//						mutex->lock();
+//						state = stateAbs;
+//						mutex->unlock();
+//						setState(getState());
+//					}
+//					else
+//						setState(getState(STATE_PARALLEL) | stateAbs);
+//					break;
+//				}
+//			case INIT_DANCE:
+//				{
+//					
+//					setState(getState(STATE_PARALLEL) | STATE_MOVING);
+//					AL::ALProxy pexec(AL::ALProxy(string("RMExecuter"), AL::ALProxy::FORCED_LOCAL, 0));
+//					pexec.pCall("behave_dance");
+//					qi::os::sleep(50);
+//					AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+//					pbehav.stopBehavior("dance");
+//					setState(getState(STATE_PARALLEL) | STATE_STANDING);
+//					break;
+//				}
+//			case CODE_SPK:
+//				speak(event->ep.sparam);
+//				break;
+//			case CODE_MOV:
+//				setState(getState(STATE_PARALLEL) | STATE_WALKING);
+//				walk(*event);
+//				sync->lock();
+//				setState(getState(STATE_PARALLEL) | STATE_STANDING);
+//				sync->unlock();
+//				break;
+//			case CODE_HEAD:
+//				setState(getState(STATE_ALL) | STATE_HEADMOVE);
+//				moveHead(*event);
+//				setState(getState(STATE_ALL) & ~STATE_HEADMOVE);
+//				break;
+//			case CODE_ARM:
+//				setState(getState(STATE_ALL) | STATE_ARMMOVE);
+//				moveArm(*event);
+//				setState(getState(STATE_ALL) & ~STATE_ARMMOVE);
+//				break;
+//			//TODO: Stopping can trigger while walking before acutally walking
+//			//		Stop would be done before the walking started --> 
+//			//  	Stop would have no actual result
+//			case CODE_STOP:
+//			{
+//				//event.ep.iparams[0] = MOV_STOP;
+//				sync->lock();
+//				setState(getState(STATE_PARALLEL) | STATE_STOPPING);
+//				walk(*event);
+//				setState(getState(STATE_PARALLEL) | STATE_STANDING);
+//				sync->unlock();
+//				cout<< "STP: NOW STANDING" << endl;
+//				break;
+//			}
+//			case CODE_STOPALL:
+//			{
+//				//save old state the Robo is in.
+//				int stateAbs = getState(STATE_ABSOLUT);
+//				setState(STATE_STOPPINGALL);
+//				AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+//				//tts.say("Stop1");
+//				mutex->lock();
+//					//tts.say("Stop2");
+//					eventList->removePending();
+//					killBehaviors();
+//					//stop walking --> stop controlled
+//					if((stateAbs != STATE_STOPPING) && 
+//					   (stateAbs != STATE_MOVING)   &&
+//					   (stateAbs != STATE_STOPPED))
+//					{
+//						event_params_t ep;
+//						ep.type = CODE_STOP;
+//						ep.iparams[0] = MOV_STOP;
+//						Event ev;
+//						ev.ep = ep;
+//						walk(ev);
+//						stateAbs = STATE_STANDING;
+//					}
+//					else if (stateAbs == STATE_MOVING)
+//						stateAbs = STATE_STOPPED;
+//					qi::os::msleep(10);
+//					killRemainingTasks();
+//				mutex->unlock();	
+//				setState(stateAbs);
+//				//tts.say("DONE");
+//							
+//				break;
+//			}
+//			case CODE_BAT:			
+//				sendBatteryStatus();
+//				break;
+//			case CODE_STATE:			
+//				sendState();
+//				break;
+//			case RESET_CONNECTION:
+//				//setState(getState(STATE_PARALLEL) | STATE_CROUCHING);
+//				break;
+//			case CODE_INVALID:
+//				//cout<< "Nothing to do" << endl;
+//				break;
+//			default:
+//			{
+//				try
+//				{
+//					AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
+//					tts.say("Unknown command!");
+//				}	
+//				catch(const AL::ALError& e)
+//				{
+//					cout<< "Error [Executer]<process(event)>: " << endl << e.what() << endl;
+//				}
+//				break;
+//			}
+//		};
+//				
+//		eventList->setClassf(event->id, EVT_DONE);	
+//	}
+//}
 
 void Executer::executerRespond()
 {
@@ -576,6 +869,21 @@ void Executer::killBehaviors()
 
 void Executer::killRemainingTasks()
 {
+}
+
+void Executer::behave_gen(const string& com)
+{
+	try
+	{
+		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+		pbehav.preloadBehavior(com);
+		pbehav.runBehavior(com);
+		//tts.say("Behaviour done");
+	}
+	catch(const AL::ALError& e)
+	{
+		cout<< "Error [Executer]<gen>: " << endl << e.what() << endl;
+	}
 }
 
 void Executer::behave_stand()
@@ -711,14 +1019,18 @@ void Executer::walk(const Event& event)
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 		AL::ALMotionProxy motion(MB_IP, MB_PORT);
 		int mode = event.ep.iparams[0];
-		
-        motion.stiffnessInterpolation("Body", 1.0, 1.0);
-		motion.walkInit();
+		std::vector<float> stiffnesses = motion.getStiffnesses("Body");
+		if ((stiffnesses.capacity() > 0) && (stiffnesses[0] < 0.9))
+       		motion.stiffnessInterpolation("Body", 1.0, 1.0);
+		//motion.walkInit();
 		
 		switch (mode)
 		{
 			case MOV_FORWARD:
 			{
+				
+				while (motion.walkIsActive())			
+					qi::os::msleep(20);
 				/*
 				vector<string> legs (50, "");
 				vector<float> footstep(3, 0.0);
@@ -749,6 +1061,8 @@ void Executer::walk(const Event& event)
 			}
 			case MOV_BACKWARD:
 			{	
+				while (motion.walkIsActive())			
+					qi::os::msleep(20);
 				/*			
 				vector<string> legs (50, "");
 				vector<float> footstep(3, 0.0);
@@ -775,6 +1089,8 @@ void Executer::walk(const Event& event)
 			}
 			case MOV_LEFT:		
 			{		
+				while (motion.walkIsActive())			
+					qi::os::msleep(20);
 				/*vector<string> legs (TURN_STEPS, "");
 				vector<float> footstep(3, 0.0);
 				footstep[0] = 0.0;
@@ -800,6 +1116,8 @@ void Executer::walk(const Event& event)
 			}
 			case MOV_RIGHT:
 			{		
+				while (motion.walkIsActive())			
+					qi::os::msleep(20);
 				/*vector<string> legs (TURN_STEPS, "");
 				vector<float> footstep(3, 0.0);
 				footstep[0] = 0.0;
@@ -827,24 +1145,26 @@ void Executer::walk(const Event& event)
 			default:
 			{
 				if(motion.walkIsActive())
+				{
 					motion.stopWalk();
+				}
 				else //if not walking don't do anything
 					return;
 					
-				vector<string> legs (2, "");
-				vector<float> footstep(3, 0.0);
-				footstep[0] = 0.0;
-				footstep[1] = 0.0;
-				footstep[2] = 0.0;	
-				
-				AL::ALValue footsteps;	
-				for (int i=0; i<2; ++i)
-					footsteps.arrayPush(footstep);
-				vector<float> speed(2, 1.0);
-				legs[0] = "LLeg"; 
-				legs[1] = "RLeg"; 		
-				//set the foots parallel			
-				motion.setFootStepsWithSpeed(legs, footsteps, speed, true);
+//				vector<string> legs (2, "");
+//				vector<float> footstep(3, 0.0);
+//				footstep[0] = 0.0;
+//				footstep[1] = 0.0;
+//				footstep[2] = 0.0;	
+//				
+//				AL::ALValue footsteps;	
+//				for (int i=0; i<2; ++i)
+//					footsteps.arrayPush(footstep);
+//				vector<float> speed(2, 1.0);
+//				legs[0] = "LLeg"; 
+//				legs[1] = "RLeg"; 		
+//				//set the foots parallel			
+//				motion.setFootStepsWithSpeed(legs, footsteps, speed, true);
 				
 				cout << "------> Move STOP <------" << endl;
 				break;
@@ -1108,27 +1428,21 @@ void Executer::sendState()
 		AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), CB_IP, CB_PORT);
 		sclient = pNetNao.call<int>("getClient_tcp"); 
 		
-		switch (getState(STATE_ABSOLUT))
+		switch (*stateAbs)
 		{
-			case STATE_CROUCHING: 
+			case ABS_CROUCHING: 
 				buf = "ZST_CROUCHING";
 				break;
-			case STATE_STANDING: 
+			case ABS_STANDING: 
 				buf = "ZST_STANDING";
 				break;
-			case STATE_SITTING: 
+			case ABS_SITTING: 
 				buf = "ZST_SITTING";
 				break;
-			case STATE_WALKING: 
+			case ABS_WALKING: 
 				buf = "ZST_WALKING";
 				break;
-			case STATE_STOPPING: 
-				buf = "ZST_STOPPING";
-				break;
-			case STATE_MOVING: 
-				buf = "ZST_MOVING";
-				break;
-			case STATE_UNKNOWN: 
+			case ABS_UNKNOWN: 
 			default:
 				buf = "ZST_UNKNOWN";
 				break;
@@ -1149,6 +1463,7 @@ void Executer::cbPoseChanged(const string& eventName, const string& postureName,
 	mpose = (string&)mem.getData("robotPoseChanged");
 	//cout<< ">>>POSTURE CHANGED<<<>" << "[" << postureName << "]:" << mpose << endl;
 	mutex->lock();
+	cbcall = true;
 	try
 	{
 		//AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);

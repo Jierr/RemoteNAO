@@ -117,7 +117,7 @@ void NetNao::singleListen(const int& sockServer)
 int NetNao::acceptClient(const int& sockServer)
 {
 	struct sockaddr_storage incomming;
-	static char ip[IP_LEN] = {0,};
+	static char ip[IP_LEN+1] = {0,};
 	socklen_t addr_size;
 	unsigned char* i = 0;
 	unsigned int addr;
@@ -129,6 +129,7 @@ int NetNao::acceptClient(const int& sockServer)
 		mode = CONN_INACTIVE;
 	else
 		mode = CONN_ACTIVE;	
+	cout<< "[NetNao]<acceptClient> Client accepted sclient = " << sclient_tcp << endl;
 	
 	addr = ((((struct sockaddr_in*)(&incomming))->sin_addr).s_addr);
 	i = (unsigned char*)&addr;
@@ -210,4 +211,9 @@ int NetNao::getClient_tcp()
 int NetNao::getServer_tcp()
 {
 	return sserver_tcp;
+}
+
+int NetNao::getMode()
+{
+	return mode;
 }

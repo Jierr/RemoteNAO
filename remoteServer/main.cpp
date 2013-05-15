@@ -34,7 +34,7 @@
 using namespace std;
 
 #undef REAL
-//#define REAL
+#define REAL
 #ifndef REAL
 	#define TEST
 #endif
@@ -50,6 +50,7 @@ struct thread_arg
 	int sclient;
 	AL::ALValue image;
 	string nameId;
+	AL::ALVideoDeviceProxy* proxyCam;
 };
 bool trun = false;
 
@@ -127,11 +128,12 @@ int main(int argc, char* argv[])
 	}	
 	
 	
-	int pipefd[2];
+	int pipefd[2] = {-1,};
 	pid_t cpid;
 	char buf;
 
 
+	
 	if (pipe(pipefd) == -1) 
 	{
 		perror("pipe");
@@ -158,6 +160,8 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
+			close(pipefd[0]);
+			close(pipefd[1]);
 			cout<< "Camera module won't be started..." << endl;
 		}
 		_exit(EXIT_SUCCESS);
@@ -165,6 +169,13 @@ int main(int argc, char* argv[])
 	} 
 	else 
 	{       
+		if(!enableCam)
+		{
+			close(pipefd[0]);
+			close(pipefd[1]);
+			pipefd[0] = -1;
+			pipefd[1] = -1;		
+		}
 		cout<< "Control module will be started..." << endl;
 		procControl(pip, pport, pipefd);
 		wait(NULL);                /* Wait for child */
@@ -185,8 +196,11 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 {	
 	
 	Decoder dec;
+	struct timer_arg targ;
+	int bat_count = 0;
 	int pipeWrite = pipefd[1];
-	close(pipefd[0]);
+	if (pipefd[0] >= 0)
+		close(pipefd[0]);
 	
 	char hallo[] = "Hallo Welt!";
 
@@ -257,19 +271,31 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 				
 	taskID = proxyManager.pCall(string("runExecuter")); //callVoid("runExecuter");
 	cout<<"ID of Thread[runExecuter] = " << taskID << endl;
+	
+	
+	targ.id = 0;
+	targ.tnum = 0;
+	targ.bat_count = boost::shared_ptr<int>(&bat_count);
+	targ.net = net;
+	
+	//pthread_create(&targ.id, 0, &Decoder::timer, &targ);	
+	//pthread_detach(targ.id);
 
 
 	boost::shared_ptr<char*> buffer(new char*(buf));	
 	sserver = net->bindTcp(port);
+	cout<< "[MAIN]Server bound to port 32768" << endl;
 	while(1)
 	{
 		net->singleListen(sserver);
+		cout<< "[MAIN]Connection Request detected (listen ended)" << endl;
 		sclient = net->acceptClient(sserver);
 		proxyManager.callVoid<string>("initIp4", net->ip4);
-		cout << "Connected from " << net->ip4 << endl;
+		cout << "[MAIN]Connected from " << net->ip4 << endl;
 		dec.setIp4(net->ip4);
 		dec.setPipe(pipeWrite);
 		dec.setManager(&proxyManager);
+		cout<< "[MAIN]Client connected" << endl;
 		
 		try 
 		{
@@ -286,12 +312,13 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 		do
 		{
 			recvd = net->recvData(sclient, buffer, 1, 0);
+			cout<< "[MAIN] Data received" << endl;
 			if ((recvd == SOCK_CLOSED) || (recvd == SOCK_LOST))
 			{
 				char dis[] = "DIS";
 				for (int i = 0; i<3; ++i)
 					dec.decode(dis[i], &ep);
-				mresult = dec.manage(&ep);	
+				mresult = dec.manage(&ep, net, bat_count);	
 			}
 			else
 			{
@@ -301,7 +328,7 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 				{
 					dresult = dec.decode(buf[i], &ep);
 					if (dresult == CODE_VALID)
-						mresult = dec.manage(&ep);		
+						mresult = dec.manage(&ep, net, bat_count);		
 					else 
 						mresult = CONN_RESUME;
 					++i;
@@ -342,7 +369,8 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 	
 	net->unbind(sserver);
 	//todo kill the proxy manager
-	close(pipefd[1]);
+	if (pipefd[1] >= 0)
+		close(pipefd[1]);
 	proxyManager.destroyConnection();
 	broker->shutdown();
 	//AL::ALBrokerManager::removeBroker(broker);
@@ -481,7 +509,7 @@ int procCam(const string& pip, const int& pport, int* pipefd)
     while (!end) 
     {	
 		   res =  read(pipeRead, &buf[f], 1);
-		   if (res)	
+		   if (res >= 0)	
 		   		cout << "[CAM] " << buf[f] << endl;
 		   else 
 		   		stop = true;
@@ -545,6 +573,7 @@ int procCam(const string& pip, const int& pport, int* pipefd)
 						break;
 					case VIP: 
 						c = -1;    
+						appIp = "";
 						do
 						{
 							++c;
@@ -570,6 +599,8 @@ int procCam(const string& pip, const int& pport, int* pipefd)
 						break;
 				};
 			}
+		
+			cout<< "[CAM] CONFIG DONE" << endl;
 
 		   if(stop)
 		   {
@@ -583,14 +614,23 @@ int procCam(const string& pip, const int& pport, int* pipefd)
 		   
 		   if (restart && vIp && vPort)
 		   {	
+		   		cout<< "[CAM] CAM ABOUT TO RESTART" << endl;
 		   		targ.tnum = 0;
+				cout<< "[CAM] tnum: " << targ.tnum <<endl;		   		
 				strcpy(targ.appIp, appIp.c_str());
+				cout<< "[CAM] appIp: " << targ.appIp <<endl;
 				targ.appPort = appPort;
+				cout<< "[CAM] appPort: " << targ.appPort <<endl;
 				targ.sclient = sclient;    
+				cout<< "[CAM] sclient: " << targ.sclient <<endl;
 				
 #ifdef REAL
 				targ.image = image;		//<------
+				cout<< "[CAM] image: " <<endl;
 				targ.nameId = nameId;	//<------
+				cout<< "[CAM] nameId: " << targ.nameId <<endl;
+				targ.proxyCam = &proxyCam;
+				cout<< "[CAM] proxyCam: " <<endl;
 #endif
 				if (trun)
 				{
@@ -602,9 +642,11 @@ int procCam(const string& pip, const int& pport, int* pipefd)
 				trun = true;
 				pthread_create(&targ.id, 0, &tcamSend, &targ);
 					
+				cout<< "[CAM] CAM RESTARTED" << endl;
 				restart = false;
 				vIp = false;
-				vPort = false;						   
+				vPort = false;	
+				stop = false;					   
 		   }
 		    
     }	  
@@ -694,6 +736,7 @@ void* tcamSend(void* args)
 	int& sclient = aarg->sclient;
 	AL::ALValue& image = aarg->image;
 	string& nameId = aarg->nameId;
+	int size = 0;
 	
 	
 	unsigned char* bmp = 0;
@@ -711,7 +754,9 @@ void* tcamSend(void* args)
 	struct jpeg_error_mgr       jerr;
 	JSAMPROW row_pointer;          /* pointer to a single row */
 
+#ifdef TEST
 	bmp = (unsigned char*)malloc(JHEIGHT * JWIDTH * 3);
+#endif
 	jpeg = (unsigned char*)malloc(JHEIGHT * JWIDTH * 3);
 	
 	jmem = fmemopen(jpeg, len, "wb");
@@ -736,7 +781,7 @@ void* tcamSend(void* args)
 #endif
 
 #ifdef REAL
-		image = proxyCam.getImageRemote(nameId); 		//<------
+		image = aarg->proxyCam->getImageRemote(nameId); 		//<------
 		bmp =  (unsigned char*)(image[6].GetBinary());	//<------
 		size = image[6].getSize();						//<------
 #endif
@@ -779,7 +824,7 @@ void* tcamSend(void* args)
 		//================ SEND JPEG ======================================
 		
 #ifdef REAL
-		proxyCam.releaseImage(nameId);//<------
+		aarg->proxyCam->releaseImage(nameId);//<------
 #endif
 		qi::os::msleep(50);
 		rewind(jmem); 
@@ -789,7 +834,9 @@ void* tcamSend(void* args)
 //	fwrite(jpeg, len, 1, dst);
 //	fclose(dst);
 
+#ifdef TEST
 	free(bmp);
+#endif
 	free(jpeg);
 	fclose(jmem);
 	

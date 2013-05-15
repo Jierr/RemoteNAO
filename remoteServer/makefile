@@ -11,6 +11,7 @@ host:
 
 aatom:
 	qitoolchain create cross-atom $(SDK)/toolchain/nao-atom-cross-toolchain-1.12.3/toolchain.xml
+	        #qitoolchain create cross-atom $(SDK)/toolchain/linux32-nao-atom-cross-toolchain-1.14/toolchain.xml
 	qibuild configure --release -c cross-atom $(PROJECT)
 	qibuild make --release -v -c cross-atom $(PROJECT)
 
