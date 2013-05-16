@@ -586,7 +586,7 @@ int Decoder::manage(event_params_t* ep, boost::shared_ptr<NetNao> net, int& bat_
 			try
 			{		
 				pproxyManager->callVoid<int, int, int, string, int>
-				("addCom", ep->type, ep->iparams[0], ep->iparams[1], ep->sparam, 1);	
+				("addCom", ep->type, ep->iparams[0], ep->iparams[1], ep->sparam, 0);	
 				qi::os::msleep(ms);
 			}
 			catch (const AL::ALError& e)

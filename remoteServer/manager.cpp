@@ -203,12 +203,12 @@ int Manager::blockfor(const int& code)
 		default:
 			for (c = 0; c < NUM_CODES; ++c)
 				block[c] = true;
-			block[C_STOPALL] = false;
 			break;
 	};
 	
-	block[C_STATE] = false; 
-	parblock[C_STATE] = false; 
+	block[C_RESET] = false;
+	parblock[C_RESET] = false;
+	
 }
 
 

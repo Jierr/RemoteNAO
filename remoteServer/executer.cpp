@@ -595,6 +595,25 @@ void* Executer::execute(void* args)
 			*self->inTransition = 0;
 			aargs->mutex->unlock();
 			break;
+		case RESET_CONNECTION:
+		
+			aargs->mutex->lock();
+			aargs->eventList->removePending();
+			if (*self->stateAbs == ABS_WALKING)
+			{
+				self->walk(*aargs->event);
+				*self->stateAbs = ABS_STANDING; 
+			}
+			self->killBehaviors();
+			aargs->mutex->unlock();
+			self->behave_stand();
+			*self->stateAbs = ABS_STANDING;
+			self->initSecure();
+			aargs->mutex->lock();
+			*self->inTransition = 0;
+			*self->stateAbs = ABS_CROUCHING;
+			aargs->mutex->unlock();
+			break;
 			
 		default:
 			cout<< "[Executer]<execute>Not specified Comand executed" << endl;
