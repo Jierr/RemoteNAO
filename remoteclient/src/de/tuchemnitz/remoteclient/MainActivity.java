@@ -190,8 +190,6 @@ public class MainActivity extends SherlockActivity {
         BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
         setActBarConnectIcon();
         
-        ((MenuItem)menu.findItem(R.id.acb_m_1)).setVisible(false);
-        
         //getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
     	//setContentView(R.menu.actionbar);
 //        menu.add("Save")
@@ -218,21 +216,23 @@ public class MainActivity extends SherlockActivity {
 			VideoModule.create_dialog(MainActivity.this, true);
 			break;
 		case R.id.acb_m_1:
-			break;
-		case R.id.acb_m_2:
 			intent = new Intent(this, BewegungActivity.class);
 			startActivity(intent);
 			break;
-		case R.id.acb_m_3:
+		case R.id.acb_m_2:
 			intent = new Intent(this, SprachausgabeActivity.class);
 			startActivity(intent);
 			break;
-		case R.id.acb_m_4:
+		case R.id.acb_m_3:
 			intent = new Intent(this, SpecialsActivity.class);
 			startActivity(intent);
 			break;
-		case R.id.acb_m_5:
+		case R.id.acb_m_4:
 			intent = new Intent(this, ConfigActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.acb_m_5:
+			intent = new Intent(this, SettingActivity.class);
 			startActivity(intent);
 			break;
 		}
@@ -244,6 +244,9 @@ public class MainActivity extends SherlockActivity {
      * Refreshes the ActionBar's network state icon.
      */
     public void setActBarConnectIcon(){
+    	if(ConnectIcon == null && BatteryIcon != null)
+    		return;
+    	
     	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);

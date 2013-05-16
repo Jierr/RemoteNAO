@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+<LinearLayout
+    android:id="@+id/set_linearLayout_out"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="vertical" >
+
+	<TextView
+	    android:id="@+id/set_textViewConf"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:padding="12dp"
+	    android:text="@string/set_head1"
+	    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+	<RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:paddingLeft="12dp"
+	    android:paddingRight="50dp" >
+	    
+		<TextView
+		    android:id="@+id/set_video_on_desc"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:text="@string/set_video_on_text"
+		    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+		<ToggleButton
+		    android:id="@+id/set_video_toggle"
+		    android:layout_width="wrap_content"
+		    android:layout_height="30dp"
+		    android:layout_alignParentRight="true"
+		    android:layout_alignParentTop="true"
+		    android:onClick="set_videotoggle_on_off"/>
+
+	</RelativeLayout>
+	
+	
+	 <TextView
+	     android:id="@+id/set_videobewalpha_beshreibung"
+	     android:layout_width="wrap_content"
+	     android:layout_height="wrap_content"
+	     android:paddingLeft="12dp"
+	     android:text="@string/set_videobewalpha_text" />
+
+	 <SeekBar
+	     android:id="@+id/set_videobewalpha_seekBar"
+	     android:layout_width="match_parent"
+	     android:layout_height="wrap_content"
+	     android:max="255"
+	     android:paddingLeft="50dp"
+	     android:paddingRight="50dp"
+	     android:paddingBottom="20dp" />
+	 
+	  <Button
+	     android:id="@+id/setbutton_close"
+	     android:layout_width="wrap_content"
+	     android:layout_height="wrap_content"
+	     android:layout_gravity="center"
+	     android:onClick="setbutton_close_event"
+	     android:text="@string/button_close_text" />
+	
+</LinearLayout>
+</ScrollView>

@@ -15,6 +15,7 @@ public class Callbacksplit {
 	
 	private static MainActivity MainAct = null;
 	private static ConfigActivity ConfAct = null;
+	private static SettingActivity SetAct = null;
 	private static BewegungActivity BewgAct = null;
 	private static SpecialsActivity SpecAct = null;
 	private static SprachausgabeActivity SpakAct = null;
@@ -55,6 +56,24 @@ public class Callbacksplit {
 	 */
 	public static ConfigActivity getConfigActivity(){
 		return ConfAct;
+	}
+	
+	/**
+	 * Registers the current SettingActivity instance.
+	 * 
+	 * @param act	current SettingActivity instance
+	 */
+	public static void registerSettingActivity(SettingActivity act){
+		SetAct = act;
+	}
+	
+	/**
+	 * Returns the current SettingActivity instance.
+	 * 
+	 * @return	current registered SettingActivity instance
+	 */
+	public static SettingActivity getSettingActivity(){
+		return SetAct;
 	}
 	
 	/**
@@ -179,6 +198,8 @@ public class Callbacksplit {
 		    Callbacksplit.getSpecialsActivity().setActBarBatteryIcon(batt_icon_r);
 	    if(Callbacksplit.getSprachausgabeActivity()!= null)
 		    Callbacksplit.getSprachausgabeActivity().setActBarBatteryIcon(batt_icon_r);
+	    if(Callbacksplit.getSettingActivity()!= null)
+		    Callbacksplit.getSettingActivity().setActBarBatteryIcon(batt_icon_r);
 	}
 	
 	/**
@@ -196,5 +217,7 @@ public class Callbacksplit {
 		    Callbacksplit.getSpecialsActivity().setActBarConnectIcon();
 	    if(Callbacksplit.getSprachausgabeActivity()!= null)
 		    Callbacksplit.getSprachausgabeActivity().setActBarConnectIcon();
+	    if(Callbacksplit.getSettingActivity()!= null)
+		    Callbacksplit.getSettingActivity().setActBarConnectIcon();
 	}
 }

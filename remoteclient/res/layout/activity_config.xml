@@ -86,62 +86,16 @@
 	            android:onClick="verbindungsbutton_event" />
 	
 	    </LinearLayout>
-	</RelativeLayout>
-
-	<TextView
-	    android:id="@+id/config_textViewConf"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:padding="12dp"
-	    android:text="@string/config_head1"
-	    android:textAppearance="?android:attr/textAppearanceLarge" />
-
-	<RelativeLayout
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:paddingLeft="12dp"
-	    android:paddingRight="50dp" >
 	    
-		<TextView
-		    android:id="@+id/config_video_on_desc"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:text="@string/config_video_on_text"
-		    android:textAppearance="?android:attr/textAppearanceSmall" />
-
-		<ToggleButton
-		    android:id="@+id/config_video_toggle"
-		    android:layout_width="wrap_content"
-		    android:layout_height="30dp"
-		    android:layout_alignParentRight="true"
-		    android:layout_alignParentTop="true"
-		    android:onClick="cfg_videotoggle_on_off"/>
-
+	    <Button
+        android:id="@+id/cfgbutton_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayout2"
+        android:layout_centerHorizontal="true"
+        android:text="@string/button_close_text"
+        android:onClick="cfgbutton_close_event" />
 	</RelativeLayout>
-	
-	
-	 <TextView
-	     android:id="@+id/config_videobewalpha_beshreibung"
-	     android:layout_width="wrap_content"
-	     android:layout_height="wrap_content"
-	     android:paddingLeft="12dp"
-	     android:text="@string/config_videobewalpha_text" />
-
-	 <SeekBar
-	     android:id="@+id/config_videobewalpha_seekBar"
-	     android:layout_width="match_parent"
-	     android:layout_height="wrap_content"
-	     android:max="255"
-	     android:paddingLeft="50dp"
-	     android:paddingRight="50dp" />
-	 
-	  <Button
-	     android:id="@+id/cfgbutton_close"
-	     android:layout_width="wrap_content"
-	     android:layout_height="wrap_content"
-	     android:layout_gravity="center"
-	     android:onClick="cfgbutton_close_event"
-	     android:text="@string/verbindungsbutton_close_text" />
 	
 </LinearLayout>
 </ScrollView>

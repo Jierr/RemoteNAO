@@ -823,7 +823,7 @@ class NetworkThread extends Thread
 			Log.v("NetMod", "Connecting to " + IP_Addr + " on port " + Port);
 			Client = new Socket();
 			Client.connect(new InetSocketAddress(IP_Addr, Port), 3000);
-			Client.setSoTimeout(1000);
+			Client.setSoTimeout(500);
 			Log.v("NetMod", "Just connected to " + Client.getRemoteSocketAddress());
 			
 			outToServer = Client.getOutputStream();
@@ -993,7 +993,7 @@ class NetworkThread extends Thread
 		{
 			e.printStackTrace();
 		}
-		Log.v("NetMod.Receive", "Received " + InStr.length() + " bytes");
+		Log.v("NetMod.Receive", "Received " + String.valueOf(InStr.length()) + " bytes");
 		return InStr;
 	}
 }

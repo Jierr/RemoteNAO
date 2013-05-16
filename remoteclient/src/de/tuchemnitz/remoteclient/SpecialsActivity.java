@@ -2,22 +2,17 @@ package de.tuchemnitz.remoteclient;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
-import android.R.array;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -35,8 +30,8 @@ import com.actionbarsherlock.view.MenuItem;
  */
 public class SpecialsActivity extends SherlockActivity {
 	
-	private MenuItem BatteryIcon;
-	private MenuItem ConnectIcon;
+	private MenuItem BatteryIcon = null;
+	private MenuItem ConnectIcon = null;
 	
 	/**
 	 * Loads/sets up the Activity layout and registers the callback.
@@ -109,7 +104,7 @@ public class SpecialsActivity extends SherlockActivity {
         ConnectIcon = (MenuItem)menu.findItem(R.id.acb_connect);
         setActBarConnectIcon();
         
-        ((MenuItem)menu.findItem(R.id.acb_m_4)).setVisible(false);
+        ((MenuItem)menu.findItem(R.id.acb_m_3)).setVisible(false);
         
         return true;
     }
@@ -125,23 +120,27 @@ public class SpecialsActivity extends SherlockActivity {
 		Intent intent;
 		switch(item.getItemId()){
 		case android.R.id.home:
-		case R.id.acb_m_1:
 			finish();
 			break;
-		case R.id.acb_m_2:
+		case R.id.acb_m_1:
 			intent = new Intent(Callbacksplit.getMainActivity(), BewegungActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_3:
+		case R.id.acb_m_2:
 			intent = new Intent(Callbacksplit.getMainActivity(), SprachausgabeActivity.class);
 			finish();
 			startActivity(intent);
 			break;
+		case R.id.acb_m_3:
+			break;
 		case R.id.acb_m_4:
+			intent = new Intent(Callbacksplit.getMainActivity(), ConfigActivity.class);
+			finish();
+			startActivity(intent);
 			break;
 		case R.id.acb_m_5:
-			intent = new Intent(Callbacksplit.getMainActivity(), ConfigActivity.class);
+			intent = new Intent(Callbacksplit.getMainActivity(), SettingActivity.class);
 			finish();
 			startActivity(intent);
 			break;
@@ -270,7 +269,7 @@ public class SpecialsActivity extends SherlockActivity {
      * @param pic	Drawable of the Battery Icon
      */
     public void setActBarBatteryIcon(Drawable pic){
-    	if(pic!=null)
+    	if(pic!=null && BatteryIcon != null)
     		BatteryIcon.setIcon(pic);
     }
     
@@ -278,6 +277,9 @@ public class SpecialsActivity extends SherlockActivity {
      * Refreshes the ActionBar's network state icon.
      */
     public void setActBarConnectIcon(){
+    	if(ConnectIcon == null)
+    		return;
+    	
     	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);

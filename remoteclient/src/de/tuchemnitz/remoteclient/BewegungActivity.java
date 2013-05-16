@@ -105,7 +105,7 @@ public class BewegungActivity extends SherlockActivity {
         ConnectIcon = (MenuItem)menu.findItem(R.id.acb_connect);
         setActBarConnectIcon();
         
-        ((MenuItem)menu.findItem(R.id.acb_m_2)).setVisible(false);
+        ((MenuItem)menu.findItem(R.id.acb_m_1)).setVisible(false);
         
         return true;
     }
@@ -121,23 +121,27 @@ public class BewegungActivity extends SherlockActivity {
 		Intent intent;
 		switch(item.getItemId()){
 		case android.R.id.home:
-		case R.id.acb_m_1:
 			finish();
 			break;
-		case R.id.acb_m_2:
+		case R.id.acb_m_1:
 			break;
-		case R.id.acb_m_3:
+		case R.id.acb_m_2:
 			intent = new Intent(Callbacksplit.getMainActivity(), SprachausgabeActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_4:
+		case R.id.acb_m_3:
 			intent = new Intent(Callbacksplit.getMainActivity(), SpecialsActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_5:
+		case R.id.acb_m_4:
 			intent = new Intent(Callbacksplit.getMainActivity(), ConfigActivity.class);
+			finish();
+			startActivity(intent);
+			break;
+		case R.id.acb_m_5:
+			intent = new Intent(Callbacksplit.getMainActivity(), SettingActivity.class);
 			finish();
 			startActivity(intent);
 			break;
@@ -418,6 +422,9 @@ public class BewegungActivity extends SherlockActivity {
      * Refreshes the ActionBar's network state icon.
      */
     public void setActBarConnectIcon(){
+    	if(ConnectIcon == null && BatteryIcon != null)
+    		return;
+    	
     	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);

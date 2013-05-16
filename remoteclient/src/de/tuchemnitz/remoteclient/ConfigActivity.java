@@ -4,20 +4,13 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-import android.widget.ToggleButton;
-
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-
-import de.tuchemnitz.remoteclient.NetworkModule.VIDEOSTATE;
 
 /**
  * @file   ConfigActivity.java
@@ -35,8 +28,6 @@ public class ConfigActivity extends SherlockActivity {
 	
 	private MenuItem BatteryIcon;
 	private MenuItem ConnectIcon;
-	private SeekBar seekbar_videosichtbarkeit = null;
-	private ToggleButton video_toggle_OnOff = null;
 	
 	
 	/**
@@ -73,11 +64,6 @@ public class ConfigActivity extends SherlockActivity {
     	}
     	textfeld_ipeingabe.setText(NetworkModule.GetIPAddress());
     	
-    	init_seekbar_videotransparency();
-    	
-    	video_toggle_OnOff = (ToggleButton) findViewById(R.id.config_video_toggle);
-    	video_toggle_OnOff.setChecked(VideoModule.isVideoThreadStarted());
-    	
 	}
 	
 	@Override
@@ -112,7 +98,7 @@ public class ConfigActivity extends SherlockActivity {
         ConnectIcon = (MenuItem)menu.findItem(R.id.acb_connect);
         setActBarConnectIcon();
         
-        ((MenuItem)menu.findItem(R.id.acb_m_5)).setVisible(false);
+        ((MenuItem)menu.findItem(R.id.acb_m_4)).setVisible(false);
 
         return true;
     }
@@ -128,25 +114,29 @@ public class ConfigActivity extends SherlockActivity {
 		Intent intent;
 		switch(item.getItemId()){
 		case android.R.id.home:
-		case R.id.acb_m_1:
 			finish();
 			break;
-		case R.id.acb_m_2:
+		case R.id.acb_m_1:
 			intent = new Intent(Callbacksplit.getMainActivity(), BewegungActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_3:
+		case R.id.acb_m_2:
 			intent = new Intent(Callbacksplit.getMainActivity(), SprachausgabeActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_4:
+		case R.id.acb_m_3:
 			intent = new Intent(Callbacksplit.getMainActivity(), SpecialsActivity.class);
 			finish();
 			startActivity(intent);
 			break;
+		case R.id.acb_m_4:
+			break;
 		case R.id.acb_m_5:
+			intent = new Intent(Callbacksplit.getMainActivity(), SettingActivity.class);
+			finish();
+			startActivity(intent);
 			break;
 		case R.id.acb_video:
 			VideoModule.create_dialog(ConfigActivity.this, true);
@@ -224,50 +214,7 @@ public class ConfigActivity extends SherlockActivity {
 	public void cfgbutton_close_event(View view)
 	{
 		finish();
-	}
-	
-	public void cfg_videotoggle_on_off(View view)
-	{
-		if(VideoModule.isVideoThreadStarted())
-		{
-			VideoModule.stopVideoServer();
-		}
-		else
-		{
-			VideoModule.startVideoServer();
-		}
-		video_toggle_OnOff.setChecked(VideoModule.isVideoThreadStarted());
-	}
-	
-	
-	private void init_seekbar_videotransparency()
-	{
-		seekbar_videosichtbarkeit = (SeekBar) findViewById(R.id.config_videobewalpha_seekBar);
-    	seekbar_videosichtbarkeit.setProgress(VideoModule.Videotransparency_bewact);
-    	
-    	seekbar_videosichtbarkeit.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-			
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-				VideoModule.Videotransparency_bewact = seekbar_videosichtbarkeit.getProgress();
-				Log.v("ConfigAct", "Videotransparency_bewact="+String.valueOf(VideoModule.Videotransparency_bewact));
-			}
-			
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
-	}
-	
+	}	
 	
 	/************ Dynamisches Aenderugszeug *****************
      ********************************************************/
@@ -311,6 +258,9 @@ public class ConfigActivity extends SherlockActivity {
      * Sets the Connection Icon depending on the current connection state.
      */
     public void setActBarConnectIcon(){
+    	if(ConnectIcon == null && BatteryIcon != null)
+    		return;
+    	
     	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);

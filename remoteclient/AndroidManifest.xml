@@ -44,6 +44,10 @@
             android:name="de.tuchemnitz.remoteclient.SpecialsActivity"
             android:label="@string/title_activity_specials" >
         </activity>
+        <activity
+            android:name="de.tuchemnitz.remoteclient.SettingActivity"
+            android:label="@string/title_activity_setting" >
+        </activity>
     </application>
 
 </manifest>
