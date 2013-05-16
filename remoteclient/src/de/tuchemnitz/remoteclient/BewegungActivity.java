@@ -34,8 +34,8 @@ public class BewegungActivity extends SherlockActivity {
 	private OnCheckedChangeListener Grp1Listener = null;
 	private OnCheckedChangeListener Grp2Listener = null;
 
-	private MenuItem BatteryIcon;
-	private MenuItem ConnectIcon;
+	private MenuItem BatteryIcon = null;
+	private MenuItem ConnectIcon = null;
 	
 	
 	/**

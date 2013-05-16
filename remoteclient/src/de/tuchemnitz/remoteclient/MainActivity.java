@@ -41,8 +41,8 @@ public class MainActivity extends SherlockActivity {
 	private final int EVENT_CONN = 2;
 	private final int EVENT_MAKRO = 3;
 	
-	private MenuItem BatteryIcon;
-	private MenuItem ConnectIcon;
+	private MenuItem BatteryIcon = null;
+	private MenuItem ConnectIcon = null;
 	
 	private boolean askfor_Makros_once = true;
 	

@@ -22,8 +22,8 @@ import com.actionbarsherlock.view.MenuItem;
  */
 public class SettingActivity extends SherlockActivity {
 	
-	private MenuItem BatteryIcon;
-	private MenuItem ConnectIcon;
+	private MenuItem BatteryIcon = null;
+	private MenuItem ConnectIcon = null;
 	private SeekBar seekbar_videosichtbarkeit = null;
 	private ToggleButton video_toggle_OnOff = null;
 	

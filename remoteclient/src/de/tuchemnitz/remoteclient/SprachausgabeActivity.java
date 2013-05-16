@@ -32,8 +32,8 @@ import com.actionbarsherlock.view.MenuItem;
  */
 public class SprachausgabeActivity extends SherlockActivity {
 
-	private MenuItem BatteryIcon;
-	private MenuItem ConnectIcon;
+	private MenuItem BatteryIcon = null;
+	private MenuItem ConnectIcon = null;
 	
 	/**
 	 * Loads the Activity layout and registers the callback.
@@ -325,7 +325,7 @@ public class SprachausgabeActivity extends SherlockActivity {
 			try {
 				fis = openFileInput("spk_textfile");
 				byte[] readData = new byte [fis.available()];
-				while(fis.read(readData) != -1)
+				while(fis.read(readData) > 0)
 				{
 					collected = new String(readData);
 				}

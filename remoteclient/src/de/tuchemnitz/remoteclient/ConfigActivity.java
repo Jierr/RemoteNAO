@@ -26,8 +26,8 @@ public class ConfigActivity extends SherlockActivity {
 	/*Buttons*/
 	private Button button_verbindenbutton;
 	
-	private MenuItem BatteryIcon;
-	private MenuItem ConnectIcon;
+	private MenuItem BatteryIcon = null;
+	private MenuItem ConnectIcon = null;
 	
 	
 	/**
