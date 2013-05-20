@@ -81,6 +81,7 @@ public class ConfigActivity extends SherlockActivity {
     public void onDestroy(){
 		super.onDestroy();
     	Callbacksplit.registerConfigActivity(null);
+    	VideoModule.closeVideoDialog();
     }
 	
 	/**

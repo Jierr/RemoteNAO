@@ -60,6 +60,7 @@ public class SprachausgabeActivity extends SherlockActivity {
     public void onDestroy(){
 		super.onDestroy();
     	Callbacksplit.registerSprachausgabeActivity(null);
+    	VideoModule.closeVideoDialog();
     }
 
 	/**

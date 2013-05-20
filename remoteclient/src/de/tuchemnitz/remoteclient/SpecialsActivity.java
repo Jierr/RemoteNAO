@@ -87,6 +87,7 @@ public class SpecialsActivity extends SherlockActivity {
     public void onDestroy(){
 		super.onDestroy();
     	Callbacksplit.registerSpecialsActivity(null);
+    	VideoModule.closeVideoDialog();
     }
 
 	/**

@@ -60,6 +60,7 @@ public class SettingActivity extends SherlockActivity {
     public void onDestroy(){
 		super.onDestroy();
     	Callbacksplit.registerSettingActivity(null);
+    	VideoModule.closeVideoDialog();
     }
 	
 	/**

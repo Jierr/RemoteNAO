@@ -172,6 +172,7 @@ public class MainActivity extends SherlockActivity {
 	@Override
     public void onDestroy(){
     	super.onDestroy();
+    	VideoModule.closeVideoDialog();
     	BattTimer.cancel();
     	NetworkModule.CloseConnection();
     	VideoModule.stopVideoServer();

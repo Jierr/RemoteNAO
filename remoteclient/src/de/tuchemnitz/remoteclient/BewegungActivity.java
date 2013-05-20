@@ -87,6 +87,7 @@ public class BewegungActivity extends SherlockActivity {
     public void onDestroy(){
 		super.onDestroy();
     	Callbacksplit.registerBewegungActivity(null);
+    	VideoModule.closeVideoDialog();
     	NetworkModule.Video(VIDEOSTATE.OFF);
     }
 

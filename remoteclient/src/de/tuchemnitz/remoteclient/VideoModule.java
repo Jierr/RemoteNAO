@@ -68,7 +68,7 @@ public class VideoModule {
 				bitmap = Bitmap.createScaledBitmap(bitmap, w, h, false);
 				
 				video_dialog_picture.setImageBitmap(bitmap);
-				Log.v("VideoMod", "Pic changed");
+				//Log.v("VideoMod", "Pic changed");
 		    }
 		    else if(video_picture != null)
 			{
@@ -80,7 +80,7 @@ public class VideoModule {
 				bitmap = BitmapFactory.decodeByteArray((byte[])msg.obj, 0, msg.arg2, opt);
 				video_picture.setImageBitmap(bitmap);
 				
-				Log.v("VideoMod", "Pic changed");
+				//Log.v("VideoMod", "Pic changed");
 			}
 		    
 		    //System.gc();
@@ -138,6 +138,17 @@ public class VideoModule {
     	video_dialog.show();
     	
     	NetVideo.pause_off();
+	}
+	
+	public static boolean isVideoDialogOpen()
+	{
+		return (video_dialog != null);
+	}
+	
+	public static void closeVideoDialog()
+	{
+		if(video_dialog != null)
+			video_dialog.dismiss();
 	}
 	
 	// resets all the variables
