@@ -63,8 +63,8 @@
         Diese Software ist ausschließlich zur nicht kommerziellen Nutzung gedacht.
     </string>
     <string name="About_Button">Einverstanden</string>
-    <string name="set_videobewalpha_text">Video-Sichtbarkeit Bew.-Act.:</string>
+    <string name="set_videobewalpha_text">Video-Sichtbarkeit in Bew.-Act.:</string>
     <string name="set_head1">Einstellungen</string>
-    <string name="set_video_on_text">Video</string>
+    <string name="set_video_on_text">Video ein-/ausschalten</string>
 
 </resources>
