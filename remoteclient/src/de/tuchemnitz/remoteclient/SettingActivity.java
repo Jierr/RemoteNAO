@@ -139,6 +139,11 @@ public class SettingActivity extends SherlockActivity {
 		finish();
 	}
 	
+	/**
+	 * Starts and Stops the Videoserver with the udp-socket in a thread.
+	 * 
+	 * @param view ignored, ID of the button, which triggers this function
+	 */
 	public void set_videotoggle_on_off(View view)
 	{
 		if(VideoModule.isVideoThreadStarted())
@@ -152,7 +157,13 @@ public class SettingActivity extends SherlockActivity {
 		video_toggle_OnOff.setChecked(VideoModule.isVideoThreadStarted());
 	}
 	
-	
+	/**
+	 * Init the seekbar for setting the transparancy of 
+	 * the video, showed in the background of the BewegungActivity.
+	 * All listeners will be initialized.
+	 * 
+	 * This function is used in the oncreate-function of the Activity.
+	 */
 	private void init_seekbar_videotransparency()
 	{
 		seekbar_videosichtbarkeit = (SeekBar) findViewById(R.id.set_videobewalpha_seekBar);

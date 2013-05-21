@@ -49,7 +49,7 @@ public class MainActivity extends SherlockActivity {
 	/**
 	* @class EvtHandler
 	*
-	* A class to handle the events vom the callback-message-queue
+	* A class to handle the events from the callback-message-queue
 	*/ 
 	private Handler EvtHandler = new Handler()
 	{
@@ -367,6 +367,12 @@ public class MainActivity extends SherlockActivity {
 	
 	//______ Funktions for Makros _________
 	
+	/**
+	 * Appents names of makros which are received from the robot to a list saved in a file (filename is MakroListe.txt).
+	 * With makro the motion sequence created with coreographe were meant
+	 * 
+	 * @param neutext Name of the makro
+	 */
 	private void addMakroToList(String neutext)
 	{
 		FileOutputStream fos = null;
@@ -385,6 +391,10 @@ public class MainActivity extends SherlockActivity {
 		}
 	}
 	
+	/**
+	 * Creates a new empty file with the filename MakroListe.txt.
+	 * Later there can be saved names of motion sequence as a list in it.
+	 */
 	private void newMakroToList()
 	{
 		FileOutputStream fos = null;

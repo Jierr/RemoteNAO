@@ -14,7 +14,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Message;
-import android.text.GetChars;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -36,7 +35,11 @@ public class VideoModule {
 	
 	public static int Videotransparency_bewact = 100;
 	
-	
+	/**
+	* @class RecvPicHandler
+	*
+	* A class to handle the events from the callbackfunction of the VideoThread
+	*/
 	private static Handler RecvPicHandler = new Handler()
 	{
 		/**
@@ -90,6 +93,12 @@ public class VideoModule {
 	};	
 	
 	
+	/**
+	 * Creates a dialog in the Activity, which is given by ref_activity
+	 * 
+	 * @param ref_activity a reference of the activity in which the dialog will be opened
+	 * @param startstop_naovideoserver By closing the dialoge let the Networkmodule send a video-stop-command to the robot
+	 */
 	public static void create_dialog(Activity ref_activity, boolean startstop_naovideoserver)
 	{
 		if(NetVideo == null)
@@ -140,18 +149,31 @@ public class VideoModule {
     	NetVideo.pause_off();
 	}
 	
+	/**
+	 * Let you know if a videodialog exists
+	 * 
+	 * @return True if a Reference to a videodialog exists
+	 */
 	public static boolean isVideoDialogOpen()
 	{
 		return (video_dialog != null);
 	}
 	
+	/**
+	 * closes the videodialog
+	 * if there is no existing dialog then nothing happens
+	 * 
+	 */
 	public static void closeVideoDialog()
 	{
 		if(video_dialog != null)
 			video_dialog.dismiss();
 	}
 	
-	// resets all the variables
+	/**
+	 * Resets all the variables of the VideoModule.
+	 * 
+	 */
 	public static void init()
 	{
 		video_dialog = null;
@@ -162,7 +184,11 @@ public class VideoModule {
 		bitmap = null;
 	}
 	
-	// returns the port on success if error then -1 is returned
+	/**
+	 * Start a new thread with an udp-server to receive pictures from robot.
+	 * 
+	 *  @return On success it returns the port. If an error occurs then -1 is returned.
+	 */
 	public static int startVideoServer()
 	{
 		
@@ -180,6 +206,11 @@ public class VideoModule {
 		return NetVideo.getServerPort();
 	}
 	
+	/**
+	 * Returns the port of the videoserver
+	 * 
+	 * @return the port of the udp-socket
+	 */
 	public static int getVideoServerPort()
 	{
 		if(NetVideo != null)
@@ -189,6 +220,10 @@ public class VideoModule {
 		return -1;
 	}
 	
+	/**
+	 * Stops the videoserver an closes the thread and the udp-socket in it. 
+	 * 
+	 */
 	public static void stopVideoServer()
 	{
 		if(NetVideo != null)
@@ -204,6 +239,12 @@ public class VideoModule {
 		}
 	}
 	
+	/**
+	 * This function tells if a thread with an udp-socket exists or not
+	 * 
+	 * @return True if thread with udp-socket for receiving pictures exists.
+	 * 
+	 */
 	public static boolean isVideoThreadStarted()
 	{
 		if( NetVideo == null)
@@ -214,11 +255,21 @@ public class VideoModule {
 		return true;
 	}
 	
+	/**
+	 * Set the active Image, which will later updated with the received pictures
+	 * 
+	 * @param active_image current active ImageView for video
+	 * 
+	 */
 	public static void setVideoPicture (ImageView active_image)
 	{
 		video_picture = active_image;
 	}
 	
+	/**
+	 * Unset the variable video_picture by setting it to null.
+	 * No picture can be updated anymore.
+	 */
 	public static void unsetVideoPicture()
 	{
 		video_picture = null;
@@ -226,6 +277,11 @@ public class VideoModule {
 }
 
 
+/**
+* @class VideoThread
+*
+* A class which will start a new thread and an udp-server for receiving pictures from the NAO-Robot
+*/
 class VideoThread extends Thread {
 	
 	//private int Port = 0x8001;
@@ -234,11 +290,20 @@ class VideoThread extends Thread {
 	DatagramSocket videosocket = null;
 	private volatile boolean receive_pause = false; 
 	
+	/**
+	 * The constructor
+	 * @param EventHandler VideoModule RecvPicHandler member
+	 */
 	public VideoThread(Handler EventHandler){
 		RecEvHandler = EventHandler;
 		return;
 	}
 	
+	/**
+	 * Return the Port from the udp-socket
+	 * 
+	 * @return port of udp-socket
+	 */
 	public int getServerPort()
 	{
 		if(videosocket != null)
@@ -247,16 +312,31 @@ class VideoThread extends Thread {
 			return -1;
 	}
 	
+	/**
+	 * Set the member receive_pause to true. Effect is the Handler is not called.
+	 * It was necessary while changing the view some elements in the gui where not available but variables in the videomodule were not updated jet.
+	 */
 	public void pause_on()
 	{
 		receive_pause = true;
 	}
 	
+	/**
+	 * Set the member receive_pause to false. Effect is the Handler will be called from this moment on.
+	 * 
+	 * It was necessary while changing the view some elements in the gui where not available but variables in the videomodule were not updated jet.
+	 */
 	public void pause_off()
 	{
 		receive_pause = false;
 	}
 	
+	/**
+	 * Robot Video-Module-Function.
+	 * 
+	 * Opens a udp-socket and receive pictures from the robot. After a picture was received the Handler is called.
+	 * 
+	 */
 	@Override
 	public void run()
 	{
@@ -336,6 +416,9 @@ class VideoThread extends Thread {
 		Log.v("Video.Thread", "END");
 	}
 	
+	/**
+	 * Requests the thread to stop and close udp-socket
+	 */
 	public void StopThread()
 	{
 		CloseVideo = true;

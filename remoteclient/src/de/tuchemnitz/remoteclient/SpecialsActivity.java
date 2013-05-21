@@ -292,7 +292,11 @@ public class SpecialsActivity extends SherlockActivity {
     }
 
     ///__________________ Makros _______________________
-    
+    /**
+     * Loads a List of names of motion sequence from a file (MakroListe.txt) and returns it.
+     * 
+     * @return Array of Strings which are the names of the makros.
+     */
     public String[] getMakroList()
 	{
     	FileInputStream fis = null;
@@ -337,10 +341,6 @@ public class SpecialsActivity extends SherlockActivity {
 
 		return collected.split("\n");
 	}
-	
-	
-    
-    
 	
 }
 
