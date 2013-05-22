@@ -120,7 +120,7 @@ public class NetworkModule {
 	 * 		2 - move right arm
 	 * 		3 - move head
 	 */
-	public static void Move(int Type, char Direction)
+	public static void Move(int Type, char Direction, float Parameter)
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
 			return;
@@ -151,6 +151,8 @@ public class NetworkModule {
 			return;
 		}
 		
+
+		CommandStr += "_" + String.valueOf(Parameter) + "_";
 		NetTData.QueueCommand(MoveType, CommandStr);
 		
 		return;

@@ -46,6 +46,19 @@ public class MainActivity extends SherlockActivity {
 	
 	private boolean askfor_Makros_once = true;
 	
+	public float param_MOV_F = 5; ///< Parameter for Movement 
+	public float param_MOV_B = 2;
+	public float param_MOV_L = 90;
+	public float param_MOV_R = 90;
+	public float param_HAD_F = 20;
+	public float param_HAD_B = 20;
+	public float param_HAD_L = 45;
+	public float param_HAD_R = 45;
+	public float param_ARM_F = 45;
+	public float param_ARM_B = 45;
+	public float param_ARM_L = 20;
+	public float param_ARM_R = 20;
+	
 	/**
 	* @class EvtHandler
 	*
@@ -228,6 +241,7 @@ public class MainActivity extends SherlockActivity {
 			intent = new Intent(this, SpecialsActivity.class);
 			startActivity(intent);
 			break;
+		case R.id.acb_connect:
 		case R.id.acb_m_4:
 			intent = new Intent(this, ConfigActivity.class);
 			startActivity(intent);

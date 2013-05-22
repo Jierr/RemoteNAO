@@ -111,6 +111,7 @@ public class SettingActivity extends SherlockActivity {
 			finish();
 			startActivity(intent);
 			break;
+		case R.id.acb_connect:
 		case R.id.acb_m_4:
 			intent = new Intent(Callbacksplit.getMainActivity(), ConfigActivity.class);
 			finish();

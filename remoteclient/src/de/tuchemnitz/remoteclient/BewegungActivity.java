@@ -136,6 +136,7 @@ public class BewegungActivity extends SherlockActivity {
 			finish();
 			startActivity(intent);
 			break;
+		case R.id.acb_connect:
 		case R.id.acb_m_4:
 			intent = new Intent(Callbacksplit.getMainActivity(), ConfigActivity.class);
 			finish();
@@ -249,28 +250,33 @@ public class BewegungActivity extends SherlockActivity {
 	 */
     public void bew_button1_event(View view) {
     	int MoveType;
+    	float Parameter;
     	String ToastStr;
     	
     	switch(bewegungsart)
     	{
     	case R.id.bewa_rbutton_LAUFEN:
     		MoveType = 0;	// MOVE
+    		Parameter = Callbacksplit.getMainActivity().param_MOV_F;
     		ToastStr = "vorwärts";
     		break;
     	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_F;
     		ToastStr = "l. Arm hoch";
     		break;
     	case R.id.bewa_rbutton_ARM_R:
     		MoveType = 2;	// ARM
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_F;
     		ToastStr = "r. Arm hoch";
     		break;
     	default:
     		MoveType = 3;	// HEAD
+    		Parameter = Callbacksplit.getMainActivity().param_HAD_F;
     		ToastStr = "Kopf vor";
     		break;
     	}
-		NetworkModule.Move(MoveType, NetworkModule.MOVE_UP);
+		NetworkModule.Move(MoveType, NetworkModule.MOVE_UP, Parameter);
     	Toast toast = Toast.makeText(BewegungActivity.this, ToastStr, Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
     	toast.show();
@@ -287,28 +293,33 @@ public class BewegungActivity extends SherlockActivity {
 	 */
     public void bew_button2_event(View view) {
     	int MoveType;
+    	float Parameter;
     	String ToastStr;
     	
     	switch(bewegungsart)
     	{
     	case R.id.bewa_rbutton_LAUFEN:
     		MoveType = 0;	// MOVE
+    		Parameter = Callbacksplit.getMainActivity().param_MOV_L;
     		ToastStr = "links";
     		break;
     	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_L;
     		ToastStr = "l. Arm links";
     		break;
     	case R.id.bewa_rbutton_ARM_R:
     		MoveType = 2;	// ARM
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_L;
     		ToastStr = "r. Arm links";
     		break;
     	default:
     		MoveType = 3;	// HEAD
+    		Parameter = Callbacksplit.getMainActivity().param_HAD_L;
     		ToastStr = "Kopf links";
     		break;
     	}
-		NetworkModule.Move(MoveType, NetworkModule.MOVE_LEFT);
+		NetworkModule.Move(MoveType, NetworkModule.MOVE_LEFT, Parameter);
     	Toast toast = Toast.makeText(BewegungActivity.this, ToastStr, Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
     	toast.show();
@@ -325,28 +336,33 @@ public class BewegungActivity extends SherlockActivity {
 	 */
     public void bew_button3_event(View view) {
     	int MoveType;
+    	float Parameter;
     	String ToastStr;
     	
     	switch(bewegungsart)
     	{
     	case R.id.bewa_rbutton_LAUFEN:
     		MoveType = 0;	// MOVE
+    		Parameter = Callbacksplit.getMainActivity().param_MOV_R;
     		ToastStr = "rechts";
     		break;
     	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_R;
     		ToastStr = "l. Arm rechts";
     		break;
     	case R.id.bewa_rbutton_ARM_R:
     		MoveType = 2;	// ARM
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_R;
     		ToastStr = "r. Arm rechts";
     		break;
     	default:
     		MoveType = 3;	// HEAD
+    		Parameter = Callbacksplit.getMainActivity().param_HAD_R;
     		ToastStr = "Kopf rechts";
     		break;
     	}
-		NetworkModule.Move(MoveType, NetworkModule.MOVE_RIGHT);
+		NetworkModule.Move(MoveType, NetworkModule.MOVE_RIGHT, Parameter);
     	Toast toast = Toast.makeText(BewegungActivity.this, ToastStr, Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
     	toast.show();
@@ -363,28 +379,33 @@ public class BewegungActivity extends SherlockActivity {
 	 */
     public void bew_button4_event(View view) {
     	int MoveType;
+    	float Parameter;
     	String ToastStr;
     	
     	switch(bewegungsart)
     	{
     	case R.id.bewa_rbutton_LAUFEN:
     		MoveType = 0;	// MOVE
+    		Parameter = Callbacksplit.getMainActivity().param_MOV_B;
     		ToastStr = "rückwärts";
     		break;
     	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_B;
     		ToastStr = "l. Arm runter";
     		break;
     	case R.id.bewa_rbutton_ARM_R:
     		MoveType = 2;	// ARM
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_B;
     		ToastStr = "r. Arm runter";
     		break;
     	default:
     		MoveType = 3;	// HEAD
+    		Parameter = Callbacksplit.getMainActivity().param_HAD_B;
     		ToastStr = "Kopf hinter";
     		break;
     	}
-		NetworkModule.Move(MoveType, NetworkModule.MOVE_DOWN);
+		NetworkModule.Move(MoveType, NetworkModule.MOVE_DOWN, Parameter);
     	Toast toast = Toast.makeText(BewegungActivity.this, ToastStr, Toast.LENGTH_SHORT);
     	toast.setGravity(Gravity.BOTTOM|Gravity.RIGHT, 0, 0);
     	toast.show();
