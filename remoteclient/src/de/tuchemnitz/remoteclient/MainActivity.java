@@ -47,17 +47,13 @@ public class MainActivity extends SherlockActivity {
 	private boolean askfor_Makros_once = true;
 	
 	public float param_MOV_F = 5; ///< Parameter for Movement 
-	public float param_MOV_B = 2;
-	public float param_MOV_L = 90;
-	public float param_MOV_R = 90;
-	public float param_HAD_F = 20;
-	public float param_HAD_B = 20;
-	public float param_HAD_L = 45;
-	public float param_HAD_R = 45;
-	public float param_ARM_F = 45;
-	public float param_ARM_B = 45;
-	public float param_ARM_L = 20;
-	public float param_ARM_R = 20;
+	public float param_MOV_B = 2; ///< Parameter for Movement 
+	public int param_MOV_D = 90;///< Parameter for Movement D for Drehung/Turning
+	public int param_HAD_F = 20;
+	public int param_HAD_B = 20;
+	public int param_HAD_D = 45;
+	public int param_ARM_HR = 45;
+	public int param_ARM_LR = 20;
 	
 	/**
 	* @class EvtHandler

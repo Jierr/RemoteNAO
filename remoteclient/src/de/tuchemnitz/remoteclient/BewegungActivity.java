@@ -262,12 +262,12 @@ public class BewegungActivity extends SherlockActivity {
     		break;
     	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
-    		Parameter = Callbacksplit.getMainActivity().param_ARM_F;
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_HR;
     		ToastStr = "l. Arm hoch";
     		break;
     	case R.id.bewa_rbutton_ARM_R:
     		MoveType = 2;	// ARM
-    		Parameter = Callbacksplit.getMainActivity().param_ARM_F;
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_HR;
     		ToastStr = "r. Arm hoch";
     		break;
     	default:
@@ -300,22 +300,22 @@ public class BewegungActivity extends SherlockActivity {
     	{
     	case R.id.bewa_rbutton_LAUFEN:
     		MoveType = 0;	// MOVE
-    		Parameter = Callbacksplit.getMainActivity().param_MOV_L;
+    		Parameter = Callbacksplit.getMainActivity().param_MOV_D;
     		ToastStr = "links";
     		break;
     	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
-    		Parameter = Callbacksplit.getMainActivity().param_ARM_L;
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_LR;
     		ToastStr = "l. Arm links";
     		break;
     	case R.id.bewa_rbutton_ARM_R:
     		MoveType = 2;	// ARM
-    		Parameter = Callbacksplit.getMainActivity().param_ARM_L;
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_LR;
     		ToastStr = "r. Arm links";
     		break;
     	default:
     		MoveType = 3;	// HEAD
-    		Parameter = Callbacksplit.getMainActivity().param_HAD_L;
+    		Parameter = Callbacksplit.getMainActivity().param_HAD_D;
     		ToastStr = "Kopf links";
     		break;
     	}
@@ -343,22 +343,22 @@ public class BewegungActivity extends SherlockActivity {
     	{
     	case R.id.bewa_rbutton_LAUFEN:
     		MoveType = 0;	// MOVE
-    		Parameter = Callbacksplit.getMainActivity().param_MOV_R;
+    		Parameter = Callbacksplit.getMainActivity().param_MOV_D;
     		ToastStr = "rechts";
     		break;
     	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
-    		Parameter = Callbacksplit.getMainActivity().param_ARM_R;
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_LR;
     		ToastStr = "l. Arm rechts";
     		break;
     	case R.id.bewa_rbutton_ARM_R:
     		MoveType = 2;	// ARM
-    		Parameter = Callbacksplit.getMainActivity().param_ARM_R;
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_LR;
     		ToastStr = "r. Arm rechts";
     		break;
     	default:
     		MoveType = 3;	// HEAD
-    		Parameter = Callbacksplit.getMainActivity().param_HAD_R;
+    		Parameter = Callbacksplit.getMainActivity().param_HAD_D;
     		ToastStr = "Kopf rechts";
     		break;
     	}
@@ -391,12 +391,12 @@ public class BewegungActivity extends SherlockActivity {
     		break;
     	case R.id.bewa_rbutton_ARM_L:
     		MoveType = 1;	// ARM
-    		Parameter = Callbacksplit.getMainActivity().param_ARM_B;
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_HR;
     		ToastStr = "l. Arm runter";
     		break;
     	case R.id.bewa_rbutton_ARM_R:
     		MoveType = 2;	// ARM
-    		Parameter = Callbacksplit.getMainActivity().param_ARM_B;
+    		Parameter = Callbacksplit.getMainActivity().param_ARM_HR;
     		ToastStr = "r. Arm runter";
     		break;
     	default:

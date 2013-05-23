@@ -39,7 +39,8 @@
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
 	    android:paddingLeft="12dp"
-	    android:paddingRight="50dp" >
+	    android:paddingRight="50dp"
+	    android:paddingBottom="5dp" >
 	    
 		<TextView
 		    android:id="@+id/set_video_on_desc"
@@ -73,7 +74,289 @@
 	     android:max="255"
 	     android:paddingLeft="50dp"
 	     android:paddingRight="50dp"
-	     android:paddingBottom="20dp" />
+	     android:paddingBottom="12dp" />
+
+	 <TextView
+	     android:id="@+id/set_parameterheadline"
+	     android:layout_width="wrap_content"
+	     android:layout_height="wrap_content"
+	     android:text="@string/set_parameterheadline_text"
+	     android:paddingLeft="12dp"
+	     android:paddingBottom="6dp"
+	     android:textAppearance="?android:attr/textAppearanceMedium" />
+
+ <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
+	 <RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:paddingLeft="12dp"
+	    android:paddingRight="50dp">
+
+	     <TextView
+	         android:id="@+id/set_param_movF"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentLeft="true"
+	         android:layout_alignParentTop="true"
+	         android:text="@string/set_param_movF_text" />
+
+	     <TextView
+	         android:id="@+id/set_val_movF"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentRight="true"
+	         android:layout_alignParentTop="true"
+	         android:text="---" />
+
+	</RelativeLayout>
+
+	 <SeekBar
+	     android:id="@+id/set_param_movF_seekBar"
+	     android:layout_width="match_parent"
+	     android:layout_height="wrap_content"
+	     android:max="100"
+	     android:paddingLeft="50dp"
+	     android:paddingRight="50dp"
+	     android:paddingBottom="10dp"/>
+ <!-- ========================================== -->
+  <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
+	 <RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:paddingLeft="12dp"
+	    android:paddingRight="50dp">
+
+	     <TextView
+	         android:id="@+id/set_param_movB"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentLeft="true"
+	         android:layout_alignParentTop="true"
+	         android:text="@string/set_param_movB_text" />
+
+	     <TextView
+	         android:id="@+id/set_val_movB"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentRight="true"
+	         android:layout_alignParentTop="true"
+	         android:text="---" />
+
+	</RelativeLayout>
+
+	 <SeekBar
+	     android:id="@+id/set_param_movB_seekBar"
+	     android:layout_width="match_parent"
+	     android:layout_height="wrap_content"
+	     android:max="100"
+	     android:paddingLeft="50dp"
+	     android:paddingRight="50dp"
+	     android:paddingBottom="10dp"/>
+ <!-- ========================================== -->
+  <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
+	 <RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:paddingLeft="12dp"
+	    android:paddingRight="50dp">
+
+	     <TextView
+	         android:id="@+id/set_param_movD"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentLeft="true"
+	         android:layout_alignParentTop="true"
+	         android:text="@string/set_param_movD_text" />
+
+	     <TextView
+	         android:id="@+id/set_val_movD"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentRight="true"
+	         android:layout_alignParentTop="true"
+	         android:text="---" />
+
+	</RelativeLayout>
+
+	 <SeekBar
+	     android:id="@+id/set_param_movD_seekBar"
+	     android:layout_width="match_parent"
+	     android:layout_height="wrap_content"
+	     android:max="720"
+	     android:paddingLeft="50dp"
+	     android:paddingRight="50dp"
+	     android:paddingBottom="10dp"/>
+ <!-- ========================================== -->
+  <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
+	 <RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:paddingLeft="12dp"
+	    android:paddingRight="50dp">
+
+	     <TextView
+	         android:id="@+id/set_param_hadF"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentLeft="true"
+	         android:layout_alignParentTop="true"
+	         android:text="@string/set_param_hadF_text" />
+
+	     <TextView
+	         android:id="@+id/set_val_hadF"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentRight="true"
+	         android:layout_alignParentTop="true"
+	         android:text="---" />
+
+	</RelativeLayout>
+
+	 <SeekBar
+	     android:id="@+id/set_param_hadF_seekBar"
+	     android:layout_width="match_parent"
+	     android:layout_height="wrap_content"
+	     android:max="50"
+	     android:paddingLeft="50dp"
+	     android:paddingRight="50dp"
+	     android:paddingBottom="10dp"/>
+ <!-- ========================================== -->
+  <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
+	 <RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:paddingLeft="12dp"
+	    android:paddingRight="50dp">
+
+	     <TextView
+	         android:id="@+id/set_param_hadB"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentLeft="true"
+	         android:layout_alignParentTop="true"
+	         android:text="@string/set_param_hadB_text" />
+
+	     <TextView
+	         android:id="@+id/set_val_hadB"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentRight="true"
+	         android:layout_alignParentTop="true"
+	         android:text="---" />
+
+	</RelativeLayout>
+
+	 <SeekBar
+	     android:id="@+id/set_param_hadB_seekBar"
+	     android:layout_width="match_parent"
+	     android:layout_height="wrap_content"
+	     android:max="50"
+	     android:paddingLeft="50dp"
+	     android:paddingRight="50dp"
+	     android:paddingBottom="10dp"/>
+ <!-- ========================================== -->
+  <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
+	 <RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:paddingLeft="12dp"
+	    android:paddingRight="50dp">
+
+	     <TextView
+	         android:id="@+id/set_param_hadD"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentLeft="true"
+	         android:layout_alignParentTop="true"
+	         android:text="@string/set_param_hadD_text" />
+
+	     <TextView
+	         android:id="@+id/set_val_hadD"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentRight="true"
+	         android:layout_alignParentTop="true"
+	         android:text="---" />
+
+	</RelativeLayout>
+
+	 <SeekBar
+	     android:id="@+id/set_param_hadD_seekBar"
+	     android:layout_width="match_parent"
+	     android:layout_height="wrap_content"
+	     android:max="200"
+	     android:paddingLeft="50dp"
+	     android:paddingRight="50dp"
+	     android:paddingBottom="10dp"/>
+ <!-- ========================================== -->
+  <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
+	 <RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:paddingLeft="12dp"
+	    android:paddingRight="50dp">
+
+	     <TextView
+	         android:id="@+id/set_param_armHR"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentLeft="true"
+	         android:layout_alignParentTop="true"
+	         android:text="@string/set_param_armHR_text" />
+
+	     <TextView
+	         android:id="@+id/set_val_armHR"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentRight="true"
+	         android:layout_alignParentTop="true"
+	         android:text="---" />
+
+	</RelativeLayout>
+
+	 <SeekBar
+	     android:id="@+id/set_param_armHR_seekBar"
+	     android:layout_width="match_parent"
+	     android:layout_height="wrap_content"
+	     android:max="200"
+	     android:paddingLeft="50dp"
+	     android:paddingRight="50dp"
+	     android:paddingBottom="10dp"/>
+ <!-- ========================================== -->
+ <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
+	 <RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:paddingLeft="12dp"
+	    android:paddingRight="50dp">
+
+	     <TextView
+	         android:id="@+id/set_param_armLR"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentLeft="true"
+	         android:layout_alignParentTop="true"
+	         android:text="@string/set_param_armLR_text" />
+
+	     <TextView
+	         android:id="@+id/set_val_armLR"
+	         android:layout_width="wrap_content"
+	         android:layout_height="wrap_content"
+	         android:layout_alignParentRight="true"
+	         android:layout_alignParentTop="true"
+	         android:text="---" />
+
+	</RelativeLayout>
+
+	 <SeekBar
+	     android:id="@+id/set_param_armLR_seekBar"
+	     android:layout_width="match_parent"
+	     android:layout_height="wrap_content"
+	     android:max="80"
+	     android:paddingLeft="50dp"
+	     android:paddingRight="50dp"
+	     android:paddingBottom="12dp"/>
+ <!-- ========================================== -->
 	 
 	  <Button
 	     android:id="@+id/setbutton_close"

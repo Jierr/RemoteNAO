@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
@@ -27,6 +28,15 @@ public class SettingActivity extends SherlockActivity {
 	private SeekBar seekbar_videosichtbarkeit = null;
 	private ToggleButton video_toggle_OnOff = null;
 	
+	private TextView text_value_pMovF = null;
+	private TextView text_value_pMovB = null;
+	private TextView text_value_pMovD = null;
+	private TextView text_value_pHadF = null;
+	private TextView text_value_pHadB = null;
+	private TextView text_value_pHadD = null;
+	private TextView text_value_pArmHR = null;
+	private TextView text_value_pArmLR = null;
+	
 	/**
 	 * Loads/sets up the Activity layout and registers the callback.
 	 */
@@ -42,6 +52,17 @@ public class SettingActivity extends SherlockActivity {
     	
     	video_toggle_OnOff = (ToggleButton) findViewById(R.id.set_video_toggle);
     	video_toggle_OnOff.setChecked(VideoModule.isVideoThreadStarted());
+    	
+    	//Parametereinstellungen
+    	text_value_pMovF = (TextView) findViewById(R.id.set_val_movF);
+    	text_value_pMovB = (TextView) findViewById(R.id.set_val_movB);
+    	text_value_pMovD = (TextView) findViewById(R.id.set_val_movD);
+    	text_value_pHadF = (TextView) findViewById(R.id.set_val_hadF);
+    	text_value_pHadB = (TextView) findViewById(R.id.set_val_hadB);
+    	text_value_pHadD = (TextView) findViewById(R.id.set_val_hadD);
+    	text_value_pArmHR = (TextView) findViewById(R.id.set_val_armHR);
+    	text_value_pArmLR = (TextView) findViewById(R.id.set_val_armLR);
+    	init_seekbar_parameters();
     	
 	}
 	
@@ -193,6 +214,181 @@ public class SettingActivity extends SherlockActivity {
 		});
 	}
 	
+	
+	private int parameter_float_to_int_mov(float val)
+	{
+		if(val > 50.0) return (((int)val)-50);
+		else return ((int)(val/10));
+	}
+	private float parameter_int_to_float_mov(int val)
+	{
+		if(val > 50) return (float)val-50;
+		else return (((float)val)/10.0f);
+	}
+	
+	private void init_seekbar_parameters()
+	{
+		final SeekBar seekbar_pMovF = (SeekBar) findViewById(R.id.set_param_movF_seekBar);
+		seekbar_pMovF.setProgress(parameter_float_to_int_mov(Callbacksplit.getMainActivity().param_MOV_F));
+		text_value_pMovF.setText(String.valueOf(Callbacksplit.getMainActivity().param_MOV_F)+" m");
+		seekbar_pMovF.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				text_value_pMovF.setText(String.valueOf(parameter_int_to_float_mov(seekBar.getProgress()))+" m");
+				Callbacksplit.getMainActivity().param_MOV_F = parameter_int_to_float_mov(seekBar.getProgress());
+			}
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				text_value_pMovF.setText(String.valueOf(parameter_int_to_float_mov(progress))+" m");
+			}
+		});
+		
+		final SeekBar seekbar_pMovB = (SeekBar) findViewById(R.id.set_param_movB_seekBar);
+		seekbar_pMovB.setProgress(parameter_float_to_int_mov(Callbacksplit.getMainActivity().param_MOV_B));
+		text_value_pMovB.setText(String.valueOf(Callbacksplit.getMainActivity().param_MOV_B)+" m");
+		seekbar_pMovB.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				text_value_pMovB.setText(String.valueOf(parameter_int_to_float_mov(seekBar.getProgress()))+" m");
+				Callbacksplit.getMainActivity().param_MOV_B = parameter_int_to_float_mov(seekBar.getProgress());
+			}
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				text_value_pMovB.setText(String.valueOf(parameter_int_to_float_mov(progress))+" m");
+			}
+		});
+		
+		final SeekBar seekbar_pMovD = (SeekBar) findViewById(R.id.set_param_movD_seekBar);
+		seekbar_pMovD.setProgress(Callbacksplit.getMainActivity().param_MOV_D);
+		text_value_pMovD.setText(String.valueOf(Callbacksplit.getMainActivity().param_MOV_D)+"°");
+		seekbar_pMovD.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				text_value_pMovD.setText(String.valueOf(seekBar.getProgress())+"°");
+				Callbacksplit.getMainActivity().param_MOV_D = seekBar.getProgress();
+			}
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				text_value_pMovD.setText(String.valueOf(progress)+"°");
+			}
+		});
+		
+		final SeekBar seekbar_pHadF = (SeekBar) findViewById(R.id.set_param_hadF_seekBar);
+		seekbar_pHadF.setProgress(Callbacksplit.getMainActivity().param_HAD_F);
+		text_value_pHadF.setText(String.valueOf(Callbacksplit.getMainActivity().param_HAD_F)+"°");
+		seekbar_pHadF.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				text_value_pHadF.setText(String.valueOf(seekBar.getProgress())+"°");
+				Callbacksplit.getMainActivity().param_HAD_F = seekBar.getProgress();
+			}
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				text_value_pHadF.setText(String.valueOf(progress)+"°");
+			}
+		});
+		
+		final SeekBar seekbar_pHadB = (SeekBar) findViewById(R.id.set_param_hadB_seekBar);
+		seekbar_pHadB.setProgress(Callbacksplit.getMainActivity().param_HAD_B);
+		text_value_pHadB.setText(String.valueOf(Callbacksplit.getMainActivity().param_HAD_B)+"°");
+		seekbar_pHadB.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				text_value_pHadB.setText(String.valueOf(seekBar.getProgress())+"°");
+				Callbacksplit.getMainActivity().param_HAD_B = seekBar.getProgress();
+			}
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				text_value_pHadB.setText(String.valueOf(progress)+"°");
+			}
+		});
+		
+		final SeekBar seekbar_pHadD = (SeekBar) findViewById(R.id.set_param_hadD_seekBar);
+		seekbar_pHadD.setProgress(Callbacksplit.getMainActivity().param_HAD_D);
+		text_value_pHadD.setText(String.valueOf(Callbacksplit.getMainActivity().param_HAD_D)+"°");
+		seekbar_pHadD.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				text_value_pHadD.setText(String.valueOf(seekBar.getProgress())+"°");
+				Callbacksplit.getMainActivity().param_HAD_D = seekBar.getProgress();
+			}
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				text_value_pHadD.setText(String.valueOf(progress)+"°");
+			}
+		});
+		
+		final SeekBar seekbar_pArmHR = (SeekBar) findViewById(R.id.set_param_armHR_seekBar);
+		seekbar_pArmHR.setProgress(Callbacksplit.getMainActivity().param_ARM_HR);
+		text_value_pArmHR.setText(String.valueOf(Callbacksplit.getMainActivity().param_ARM_HR)+"°");
+		seekbar_pArmHR.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				text_value_pArmHR.setText(String.valueOf(seekBar.getProgress())+"°");
+				Callbacksplit.getMainActivity().param_ARM_HR = seekBar.getProgress();
+			}
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				text_value_pArmHR.setText(String.valueOf(progress)+"°");
+			}
+		});
+		
+		final SeekBar seekbar_pArmLR = (SeekBar) findViewById(R.id.set_param_armLR_seekBar);
+		seekbar_pArmLR.setProgress(Callbacksplit.getMainActivity().param_ARM_LR);
+		text_value_pArmLR.setText(String.valueOf(Callbacksplit.getMainActivity().param_ARM_LR)+"°");
+		seekbar_pArmLR.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				text_value_pArmLR.setText(String.valueOf(seekBar.getProgress())+"°");
+				Callbacksplit.getMainActivity().param_ARM_LR = seekBar.getProgress();
+			}
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				text_value_pArmLR.setText(String.valueOf(progress)+"°");
+			}
+		});
+		
+	}
 	
 	/************ Dynamisches Aenderugszeug *****************
      ********************************************************/

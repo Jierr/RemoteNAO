@@ -66,5 +66,14 @@
     <string name="set_videobewalpha_text">Video-Sichtbarkeit in Bew.-Act.:</string>
     <string name="set_head1">Einstellungen</string>
     <string name="set_video_on_text">Video ein-/ausschalten</string>
+    <string name="set_parameterheadline_text">Parametereinstellung</string>
+    <string name="set_param_movF_text">Weite beim Vorwätslaufen:</string>
+    <string name="set_param_movB_text">Weite beim Rückwärtslaufen:</string>
+    <string name="set_param_movD_text">Drehwinkel pro Drehbewegung:</string>
+    <string name="set_param_armHR_text">Winkel Armbewegung hoch/runter:</string>
+    <string name="set_param_armLR_text">Winkel Armseitwärtsbewegung:</string>
+    <string name="set_param_hadF_text">Neigewinkel für Kopfbew. hinter:</string>
+    <string name="set_param_hadB_text">Neigewinkel für Kopfbew. vor:</string>
+    <string name="set_param_hadD_text">Drehwinkel pro Kopfdrehbewegung:</string>
 
 </resources>
