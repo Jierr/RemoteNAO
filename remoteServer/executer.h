@@ -5,7 +5,7 @@
 #include <alcommon/albroker.h>
 //#include <boost/enable_shared_from_this.hpp>
 #include <string>
-
+#include "behavelist.h"
 #include "eventlist.h"
 
 using namespace std;
@@ -34,6 +34,7 @@ class Executer:public AL::ALModule
 		boost::shared_ptr<AL::ALMutex> mutex; ///< mutex to grant consistent data --> espec. used in Executer::process()
 		boost::shared_ptr<AL::ALMutex> sync; 
 		boost::shared_ptr<EventList> eventList; ///< contains events to be executed
+		boost::shared_ptr<Behavelist> blist;
 		state_t state;	///< logical state of the robot, set through executed functions in process()
 		string mpose;	///< physical state of the robot as string, also retrieved through the callback --> cbPoseChanged()
 		AL::ALMemoryProxy mem; ///< Proxy to the atomic memory management of the framework.
@@ -44,8 +45,12 @@ class Executer:public AL::ALModule
 		bool* block;
 		bool* parblock;
 		
+		
 		int unblockfor(const int& code);
 	public:
+		string cbip;
+		unsigned short cbport;
+		
 		bool cbcall;
 		bool cbinc;
 		state_t cbstate;	///< physical state of the robot, set through sensors, hence a callback --> cbPoseChanged()
@@ -77,6 +82,7 @@ class Executer:public AL::ALModule
 		\param eL
 		*/
 		void initEventList(boost::shared_ptr<EventList> eL);
+		void initBehavelist(boost::shared_ptr<Behavelist> bL);
 		/**
 		\brief Resolves event - conflicts and executes one fitting event. \n
 			   Sets the #state of the roboter after the event has been executed.

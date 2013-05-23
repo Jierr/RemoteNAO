@@ -55,9 +55,12 @@ class Manager:public AL::ALModule
 		boost::shared_ptr<AL::ALMutex> mutex; ///< reserved.
 		AcessExec accessExec; ///< \see AcessExec
 		boost::shared_ptr<EventList> eventList; ///< Pointer to instance of EventList, queueing valid comands.
+		boost::shared_ptr<Behavelist> blist;
 		int pipeWrite;
 		int threadcount;
 		string ip4;
+		string cbip;
+		unsigned short cbport;
 		int stateAbs;
 		int inTransition;
 		int blockGen;
@@ -94,6 +97,7 @@ class Manager:public AL::ALModule
 		
 		void initAbsTransition();
 		void initGenAllowed();
+		void initblist();
 		int retrieveTrans(const int& from, const int& to, event_params_t* ep);
 		int isGenAllowed(const int& gen, const int& abs);
 		int processConflicts(Event* event);
@@ -134,6 +138,7 @@ class Manager:public AL::ALModule
 		virtual void init();
 		/// Kind of a ping to this module, to test if still living.
 		void localRespond();
+		void setCB(const string& bip, const int& bport);
 			
 		/**
 		\brief decodes a string, it only processes one char at a time before returning
@@ -147,7 +152,7 @@ class Manager:public AL::ALModule
 		*/
 //		int decode(const string& toParse);
 		
-		void addCom(const int& type, const int& ip1, const int& ip2, const string& sp, const int& prio);
+		void addCom(const int& type, const int& ip1, const int& ip2, const float& fp, const string& sp, const int& prio);
 		
 		void initPipe(const int& writer);
 		void initIp4(const string& ip);

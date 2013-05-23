@@ -24,7 +24,8 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 :	AL::ALModule(broker, name), 
 	mutex(AL::ALMutex::createALMutex()),
 	accessExec(broker),
-	eventList(new EventList)
+	eventList(new EventList),
+	blist(new Behavelist)
 {
 	setModuleDescription("This Module manages the Data comming from the remoteServer module");
 	
@@ -51,13 +52,20 @@ Manager::Manager(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 	addParam("type", "");
 	addParam("ip1", "");
 	addParam("ip2", "");
+	addParam("fp", "");
 	addParam("sp", "");
 	addParam("prio", "");
 	BIND_METHOD(Manager::addCom)
 	
+	functionName("setCB", getName(), "Init the Controle Broker IP and Port");
+	addParam("bip", "");
+	addParam("bport", "");
+	BIND_METHOD(Manager::setCB)
+	
 	mem = AL::ALMemoryProxy(broker);
 	
 	accessExec.exec->initEventList(eventList);
+	accessExec.exec->initBehavelist(blist);
 }
 
 Manager::~Manager()
@@ -75,13 +83,118 @@ void Manager::init()
 	stateDisrupt = false;
 	inTransition = 0;
 	blockGen = 0;
+	cbip = "127.0.0.1";
+	cbport = 0;
 	for (int c = 0; c < NUM_CODES; ++c)
 		block[c] = false;
 	for (int c = 0; c < NUM_CODES; ++c)
 		parblock[c] = false;
+	initblist();
 	initAbsTransition();
 	initGenAllowed();
+	cout<< "[Executer] Liste aller Events" << endl << blist->list() << endl;
 }
+
+
+void Manager::setCB(const string& bip, const int& bport)
+{
+	cbip = bip;
+	cbport = (unsigned short)bport;
+	accessExec.exec->cbip = cbip;
+	accessExec.exec->cbport = cbport;
+}
+
+void Manager::initblist()
+{
+	int size = 0;
+	int b = 0;
+	int dots = 0;
+	int dfirst = 0;
+	int dlast = 0;
+	bool found = false;
+	string name = "";
+	string full = "";
+	int fstate = -1;
+	int lstate = -1;
+	
+	string curr = "";
+	try
+	{
+		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
+		AL::ALValue behav;
+		behav = pbehav.getInstalledBehaviors();
+		size = behav.getSize();
+		
+		while (b < size)
+		{
+			curr = (string&)behav[b];
+			dots = 0;
+			//cout<< "Bearbeite Behaviour: " << curr << endl;
+			for (int c = 0; c < curr.length(); ++c)
+				if (curr[c] == '.')
+				{
+					++dots;
+					if (dots == 1)
+						dfirst = c;
+					else if (dots == 2)
+						dlast = c;
+				}
+
+			if (dots>= 2)
+			{
+				if(curr.compare(0, dfirst, "none") == 0)
+					fstate = -1;
+				else if(curr.compare(0, dfirst, "standing") == 0)
+					fstate = ABS_STANDING;
+				else if(curr.compare(0, dfirst, "sitting") == 0)
+					fstate = ABS_SITTING;
+				else if(curr.compare(0, dfirst, "walking") == 0)
+					fstate = ABS_WALKING;
+				else if(curr.compare(0, dfirst, "lieing") == 0)
+					fstate = ABS_LIEING;
+				else if(curr.compare(0, dfirst, "unknown") == 0)
+					fstate = ABS_UNKNOWN;
+				else
+					fstate = ABS_STANDING;
+					
+				if(curr.compare(dfirst+1, dlast-1 - dfirst, "none") == 0)
+					lstate = -1;
+				else if(curr.compare(dfirst+1, dlast-1 - dfirst, "standing") == 0)
+					lstate = ABS_STANDING;
+				else if(curr.compare(dfirst+1, dlast-1 - dfirst, "sitting") == 0)
+					lstate = ABS_SITTING;
+				else if(curr.compare(dfirst+1, dlast-1 - dfirst, "walking") == 0)
+					lstate = ABS_WALKING;
+				else if(curr.compare(dfirst+1, dlast-1 - dfirst, "lieing") == 0)
+					lstate = ABS_LIEING;
+				else
+					lstate = ABS_UNKNOWN;
+				if (dlast+1 < curr.length())	
+					name = curr.substr(dlast+1, curr.length() - (dlast+1));
+				else 
+					name = "<name missing>";
+		
+			}
+			else 
+			{
+				fstate = ABS_STANDING;
+				lstate = ABS_UNKNOWN;
+				name = curr;				
+			}
+			full = curr;
+//			cout<< "Fuege neu gefundenen Behaviour zur Liste hinzu:" << endl
+//				<< ">Name " << name << endl;
+			blist->addBehave(fstate, lstate, name, full);
+			++b;
+		}
+//		cout<< "Alle Behaviours bearbeited" << endl;
+	}
+	catch(const AL::ALError& e)
+	{
+		cout<< "Error [Executer]<gen>: " << endl << e.what() << endl;
+	}
+}
+
 
 
 
@@ -101,31 +214,38 @@ int Manager::blockfor(const int& code)
 			for (c = 0; c < NUM_CODES; ++c)
 				block[c] = true;
 			block[C_STOPALL] = false;
+			block[C_RESET] = false;
 			block[C_SPK] = false;
 			break;
 		case C_REST:
 			for (c = 0; c < NUM_CODES; ++c)
 				block[c] = true;
 			block[C_STOPALL] = false;
+			block[C_RESET] = false;
 			block[C_SPK] = false;
 			break;
 		case C_SIT:
 			for (c = 0; c < NUM_CODES; ++c)
 				block[c] = true;
 			block[C_STOPALL] = false;
+			block[C_RESET] = false;
 			block[C_SPK] = false;
 			break;
 		case C_WALK:
 			for (c = 0; c < NUM_CODES; ++c)
 				block[c] = true;
 			block[C_STOPALL] = false;
+			block[C_RESET] = false;
 			block[C_SPK] = false;
 			break;
 		case C_EXE:
 			for (c = 0; c < NUM_CODES; ++c)
 				block[c] = true;
 			block[C_STOPALL] = false;
+			block[C_RESET] = false;
 			block[C_SPK] = false;
+			break;
+		case C_EXE_PAR:
 			break;
 		case C_WAVE:
 			parblock[C_DANCE] = true;
@@ -153,12 +273,14 @@ int Manager::blockfor(const int& code)
 			for (c = 0; c < NUM_CODES; ++c)
 				block[c] = true;
 			block[C_STOPALL] = false;
+			block[C_RESET] = false;
 			block[C_SPK] = false;
 			break;
 		case C_STOP:
 			for (c = 0; c < NUM_CODES; ++c)
 				block[c] = true;
 			block[C_STOPALL] = false;
+			block[C_RESET] = false;
 			block[C_WIPE] = false;
 			block[C_WAVE] = false;
 			block[C_ARM] = false;
@@ -180,6 +302,7 @@ int Manager::blockfor(const int& code)
 			block[C_HEAD] = false;
 			block[C_SPK] = false;
 			block[C_STOPALL] = false;
+			block[C_RESET] = false;
 			break;
 		case C_VID:
 			break;
@@ -199,6 +322,9 @@ int Manager::blockfor(const int& code)
 		case C_STATE:
 			break;
 		case C_RESET:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = true;
+			block[C_STOPALL] = false;
 			break;
 		default:
 			for (c = 0; c < NUM_CODES; ++c)
@@ -274,8 +400,10 @@ bool Manager::isblocked(Event* event)
 
 void Manager::initAbsTransition()
 {
-	event_params_t invalid = {CODE_INVALID, {0,0}, ""};
-	event_params_t valid = {CODE_VALID, {0,0}, ""};
+	int size = 0;
+	behave_t* curr;
+	event_params_t invalid = EP_DEFAULT(CODE_INVALID);
+	event_params_t valid = EP_DEFAULT(CODE_VALID);
 	for(int from = 0; from<NUM_ABS_STATES; ++from)
 		for(int to = 0; to<NUM_ABS_STATES; ++to)
 			absTransition[from][to] = invalid;
@@ -286,7 +414,7 @@ void Manager::initAbsTransition()
 	valid.type = INIT_REST;
 	absTransition[ABS_STANDING][ABS_CROUCHING] = valid;
 	valid.type = CODE_INVALID;
-	absTransition[ABS_STANDING][ABS_LIEING] = valid;
+	absTransition[ABS_STANDING][ABS_LIEING] = invalid;
 	valid.type = CODE_VALID;
 	absTransition[ABS_STANDING][ABS_WALKING] = valid;
 	//generic behaviours have no predefined state so its end state is ABS_UNKNOWN
@@ -301,7 +429,7 @@ void Manager::initAbsTransition()
 	absTransition[ABS_SITTING][ABS_SITTING] = invalid;
 	absTransition[ABS_SITTING][ABS_CROUCHING] = invalid;
 	valid.type = CODE_INVALID;
-	absTransition[ABS_SITTING][ABS_LIEING] = valid;
+	absTransition[ABS_SITTING][ABS_LIEING] = invalid;
 	absTransition[ABS_SITTING][ABS_WALKING] = invalid;
 	absTransition[ABS_SITTING][ABS_UNKNOWN] = invalid;	
 	
@@ -312,7 +440,7 @@ void Manager::initAbsTransition()
 	absTransition[ABS_CROUCHING][ABS_SITTING] = valid;
 	absTransition[ABS_CROUCHING][ABS_CROUCHING] = invalid;
 	valid.type = CODE_INVALID;
-	absTransition[ABS_CROUCHING][ABS_LIEING] = valid;
+	absTransition[ABS_CROUCHING][ABS_LIEING] = invalid;
 	valid.type = CODE_VALID;
 	absTransition[ABS_CROUCHING][ABS_WALKING] = valid;
 	absTransition[ABS_CROUCHING][ABS_UNKNOWN] = invalid;	
@@ -344,9 +472,26 @@ void Manager::initAbsTransition()
 	absTransition[ABS_UNKNOWN][ABS_SITTING] = valid;
 	absTransition[ABS_UNKNOWN][ABS_CROUCHING] = invalid;
 	valid.type = CODE_INVALID;
-	absTransition[ABS_UNKNOWN][ABS_LIEING] = valid;
+	absTransition[ABS_UNKNOWN][ABS_LIEING] = invalid;
 	absTransition[ABS_UNKNOWN][ABS_WALKING] = invalid;
 	absTransition[ABS_UNKNOWN][ABS_UNKNOWN] = invalid;	
+	
+	//adapt this state machine now with all generic transitions
+	
+	size = blist->getSize();
+	for (int nr = 0; nr < size; ++nr)
+	{
+		curr = blist->getwNr(nr);
+		if ((curr->fstate>=0) && (curr->lstate>=0) && 
+			(curr->fstate<NUM_ABS_STATES) && (curr->lstate<NUM_ABS_STATES))
+		{
+			if (absTransition[curr->fstate][curr->lstate].type == CODE_INVALID)
+			{
+				absTransition[curr->fstate][curr->lstate].type = CODE_EXE;
+				absTransition[curr->fstate][curr->lstate].sparam = curr->name;
+			}
+		}
+	}
 }
 
 void Manager::initGenAllowed()
@@ -464,18 +609,36 @@ int Manager::processConflicts(Event* event)
 				return 0;
 			break;
 		case CODE_EXE:
-			if (isblocked(C_EXE))
-				return -1;
-			if (retrieveTrans(stateAbs, ABS_UNKNOWN, 0) >= 0)
+		{
+			string& name = event->ep.sparam;
+			int fstate = blist->getfState(name);
+			int lstate = blist->getlState(name);
+			
+			if ((fstate >= 0) && (lstate >= 0))
 			{
-				blockfor(C_EXE);
-				inTransition = 1;
-				blockGen = 1;
+				if (isblocked(C_EXE))
+					return -1;
+				if (retrieveTrans(fstate, lstate, 0) >= 0)
+				{
+					blockfor(C_EXE);
+					inTransition = 1;
+					blockGen = 1;
+					return 1;
+				}
+				else 
+					return 0;
+				break;
+			}
+			else if ((fstate < 0) && (lstate < 0))
+			{
 				return 1;
 			}
 			else 
-				return 0;
+			{
+				return -3;
+			}
 			break;
+		}
 		case INIT_WIPE:
 			if(isblocked(C_WIPE))
 				return -2;
@@ -513,6 +676,7 @@ int Manager::processConflicts(Event* event)
 				return 0;
 			break;
 		case CODE_SPK:
+			return 1;
 			break;
 		case CODE_MOV:
 			if (isblocked(C_MOV))
@@ -576,12 +740,18 @@ int Manager::processConflicts(Event* event)
 		case CODE_STOPALL:
 			if(isblocked(C_STOPALL))
 				return -2;		
-			blockfor(C_STOP);
+			blockfor(C_STOPALL);
 			inTransition = 1;
 			blockGen = 1;
 			return 1;
 			break;
 		case RESET_CONNECTION:
+			if(isblocked(C_RESET))
+				return -2;		
+			blockfor(C_RESET);
+			inTransition = 1;
+			blockGen = 1;
+			return 1;
 			break;
 		case CODE_INVALID:
 		default:
@@ -610,7 +780,7 @@ int Manager::resolveConflict(Event* event, const int& from, const int& to)
 		q[head] = -1;
 		++head;
 		//Do not color the ABS_WALKING node if it is also the final state
-		if(!((step == 1) && (to == ABS_WALKING) && (from == to)))
+		if(!((step == 1) && (to == from)))
 			col[ffrom] = 1;
 		if(head == NUM_ABS_STATES)
 			head = 0;
@@ -618,6 +788,7 @@ int Manager::resolveConflict(Event* event, const int& from, const int& to)
 		{
 			if((col[tto] == 0) && (retrieveTrans(ffrom, tto, 0) == 0))
 			{
+				//only take paths which lead only in their final execution in ABS_UNKNOWN
 				if ((to != ABS_UNKNOWN) && (tto == ABS_UNKNOWN))
 				{
 					col[tto] = 2;
@@ -633,7 +804,7 @@ int Manager::resolveConflict(Event* event, const int& from, const int& to)
 				}
 			}
 		}
-		if(!((step == 1) && (to == ABS_WALKING) && (from == to)))
+		if(!((step == 1) && (to == from)))
 			col[ffrom] = 2;
 	}
 	
@@ -656,6 +827,8 @@ int Manager::resolveConflict(Event* event, const int& from, const int& to)
 int Manager::adaptEventList(const int& confresult, Event* event)
 {
 	int abs;
+	string& name = event->ep.sparam;
+	int lstate = blist->getlState(name);
 	if (confresult == -3)
 	{
 		if (event)
@@ -683,8 +856,14 @@ int Manager::adaptEventList(const int& confresult, Event* event)
 				abs = ABS_UNKNOWN;
 				break;
 			case CODE_EXE:
-				abs = ABS_UNKNOWN;
-				break;				
+			{
+				
+				if (lstate >= 0)
+					abs = lstate;
+				else 
+					abs = ABS_UNKNOWN;
+				break;	
+			}			
 			default:
 				return confresult;
 				break;
@@ -705,13 +884,14 @@ int Manager::adaptEventList(const int& confresult, Event* event)
 	return confresult;
 }
 
-void Manager::addCom(const int& type, const int& ip1, const int& ip2, const string& sp, const int& prio)
+void Manager::addCom(const int& type, const int& ip1, const int& ip2, const float& fp, const string& sp, const int& prio)
 {
-	event_params_t eventp = {CODE_UNKNOWN, {0,0}, ""};
+	event_params_t eventp = EP_DEFAULT(CODE_UNKNOWN);
 	
 	eventp.type = type;
 	eventp.iparams[0] = ip1;
 	eventp.iparams[1] = ip2;
+	eventp.fparam = fp;
 	eventp.sparam = sp;
 	
 	if (prio == 0)
@@ -744,7 +924,7 @@ void Manager::initIp4(const string& ip)
 void Manager::runExecuter()
 {
 	struct exec_arg* targ[MAX_THREADS] = {0,};
-	event_params_t ep = {CODE_VALID, {0,0}, ""};
+	event_params_t ep = EP_DEFAULT(CODE_VALID);
 	int taskID = 0;
 	Event* event = 0;
 	int tnum = 0;
@@ -800,7 +980,7 @@ void Manager::runExecuter()
 				try 
 				{
 					AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-					tts.say("Oh no, something went wrong!");
+					tts.say("Oh something went wrong!");
 				}		
 				catch(const AL::ALError& e)
 				{

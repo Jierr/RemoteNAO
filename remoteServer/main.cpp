@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string.h>
+#include <string>
 
 #include <fcntl.h> 
 #include <unistd.h>
@@ -34,7 +35,7 @@
 using namespace std;
 
 #undef REAL
-#define REAL
+//#define REAL
 #ifndef REAL
 	#define TEST
 #endif
@@ -71,7 +72,7 @@ int main(int argc, char* argv[])
 	int pport = MB_PORT;
 	string pip = MB_IP;
 	bool validCon = false;
-	bool enableCam = false;
+	bool enableCam = true;
 	
 	#ifdef TEST
 	cout<< "[MAIN] TEST-Build" << endl;
@@ -80,52 +81,71 @@ int main(int argc, char* argv[])
 	cout<< "[MAIN] REAL-Build" << endl;
 	#endif
 
-	if(argc > 2)
-	{
-		if(!string(argv[1]).compare("--pip"))
-		{
-			pip = argv[2];
-			if (argc > 4)
-			{
-				if(!string(argv[3]).compare("--pport"))
-				{
-					pport = atoi(argv[4]);
-				}
-			} 
-		}
-		else if (!string(argv[1]).compare("--pport"))
-		{
-			pport = atoi(argv[2]);
-			if (argc > 4)
-			{
-				if(!string(argv[3]).compare("--pip"))
-					pip = argv[4];
-			} 
-		}
-	}
-	else 
-	{
-		pport = MB_PORT;
-		pip = MB_IP;
-		enableCam = false;
-	}
+//	if(argc > 2)
+//	{
+//		if(!string(argv[1]).compare("--pip"))
+//		{
+//			pip = argv[2];
+//			if (argc > 4)
+//			{
+//				if(!string(argv[3]).compare("--pport"))
+//				{
+//					pport = atoi(argv[4]);
+//				}
+//			} 
+//		}
+//		else if (!string(argv[1]).compare("--pport"))
+//		{
+//			pport = atoi(argv[2]);
+//			if (argc > 4)
+//			{
+//				if(!string(argv[3]).compare("--pip"))
+//					pip = argv[4];
+//			} 
+//		}
+//	}
+//	else 
+//	{
+//		pport = MB_PORT;
+//		pip = MB_IP;
+//		enableCam = true;
+//	}
 	
+	enableCam = true;
 	if (argc > 1)
 	{
 		for (int a = 1; a<argc; ++a)
 		{
-			if (!string(argv[a]).compare("--cam"))
-				enableCam = true;
+			if (!string(argv[a]).compare("--nocam"))
+				enableCam = false;
+				
+			if (!string(argv[a]).compare("--pip"))
+			{
+				if (a+1 < argc)
+					pip = argv[a+1];
+			}	
+			
+			if (!string(argv[a]).compare("--pport"))
+			{
+				if (a+1 < argc)
+					pport = atoi(argv[a+1]);
+			}
+			
 			if (!string(argv[a]).compare("--help") || !string(argv[a]).compare("-h") || 
 			    !string(argv[a]).compare("--h") || !string(argv[a]).compare("-?"))
 			{
-				cout<< "Usage: remoteServer [--pip <ip>] [--pport <port>] [--cam] [--help]" << endl
-					<< "	pip: Ip of the Parent Broker (default naoqi: 127.0.0.1)" << endl
-					<< "	pport: Port of the Parent Broker (default naoqi: 9559)" << endl
-					<< "	cam: Activates Camera module for video streaming" <<  endl;
+				cout<< "Usage: remoteServer [--pip <ip>] [--pport <port>] [--nocam] [--help]" << endl
+					<< "	>pip: Ip of the Parent Broker (default naoqi: 127.0.0.1)" << endl
+					<< "	>pport: Port of the Parent Broker (default naoqi: 9559)" << endl
+					<< "	>nocam: Deactivates Camera module for video streaming" <<  endl;
+				return 0;
 			}
 		}
 	}	
+	
+	cout<< "Zahl Argumente " << argc << endl
+		<< "pip = " << pip << endl
+		<< "pport = " << pport << endl;
 	
 	
 	int pipefd[2] = {-1,};
@@ -202,20 +222,22 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 	if (pipefd[0] >= 0)
 		close(pipefd[0]);
 	
-	char hallo[] = "Hallo Welt!";
 
 	//for SOAP serializations of floats
 	//The call to setlocale is very important. Due to SOAP issues, you must make
 	//sure your client and your server are using the same LC_NUMERIC settings
 	setlocale(LC_NUMERIC, "C");	
 	
-	const string brokerName = "AppToNAO_BROKER";
+	const string brokerName = "NET_BROKER";
 	//assign open port via port 0 from os
 	//will be the port of the newly created broker
-	int brokerPort = 50000;
+	int brokerPort = 0;
 	//ANYIP
-	const string brokerIp = "0.0.0.0";
+	string brokerIp = "0.0.0.0";
 	boost::shared_ptr<AL::ALBroker> broker;
+	
+	
+	qi::os::sleep(2);
 	try
 	{
 		broker = AL::ALBroker::createBroker(
@@ -232,9 +254,12 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 		AL::ALBrokerManager::kill();
 	}
 	
+	cout<< "[MAIN] Broker Port >" << broker->getPort() << endl
+		<< "[MAIN] Broker Ip >" << broker->getIP() << endl;
 	
+	brokerIp = broker->getIP();
+	brokerPort = broker->getPort();
 	
-	qi::os::sleep(2);
 	//kills old BrokerManager Singleton and replaces it with a new one
 	//fBrokerManager is weak pointer and converted to shared ptr via lock
 	//lock additionally checks if there is one reference existing to AlBM
@@ -243,13 +268,11 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 	AL::ALBrokerManager::getInstance()->addBroker(broker);
 	
 
-	cout<< "[CONTROL] Control-Server gestartet..." << endl
-		<< "[CONTROL] Schreiber = " << pipeWrite << endl;
+	cout<< "[MAIN] Control-Server gestartet..." << endl
+		<< "[MAIN] Schreiber = " << pipeWrite << endl;
 
-	cout<< "connect to Broker naoqi" << endl;
 	static boost::shared_ptr<NetNao> net = 
 		AL::ALModule::createModule<NetNao>(broker, "RMNetNao");	
-	cout<< "connected" << endl;
 	
 	//NetNao* net = new NetNao(broker, "NetNao");
 	string port = RM_PORT;
@@ -265,12 +288,13 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 	
 	// connect to local module RMManager
 	
-	cout << "Establish Proxy to RMManager"<< endl;
+	cout << "[MAIN] Establish Proxy to RMManager"<< endl;
 	AL::ALProxy proxyManager = AL::ALProxy(broker, string("RMManager")/*, pip, MB_PORT*/);
-	cout << "Proxy to RMManager established" << endl;
+	cout << "[MAIN] Proxy to RMManager established" << endl;
 				
 	taskID = proxyManager.pCall(string("runExecuter")); //callVoid("runExecuter");
-	cout<<"ID of Thread[runExecuter] = " << taskID << endl;
+	cout<<"[MAIN] ID of Thread[runExecuter] = " << taskID << endl;
+	proxyManager.callVoid<string, int>("setCB", brokerIp, brokerPort);
 	
 	
 	targ.id = 0;
@@ -278,24 +302,24 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 	targ.bat_count = boost::shared_ptr<int>(&bat_count);
 	targ.net = net;
 	
-	//pthread_create(&targ.id, 0, &Decoder::timer, &targ);	
-	//pthread_detach(targ.id);
+	pthread_create(&targ.id, 0, &Decoder::timer, &targ);	
+	pthread_detach(targ.id);
 
 
 	boost::shared_ptr<char*> buffer(new char*(buf));	
 	sserver = net->bindTcp(port);
-	cout<< "[MAIN]Server bound to port 32768" << endl;
+	cout<< "[MAIN] Server bound to port 32768" << endl;
 	while(1)
 	{
 		net->singleListen(sserver);
-		cout<< "[MAIN]Connection Request detected (listen ended)" << endl;
+		cout<< "[MAIN] Connection Request detected (listen ended)" << endl;
 		sclient = net->acceptClient(sserver);
 		proxyManager.callVoid<string>("initIp4", net->ip4);
-		cout << "[MAIN]Connected from " << net->ip4 << endl;
+		cout << "[MAIN] Connected from " << net->ip4 << endl;
 		dec.setIp4(net->ip4);
 		dec.setPipe(pipeWrite);
 		dec.setManager(&proxyManager);
-		cout<< "[MAIN]Client connected" << endl;
+		cout<< "[MAIN] Client connected" << endl;
 		
 		try 
 		{
@@ -304,26 +328,30 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 		}		
 		catch(const AL::ALError& e)
 		{
-			cerr<< "EXCEPTION: " << e.what() << endl;
+			cerr<< "[MAIN] EXCEPTION: " << e.what() << endl;
 		}
 		buf[0] = 0;
-		cout<< "receive...\r\n";
+		cout<< "[MAIN] receive...\r\n";
 		bytesRead = 0;
 		do
 		{
 			recvd = net->recvData(sclient, buffer, 1, 0);
-			cout<< "[MAIN] Data received" << endl;
+//			cout<< "[MAIN] Data received" << endl;
 			if ((recvd == SOCK_CLOSED) || (recvd == SOCK_LOST))
 			{
-				char dis[] = "DIS";
-				for (int i = 0; i<3; ++i)
-					dec.decode(dis[i], &ep);
+				string com = "DIS";
+				for (int i = 0; i<com.length(); ++i)
+					dec.decode(com[i], &ep);
 				mresult = dec.manage(&ep, net, bat_count);	
+//				com = "VID_D";
+//				for (int i = 0; i<com.length(); ++i)
+//					dec.decode(com[i], &ep);
+//				mresult = dec.manage(&ep, net, bat_count);	
 			}
 			else
 			{
 				int i = 0;
-				cout<< "receive done: [BUFFER] = " << string(buf) << endl;
+				cout<< "[MAIN] received >" << string(buf) << endl;
 				do 
 				{
 					dresult = dec.decode(buf[i], &ep);
@@ -347,7 +375,7 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 			}
 			catch(const AL::ALError& e)
 			{
-				cerr<< "EXCEPTION: " << e.what() << endl;
+				cerr<< "[MAIN] EXCEPTION: " << e.what() << endl;
 			}	
 			net->disconnect(sclient);
 			mresult = CONN_DISCONNECT;
@@ -361,7 +389,7 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 			}
 			catch(const AL::ALError& e)
 			{
-				cerr<< "EXCEPTION: " << e.what() << endl;
+				cerr<< "[MAIN] EXCEPTION: " << e.what() << endl;
 			}				
 		}
 	}
@@ -398,10 +426,11 @@ int procCam(const string& pip, const int& pport, int* pipefd)
 	const string brokerName = "CAM_BROKER";
 	//assign open port via port 0 from os
 	//will be the port of the newly created broker
-	int brokerPort = 50001;
+	int brokerPort = 0;
 	//ANYIP
 	const string brokerIp = "0.0.0.0";
 	boost::shared_ptr<AL::ALBroker> broker;
+	qi::os::sleep(4);
 	try
 	{
 		broker = AL::ALBroker::createBroker(
@@ -419,8 +448,7 @@ int procCam(const string& pip, const int& pport, int* pipefd)
 	}
 	
 	
-	
-	qi::os::sleep(2);
+
 	//kills old BrokerManager Singleton and replaces it with a new one
 	//fBrokerManager is weak pointer and converted to shared ptr via lock
 	//lock additionally checks if there is one reference existing to AlBM
@@ -474,13 +502,13 @@ int procCam(const string& pip, const int& pport, int* pipefd)
 	// You can get the pointer to the image data and its size
 	const unsigned char* bmp =  (unsigned char*)(image[6].GetBinary()); //<--------
 	int size = image[6].getSize();
-	
-	cout<< "Bildweite: " << width << endl
-		<< "Bildhöhe: " << height << endl
-		<< "Anzahl Layer: " << nbLayers << endl
-		<< "Farbraum: " << color << endl
-		<< "Timestamp in microseconds: " << timeStamp << endl
-		<< "Datengröße: " << size << endl;
+
+//	cout<< "Bildweite: " << width << endl
+//		<< "Bildhöhe: " << height << endl
+//		<< "Anzahl Layer: " << nbLayers << endl
+//		<< "Farbraum: " << color << endl
+//		<< "Timestamp in microseconds: " << timeStamp << endl
+//		<< "Datengröße: " << size << endl;
 #endif
 	//================ VIDEO DEVICE INITIALIZATION ======================================	
 		
@@ -509,11 +537,13 @@ int procCam(const string& pip, const int& pport, int* pipefd)
     while (!end) 
     {	
 		   res =  read(pipeRead, &buf[f], 1);
-		   if (res >= 0)	
+		   if (res > 0)	
 		   		cout << "[CAM] " << buf[f] << endl;
 		   else 
+		   {
+		   		end = true;
 		   		stop = true;
-	   			   
+		   }   			   
 			if (state == STG_FETCH)
 			{
 				switch(buf[f])
@@ -562,7 +592,7 @@ int procCam(const string& pip, const int& pport, int* pipefd)
 						{
 							vPort = true;
 							appPort = atoi((char*)buf);
-							cout<< "Port für neue Bildübertragung = " << appPort << endl;
+							cout<< "[CAM] Port für neue Bildübertragung = " << appPort << endl;
 						}
 						else 
 						{
@@ -584,7 +614,7 @@ int procCam(const string& pip, const int& pport, int* pipefd)
 						{
 							vIp = true;
 							appIp = (char*)buf;
-							cout<< "IP für neue Bildübertragung = " << appIp << endl;
+							cout<< "[CAM] IP für neue Bildübertragung = " << appIp << endl;
 						}
 						else
 						{
@@ -613,7 +643,7 @@ int procCam(const string& pip, const int& pport, int* pipefd)
 		   }
 		   
 		   if (restart && vIp && vPort)
-		   {	
+		   {
 		   		cout<< "[CAM] CAM ABOUT TO RESTART" << endl;
 		   		targ.tnum = 0;
 				cout<< "[CAM] tnum: " << targ.tnum <<endl;		   		
@@ -725,7 +755,7 @@ int udp_bind_host(const char* port)
 
 void* tcamSend(void* args)
 {
-	cout<< "Neuer Cam Thread gestartet..." << endl;
+	cout<< ">Neuer Cam Thread gestartet..." << endl;
 	struct thread_arg* aarg = (struct thread_arg*)args;
 	
 	struct sockaddr_in server;
@@ -815,8 +845,9 @@ void* tcamSend(void* args)
 	
 		fflush(jmem);
 		len = ftell(jmem);
-		printf("Size of the jpeg file is %d bytes\n", len);	
-	
+#ifdef TEST
+		printf(">Size of the jpeg file is %d bytes\n", len);	
+#endif
 	
 		//================ SEND JPEG ======================================
 	

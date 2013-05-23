@@ -73,7 +73,8 @@ enum codes{
 	C_STATE,
 	C_RESET,
 	C_GEN,
-	C_EXE
+	C_EXE,
+	C_EXE_PAR
 };
 
 /*============ Comand Specfier TOKENs ============*/
@@ -169,6 +170,18 @@ enum{
 	ORD_ABS,
 	ORD_STRICT
 };
+
+/*
+Dataname prefix for behaviours to indicate start and Endstate
+seperated via .
+
+standing
+sitting
+unknown
+walking
+none
+
+*/
 
 //with all automated collision avoiding this angle will be reduced
 //to approx 23° per 2 steps

@@ -16,8 +16,11 @@ using namespace std;
 typedef struct{
 	int type; ///< Comand Specifier TOKEN --> gen.h
 	int iparams[IPARAM_LEN]; ///< holds integer parameters
+	float fparam;
 	string sparam; ///< holds string parameter
 } event_params_t;
+
+#define EP_DEFAULT(code) {code, {0,0}, 0.0f, ""};
 
 
 class EventList;

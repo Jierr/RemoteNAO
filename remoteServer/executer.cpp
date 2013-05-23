@@ -16,7 +16,6 @@
 #include <pthread.h>
 #include <time.h>
 
-
 #include "executer.h"
 #include "gen.h"
 
@@ -28,6 +27,7 @@ Executer::Executer(boost::shared_ptr<AL::ALBroker> broker, const string& name)
 : 	AL::ALModule(broker, name),
 	mutex(AL::ALMutex::createALMutex()),
 	sync(AL::ALMutex::createALMutex())
+	
 {
 	setModuleDescription("This Module manages the Data comming from the Network remotemodule");
 
@@ -91,15 +91,25 @@ void Executer::init()
 	self = this;
 	cbinc = false;
 	cbcall = false;
+	
+	cbip = "127.0.0.1";
+	cbport = 0;
+	//blist = boost::shared_ptr<Behavelist>(new Behavelist);
 	mem = AL::ALMemoryProxy(getParentBroker());
 	mpose = (string&)mem.getData("robotPoseChanged");
 	mem.subscribeToEvent("robotPoseChanged", "RMExecuter", "cbPoseChanged");
 	
 }
 
+
 void Executer::initEventList(boost::shared_ptr<EventList> eL)
 {
 	eventList = eL;
+}
+
+void Executer::initBehavelist(boost::shared_ptr<Behavelist> bL)
+{
+	blist = bL;
 }
 
 void Executer::setStateMan(int* abs, int* itrans, int* gblock, bool* b, bool* pb)
@@ -135,6 +145,8 @@ int Executer::unblockfor(const int& code)
 		case C_EXE:
 			for (c = 0; c < NUM_CODES; ++c)
 				block[c] = false;
+			break;
+		case C_EXE_PAR:
 			break;
 		case C_WAVE:
 			parblock[C_DANCE] = false;
@@ -195,6 +207,8 @@ int Executer::unblockfor(const int& code)
 		case C_STATE:
 			break;
 		case C_RESET:
+			for (c = 0; c < NUM_CODES; ++c)
+				block[c] = false;
 			break;		
 		default:
 			for (c = 0; c < NUM_CODES; ++c)
@@ -436,6 +450,8 @@ void Executer::mark_thread_done(struct exec_arg* aargs)
 void* Executer::execute(void* args)
 {
 	struct exec_arg* aargs = (struct exec_arg*)args;
+	static bool stopped = false;
+	static int running = 0;
 	int oldstate;
 	int oldtype;
 	
@@ -452,96 +468,134 @@ void* Executer::execute(void* args)
 		<< "Event.type: " << aargs->event->ep.type << endl
 		<< "Event.ip1: " << aargs->event->ep.iparams[0] << endl
 		<< "Event.ip2: " << aargs->event->ep.iparams[1] << endl
+		<< "Event.fp: " << aargs->event->ep.fparam << endl
 		<< "Event.string: " << aargs->event->ep.sparam << endl;
+		
+		
+	//cout<< "[Executer] Liste aller Events" << endl << self->blist->list() << endl;
 	
 	switch(aargs->event->ep.type)
 	{
 		case INIT_WALK:
+			++running;
 			self->initWalk();
 			aargs->mutex->lock();
-			if (!self->cbinc)
+			if (!self->cbinc && !stopped)
 				*self->stateAbs = ABS_STANDING;
+			stopped = false;
 			self->unblockfor(C_WALK);
 			*self->inTransition = 0;
+			--running;
 			aargs->mutex->unlock();
 			break;
 		case INIT_REST:
+			++running;
 			self->initSecure();
 			aargs->mutex->lock();
-			if (!self->cbinc)
+			if (!self->cbinc && !stopped)
+			{
 				*self->stateAbs = ABS_CROUCHING;
+			}
+			stopped = false;
 			self->unblockfor(C_REST);
 			*self->inTransition = 0;
+			--running;
 			aargs->mutex->unlock();
 			break;
 		case INIT_SIT:
+			++running;
 			self->behave_sit();
 			aargs->mutex->lock();
-			*self->stateAbs = ABS_SITTING;
-			self->cbinc = false;
+			if (!stopped)
+			{
+				*self->stateAbs = ABS_SITTING;
+				self->cbinc = false;
+			}
+			stopped = false;
 			self->unblockfor(C_SIT);
 			*self->inTransition = 0;
+			--running;
 			aargs->mutex->unlock();
 			break;
 		case INIT_UP:
+			++running;
 			self->behave_stand();
 			aargs->mutex->lock();
-			*self->stateAbs = ABS_STANDING;
-			self->cbinc = false;
+			if (!stopped)
+			{
+				*self->stateAbs = ABS_STANDING;
+				self->cbinc = false;
+			}
+			stopped = false;
 			self->unblockfor(C_UP);
 			*self->inTransition = 0;
+			--running;
 			aargs->mutex->unlock();
 			break;
 		case INIT_WAVE:
 			self->behave_hello();
 			aargs->mutex->lock();
+			if (running == 0)
+				stopped = false;
 			self->unblockfor(C_WAVE);
-			*self->inTransition = 0;
 			aargs->mutex->unlock();
 			break;
 		case INIT_DANCE:
+			++running;
 			self->behave_dance();
 			aargs->mutex->lock();
-			if (!self->cbinc)
+			if (!self->cbinc && !stopped)
 				*self->stateAbs = ABS_STANDING;
+			stopped = false;
 			self->unblockfor(C_DANCE);
 			*self->inTransition = 0;
+			--running;
 			aargs->mutex->unlock();
 			break;
 		case INIT_WIPE:
 			self->behave_wipe();
 			aargs->mutex->lock();
+			if (running == 0)
+				stopped = false;
 			self->unblockfor(C_WIPE);
 			aargs->mutex->unlock();
 			break;
-		case CODE_MOV:		
+		case CODE_MOV:
+			++running;		
 			cout<< "[Executer]<execute>: MOV" << endl;
 			aargs->mutex->lock();
 			if (!aargs->eventList->reduceLastWalking())
 			{
 				if (!self->cbinc)
 				{
-					*self->stateAbs = ABS_WALKING;
+					if (!stopped)
+						*self->stateAbs = ABS_WALKING;
 					aargs->mutex->unlock();
 					self->walk(*aargs->event);
 					aargs->mutex->lock();
-					if ((!self->cbinc) && (*self->stateAbs == ABS_WALKING))
+					if ((!self->cbinc) && (*self->stateAbs == ABS_WALKING) && !stopped)
 						*self->stateAbs = ABS_STANDING;
+					stopped = false;
 					self->unblockfor(C_MOV);
 					*self->inTransition = 0;
+					--running;
 					aargs->mutex->unlock();
 				}
 				else
 				{
+					stopped = false;
 					self->unblockfor(C_MOV);
 					*self->inTransition = 0;
+					--running;
 					aargs->mutex->unlock();					
 				}
 			}
 			else
 			{
+				stopped = false;
 				self->unblockfor(C_MOV);
 				*self->inTransition = 0;
+				--running;
 				aargs->mutex->unlock();					
 			}
 					
@@ -557,6 +611,7 @@ void* Executer::execute(void* args)
 			aargs->mutex->unlock();
 			break;
 		case CODE_STOPALL:
+			//TODO State will be wrong After STPAUFMOV_F, when AUF is done
 			aargs->mutex->lock();
 			aargs->eventList->removePending();
 			if (*self->stateAbs == ABS_WALKING)
@@ -566,6 +621,8 @@ void* Executer::execute(void* args)
 			}
 			self->killBehaviors();
 			self->unblockfor(C_STOPALL);
+			if (running > 0)
+				stopped = true;
 			*self->inTransition = 0;
 			aargs->mutex->unlock();
 			break;
@@ -578,25 +635,70 @@ void* Executer::execute(void* args)
 		case CODE_ARM:
 			self->moveArm(*aargs->event);
 			aargs->mutex->lock();
+			if (running == 0)
+				stopped = false;
 			self->unblockfor(C_ARM);
 			aargs->mutex->unlock();
 			break;
 		case CODE_HEAD:
 			self->moveHead(*aargs->event);
 			aargs->mutex->lock();
+			if (running == 0)
+				stopped = false;
 			self->unblockfor(C_HEAD);
 			aargs->mutex->unlock();
 			break;
 		case CODE_EXE:
-			self->behave_gen(aargs->event->ep.sparam);
+		{
+			string name;
+			int fstate = 0;
+			int lstate = 0;
+			behave_t* behave;
 			aargs->mutex->lock();
-			*self->stateAbs = ABS_UNKNOWN;
-			self->unblockfor(C_EXE);
-			*self->inTransition = 0;
-			aargs->mutex->unlock();
+			name = aargs->event->ep.sparam;
+			behave = self->blist->getBehave(name);
+			if (!behave)
+			{
+				aargs->mutex->unlock();				
+				break;
+			}
+			else
+			{
+				fstate = behave->fstate;
+				lstate = behave->lstate;
+				if ((fstate >= 0) && (lstate >= 0))
+				{
+					++running;
+					aargs->mutex->unlock();			
+					
+					self->behave_gen(name);
+					aargs->mutex->lock();
+					
+					if (!self->cbinc && !stopped)
+						*self->stateAbs = lstate;
+					self->unblockfor(C_EXE);
+					*self->inTransition = 0;
+					--running;
+					aargs->mutex->unlock();
+					break;
+				}
+				else if ((fstate < 0) && (lstate < 0))
+				{
+					
+					self->behave_gen(name);
+					aargs->mutex->lock();
+					if (running == 0)
+						stopped = false;
+					aargs->mutex->unlock();
+				}	
+				
+			}			
+		
 			break;
+		}
 		case RESET_CONNECTION:
 		
+			++running;
 			aargs->mutex->lock();
 			aargs->eventList->removePending();
 			if (*self->stateAbs == ABS_WALKING)
@@ -606,12 +708,29 @@ void* Executer::execute(void* args)
 			}
 			self->killBehaviors();
 			aargs->mutex->unlock();
-			self->behave_stand();
-			*self->stateAbs = ABS_STANDING;
-			self->initSecure();
+			if (!stopped && (*self->stateAbs != ABS_CROUCHING) && (*self->stateAbs != ABS_STANDING))
+			{
+				self->behave_stand();
+				
+				aargs->mutex->lock();
+				if (!stopped)
+				{
+					*self->stateAbs = ABS_STANDING;
+					self->cbinc = false;
+				}
+				aargs->mutex->unlock();
+			}
+			
+			if (!stopped && (*self->stateAbs == ABS_STANDING))
+				self->initSecure();
 			aargs->mutex->lock();
+			stopped = false;
 			*self->inTransition = 0;
-			*self->stateAbs = ABS_CROUCHING;
+			if (!self->cbinc && !stopped)
+				*self->stateAbs = ABS_CROUCHING;
+			
+			--running;
+			self->unblockfor(C_RESET);
 			aargs->mutex->unlock();
 			break;
 			
@@ -877,6 +996,7 @@ void Executer::killBehaviors()
 	{
 		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
 		pbehav.stopAllBehaviors();
+		qi::os::sleep(1);
 	}
 	catch(const AL::ALError& e)
 	{
@@ -892,11 +1012,27 @@ void Executer::killRemainingTasks()
 
 void Executer::behave_gen(const string& com)
 {
+	int size = 0;
+	int b = 0;
+	int dots = 0;
+	int dlast = 0;
+	bool found = false;
+	string curr = "";
 	try
 	{
 		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
-		pbehav.preloadBehavior(com);
-		pbehav.runBehavior(com);
+		behave_t* bgen = 0;
+		bgen = blist->getBehave(com);
+		
+		if (bgen)
+		{
+			curr = bgen->full;
+			cout<< "[Executer] Execute generic Behaviour >" << curr << endl;
+ 			pbehav.preloadBehavior(curr);
+			pbehav.runBehavior(curr);
+		}
+		
+		
 		//tts.say("Behaviour done");
 	}
 	catch(const AL::ALError& e)
@@ -1038,6 +1174,8 @@ void Executer::walk(const Event& event)
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 		AL::ALMotionProxy motion(MB_IP, MB_PORT);
 		int mode = event.ep.iparams[0];
+		float meter = event.ep.fparam;
+		float angle = meter;
 		std::vector<float> stiffnesses = motion.getStiffnesses("Body");
 		if ((stiffnesses.capacity() > 0) && (stiffnesses[0] < 0.9))
        		motion.stiffnessInterpolation("Body", 1.0, 1.0);
@@ -1074,7 +1212,7 @@ void Executer::walk(const Event& event)
 				//last argument determines if existing footsteps planned should 
 				//be cleared
 				motion.setFootStepsWithSpeed(legs, footsteps, speed, true); */
-				motion.walkTo(10,0,0);
+				motion.walkTo(meter,0.0,0.0);
 				
 				break;
 			}
@@ -1103,7 +1241,7 @@ void Executer::walk(const Event& event)
 				//last argument determines if existing footsteps planned should 
 				//be cleared
 				motion.setFootStepsWithSpeed(legs, footsteps, speed, true); */
-				motion.walkTo(-10,0,0);
+				motion.walkTo(-meter,0.0,0.0);
 				break;
 			}
 			case MOV_LEFT:		
@@ -1129,7 +1267,7 @@ void Executer::walk(const Event& event)
 				//last argument determines if existing footsteps planned should 
 				//be cleared
 				motion.setFootStepsWithSpeed(legs, footsteps, speed, true); */
-				motion.walkTo(0,0,TURN_ANGLE * RAD);
+				motion.walkTo(0,0,angle * RAD);
 				
 				break;
 			}
@@ -1157,7 +1295,7 @@ void Executer::walk(const Event& event)
 				//be cleared
 				motion.setFootStepsWithSpeed(legs, footsteps, speed, true); */
 				
-				motion.walkTo(0,0,-TURN_ANGLE * RAD);
+				motion.walkTo(0,0,-angle * RAD);
 				break;
 			}
 			case MOV_STOP:
@@ -1204,6 +1342,7 @@ void Executer::walk(const Event& event)
 void Executer::moveHead(const Event& event)
 {
 	int mode = event.ep.iparams[0];
+	float angle = event.ep.fparam;
 	AL::ALValue jointNames;		
 	AL::ALValue stiffList;		
 	AL::ALValue stiffTime;
@@ -1222,7 +1361,8 @@ void Executer::moveHead(const Event& event)
 				stiffList.arrayPush(1.0);
 				stiffTime.arrayPush(1.0);	
 				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
-				angleList.arrayPush(HEAD_PITCH);
+				//angleList.arrayPush(HEAD_PITCH);
+				angleList.arrayPush(angle* RAD);
 				angleTime.arrayPush(0.5);			
     			motion.angleInterpolation(jointNames, angleList, angleTime, false);
     			stiffList[0] = 0.0;
@@ -1234,7 +1374,7 @@ void Executer::moveHead(const Event& event)
 				stiffList.arrayPush(1.0);
 				stiffTime.arrayPush(1.0);	
 				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
-				angleList.arrayPush(-HEAD_PITCH);
+				angleList.arrayPush(-angle* RAD);
 				angleTime.arrayPush(0.5);			
     			motion.angleInterpolation(jointNames, angleList, angleTime, false);
     			stiffList[0] = 0.0;
@@ -1246,7 +1386,8 @@ void Executer::moveHead(const Event& event)
 				stiffList.arrayPush(1.0);
 				stiffTime.arrayPush(1.0);	
 				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
-				angleList.arrayPush(HEAD_YAW);
+				//angleList.arrayPush(HEAD_YAW);
+				angleList.arrayPush(angle* RAD);
 				angleTime.arrayPush(0.5);			
     			motion.angleInterpolation(jointNames, angleList, angleTime, false);
     			stiffList[0] = 0.0;
@@ -1258,7 +1399,7 @@ void Executer::moveHead(const Event& event)
 				stiffList.arrayPush(1.0);
 				stiffTime.arrayPush(1.0);	
 				motion.stiffnessInterpolation(jointNames, stiffList, stiffTime);
-				angleList.arrayPush(-HEAD_YAW);
+				angleList.arrayPush(-angle* RAD);
 				angleTime.arrayPush(0.5);			
     			motion.angleInterpolation(jointNames, angleList, angleTime, false);
     			stiffList[0] = 0.0;
@@ -1281,6 +1422,7 @@ void Executer::moveArm(const Event& event)
     AL::ALValue angleTime;
 	int arm = event.ep.iparams[0];  
 	int mode = event.ep.iparams[1]; 
+	float angle = event.ep.fparam;
 	jointNames.arrayPush("Body");
 	stiffList.arrayPush(0.6);
 	stiffTime.arrayPush(1.0);	
@@ -1298,15 +1440,16 @@ void Executer::moveArm(const Event& event)
 					cout<< ">>>ARM FORWARD<<<" << endl;
 					jointNames.clear(); 
 					jointNames.arrayPush("LShoulderPitch");      
-					angleList.arrayPush(-ARM_SHOULDER_PITCH*RAD);
+//					angleList.arrayPush(-ARM_SHOULDER_PITCH*RAD);
+					angleList.arrayPush(-angle*RAD);
 					angleTime.arrayPush(0.5);			
 					motion.angleInterpolation(jointNames, angleList, angleTime, false);
 					break;
 				case MOV_BACKWARD:
 					cout<< ">>>ARM BACKWARD<<<" << endl;
 					jointNames.clear(); 
-					jointNames.arrayPush("LShoulderPitch");      
-					angleList.arrayPush(ARM_SHOULDER_PITCH*RAD);
+					jointNames.arrayPush("LShoulderPitch");     
+					angleList.arrayPush(angle*RAD);
 					angleTime.arrayPush(0.5);			
 					motion.angleInterpolation(jointNames, angleList, angleTime, false);
 					break;
@@ -1314,7 +1457,8 @@ void Executer::moveArm(const Event& event)
 					cout<< ">>>ARM LEFT<<<" << endl;
 					jointNames.clear(); 
 					jointNames.arrayPush("LShoulderRoll");      
-					angleList.arrayPush(ARM_SHOULDER_ROLL*RAD);
+					//angleList.arrayPush(ARM_SHOULDER_ROLL*RAD);
+					angleList.arrayPush(angle*RAD);
 					angleTime.arrayPush(0.5);			
 					motion.angleInterpolation(jointNames, angleList, angleTime, false);
 					break;
@@ -1322,7 +1466,8 @@ void Executer::moveArm(const Event& event)
 					cout<< ">>>ARM RIGHT<<<" << endl;
 					jointNames.clear(); 
 					jointNames.arrayPush("LShoulderRoll");      
-					angleList.arrayPush(-ARM_SHOULDER_ROLL*RAD);
+//					angleList.arrayPush(-ARM_SHOULDER_ROLL*RAD);
+					angleList.arrayPush(-angle*RAD);
 					angleTime.arrayPush(0.5);			
 					motion.angleInterpolation(jointNames, angleList, angleTime, false);
 					break;
@@ -1346,7 +1491,8 @@ void Executer::moveArm(const Event& event)
 					cout<< ">>>ARM FORWARD<<<" << endl;
 					jointNames.clear(); 
 					jointNames.arrayPush("RShoulderPitch");      
-					angleList.arrayPush(-ARM_SHOULDER_PITCH*RAD);
+//					angleList.arrayPush(-ARM_SHOULDER_PITCH*RAD);
+					angleList.arrayPush(-angle*RAD);
 					angleTime.arrayPush(0.5);			
 					motion.angleInterpolation(jointNames, angleList, angleTime, false);
 					break;
@@ -1354,7 +1500,8 @@ void Executer::moveArm(const Event& event)
 					cout<< ">>>ARM BACKWARD<<<" << endl;
 					jointNames.clear(); 
 					jointNames.arrayPush("RShoulderPitch");      
-					angleList.arrayPush(ARM_SHOULDER_PITCH*RAD);
+//					angleList.arrayPush(ARM_SHOULDER_PITCH*RAD);
+					angleList.arrayPush(angle*RAD);
 					angleTime.arrayPush(0.5);			
 					motion.angleInterpolation(jointNames, angleList, angleTime, false);
 					break;
@@ -1362,7 +1509,8 @@ void Executer::moveArm(const Event& event)
 					cout<< ">>>ARM LEFT<<<" << endl;
 					jointNames.clear(); 
 					jointNames.arrayPush("RShoulderRoll");      
-					angleList.arrayPush(ARM_SHOULDER_ROLL*RAD);
+//					angleList.arrayPush(ARM_SHOULDER_ROLL*RAD);
+					angleList.arrayPush(angle*RAD);
 					angleTime.arrayPush(0.5);			
 					motion.angleInterpolation(jointNames, angleList, angleTime, false);
 					break;
@@ -1370,7 +1518,8 @@ void Executer::moveArm(const Event& event)
 					cout<< ">>>ARM RIGHT<<<" << endl;
 					jointNames.clear(); 
 					jointNames.arrayPush("RShoulderRoll");      
-					angleList.arrayPush(-ARM_SHOULDER_ROLL*RAD);
+//					angleList.arrayPush(-ARM_SHOULDER_ROLL*RAD);
+					angleList.arrayPush(-angle*RAD);
 					angleTime.arrayPush(0.5);			
 					motion.angleInterpolation(jointNames, angleList, angleTime, false);
 					break;
@@ -1417,7 +1566,7 @@ void Executer::sendBatteryStatus()
 	
 		value=(int)((float&)mem.getData("Device/SubDeviceList/Battery/Charge/Sensor/Value") * 100);
 			
-		AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), CB_IP, CB_PORT);
+		AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), cbip, cbport);
 		sclient = pNetNao.call<int>("getClient_tcp"); 
 		
 		buf = buf + (char)(value);
@@ -1444,7 +1593,7 @@ void Executer::sendState()
 	string buf;
 	try
 	{		
-		AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), CB_IP, CB_PORT);
+		AL::ALProxy pNetNao = AL::ALProxy(string("RMNetNao"), cbip, cbport);
 		sclient = pNetNao.call<int>("getClient_tcp"); 
 		
 		switch (*stateAbs)
