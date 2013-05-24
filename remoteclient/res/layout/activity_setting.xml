@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/settingView" >
+    android:layout_height="match_parent" >
 
 <LinearLayout
     android:id="@+id/set_linearLayout_out"
@@ -73,8 +72,10 @@
 	     android:layout_width="match_parent"
 	     android:layout_height="wrap_content"
 	     android:max="255"
-	     android:layout_marginLeft="50dp"
-	     android:layout_marginRight="50dp"
+	     android:layout_marginLeft="43dp"
+	     android:layout_marginRight="42dp"
+	     android:paddingLeft="7dp"
+	     android:paddingRight="8dp"
 	     android:paddingBottom="12dp" />
 
 	 <TextView
@@ -116,8 +117,10 @@
 	     android:layout_width="match_parent"
 	     android:layout_height="wrap_content"
 	     android:max="100"
-	     android:layout_marginLeft="50dp"
-	     android:layout_marginRight="50dp"
+	     android:layout_marginLeft="43dp"
+	     android:layout_marginRight="42dp"
+	     android:paddingLeft="7dp"
+	     android:paddingRight="8dp"
 	     android:paddingBottom="12dp"/>
  <!-- ========================================== -->
   <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
@@ -150,8 +153,10 @@
 	     android:layout_width="match_parent"
 	     android:layout_height="wrap_content"
 	     android:max="100"
-	     android:layout_marginLeft="50dp"
-	     android:layout_marginRight="50dp"
+	     android:layout_marginLeft="43dp"
+	     android:layout_marginRight="42dp"
+	     android:paddingLeft="7dp"
+	     android:paddingRight="8dp"
 	     android:paddingBottom="12dp"/>
  <!-- ========================================== -->
   <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
@@ -184,8 +189,10 @@
 	     android:layout_width="match_parent"
 	     android:layout_height="wrap_content"
 	     android:max="720"
-	     android:layout_marginLeft="50dp"
-	     android:layout_marginRight="50dp"
+	     android:layout_marginLeft="43dp"
+	     android:layout_marginRight="42dp"
+	     android:paddingLeft="7dp"
+	     android:paddingRight="8dp"
 	     android:paddingBottom="12dp"/>
  <!-- ========================================== -->
   <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
@@ -218,8 +225,10 @@
 	     android:layout_width="match_parent"
 	     android:layout_height="wrap_content"
 	     android:max="50"
-	     android:layout_marginLeft="50dp"
-	     android:layout_marginRight="50dp"
+	     android:layout_marginLeft="43dp"
+	     android:layout_marginRight="42dp"
+	     android:paddingLeft="7dp"
+	     android:paddingRight="8dp"
 	     android:paddingBottom="12dp"/>
  <!-- ========================================== -->
   <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
@@ -252,8 +261,10 @@
 	     android:layout_width="match_parent"
 	     android:layout_height="wrap_content"
 	     android:max="50"
-	     android:layout_marginLeft="50dp"
-	     android:layout_marginRight="50dp"
+	     android:layout_marginLeft="43dp"
+	     android:layout_marginRight="42dp"
+	     android:paddingLeft="7dp"
+	     android:paddingRight="8dp"
 	     android:paddingBottom="12dp"/>
  <!-- ========================================== -->
   <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
@@ -286,8 +297,10 @@
 	     android:layout_width="match_parent"
 	     android:layout_height="wrap_content"
 	     android:max="200"
-	     android:layout_marginLeft="50dp"
-	     android:layout_marginRight="50dp"
+	     android:layout_marginLeft="43dp"
+	     android:layout_marginRight="42dp"
+	     android:paddingLeft="7dp"
+	     android:paddingRight="8dp"
 	     android:paddingBottom="12dp"/>
  <!-- ========================================== -->
   <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
@@ -320,8 +333,10 @@
 	     android:layout_width="match_parent"
 	     android:layout_height="wrap_content"
 	     android:max="200"
-	     android:layout_marginLeft="50dp"
-	     android:layout_marginRight="50dp"
+	     android:layout_marginLeft="43dp"
+	     android:layout_marginRight="42dp"
+	     android:paddingLeft="7dp"
+	     android:paddingRight="8dp"
 	     android:paddingBottom="12dp"/>
  <!-- ========================================== -->
  <!-- =EIN PARAMETEREINSTELLUNGSELEMNT= -->
@@ -354,8 +369,10 @@
 	     android:layout_width="match_parent"
 	     android:layout_height="wrap_content"
 	     android:max="80"
-	     android:layout_marginLeft="50dp"
-	     android:layout_marginRight="50dp"
+	     android:layout_marginLeft="43dp"
+	     android:layout_marginRight="42dp"
+	     android:paddingLeft="7dp"
+	     android:paddingRight="8dp"
 	     android:paddingBottom="12dp"/>
  <!-- ========================================== -->
 	 
