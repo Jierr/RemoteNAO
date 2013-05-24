@@ -1,5 +1,6 @@
 package de.tuchemnitz.remoteclient;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -157,6 +158,38 @@ public class MainActivity extends SherlockActivity {
 		//BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
         BattTimer.schedule(new BattTmrTask(), 1000, 10000);
         
+        //Load Parameters
+        FileInputStream fis = null;
+        String[] paralist = null;
+        try {
+			fis = openFileInput("Parameter.sav");
+			byte[] readData = new byte [fis.available()];
+			fis.read(readData);
+			paralist = (new String(readData)).split("\n");
+			fis.close();
+		}
+        catch(FileNotFoundException fnfe){Log.v("MainAct","paraload: File not found exeption");}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			try{ fis.close();} catch (IOException ex){ex.printStackTrace();}
+			paralist = null;
+			fis = null;
+		}
+        
+        if(paralist!=null && paralist.length == 8)
+        {
+        	param_MOV_F = Float.valueOf(paralist[0]); ///< Parameter for Movement 
+        	param_MOV_B = Float.valueOf(paralist[1]); ///< Parameter for Movement 
+        	param_MOV_D = Integer.valueOf(paralist[2]);///< Parameter for Movement D for Drehung/Turning
+        	param_HAD_F = Integer.valueOf(paralist[3]);
+        	param_HAD_B = Integer.valueOf(paralist[4]);
+        	param_HAD_D = Integer.valueOf(paralist[5]);
+        	param_ARM_HR = Integer.valueOf(paralist[6]);
+        	param_ARM_LR = Integer.valueOf(paralist[7]);
+        }
+
+        
         VideoModule.init();
         VideoModule.startVideoServer();
         
@@ -185,6 +218,20 @@ public class MainActivity extends SherlockActivity {
     	BattTimer.cancel();
     	NetworkModule.CloseConnection();
     	VideoModule.stopVideoServer();
+    	try {
+    		FileOutputStream fos = openFileOutput("Parameter.sav", Context.MODE_PRIVATE);
+			fos.write( (String.valueOf(param_MOV_F)+"\n").getBytes());
+			fos.write( (String.valueOf(param_MOV_B)+"\n").getBytes());
+			fos.write( (String.valueOf(param_MOV_D)+"\n").getBytes());
+			fos.write( (String.valueOf(param_HAD_F)+"\n").getBytes());
+			fos.write( (String.valueOf(param_HAD_B)+"\n").getBytes());
+			fos.write( (String.valueOf(param_HAD_D)+"\n").getBytes());
+			fos.write( (String.valueOf(param_ARM_HR)+"\n").getBytes());
+			fos.write( (String.valueOf(param_ARM_LR)).getBytes());
+			Log.v("MainAct","parasave:" + String.valueOf(param_ARM_LR));
+			fos.close();
+		}
+		catch(Exception e){	e.printStackTrace();}
     }
 
 	/**

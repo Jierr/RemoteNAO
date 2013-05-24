@@ -217,8 +217,8 @@ public class SettingActivity extends SherlockActivity {
 	
 	private int parameter_float_to_int_mov(float val)
 	{
-		if(val > 50.0) return (((int)val)-50);
-		else return ((int)(val/10));
+		if(val > 5.0) return (((int)val)+50);
+		else return ((int)(val*10));
 	}
 	private float parameter_int_to_float_mov(int val)
 	{
