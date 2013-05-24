@@ -246,6 +246,8 @@ int Manager::blockfor(const int& code)
 			block[C_SPK] = false;
 			break;
 		case C_EXE_PAR:
+			block[C_STOPALL] = false;
+			block[C_RESET] = false;
 			break;
 		case C_WAVE:
 			parblock[C_DANCE] = true;
@@ -631,6 +633,7 @@ int Manager::processConflicts(Event* event)
 			}
 			else if ((fstate < 0) && (lstate < 0))
 			{
+				blockfor(C_EXE_PAR);
 				return 1;
 			}
 			else 

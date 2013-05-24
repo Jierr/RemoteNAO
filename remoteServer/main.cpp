@@ -35,7 +35,7 @@
 using namespace std;
 
 #undef REAL
-//#define REAL
+#define REAL
 #ifndef REAL
 	#define TEST
 #endif

@@ -685,15 +685,18 @@ void* Executer::execute(void* args)
 				else if ((fstate < 0) && (lstate < 0))
 				{
 					
+					aargs->mutex->unlock();	
 					self->behave_gen(name);
 					aargs->mutex->lock();
 					if (running == 0)
 						stopped = false;
 					aargs->mutex->unlock();
+					break;
 				}	
 				
 			}			
 		
+			aargs->mutex->unlock();
 			break;
 		}
 		case RESET_CONNECTION:
@@ -1178,7 +1181,7 @@ void Executer::walk(const Event& event)
 		float angle = meter;
 		std::vector<float> stiffnesses = motion.getStiffnesses("Body");
 		if ((stiffnesses.capacity() > 0) && (stiffnesses[0] < 0.9))
-       		motion.stiffnessInterpolation("Body", 1.0, 1.0);
+       		motion.stiffnessInterpolation("Body", 0.95, 1.0);
 		//motion.walkInit();
 		
 		switch (mode)
@@ -1188,6 +1191,7 @@ void Executer::walk(const Event& event)
 				
 				while (motion.walkIsActive())			
 					qi::os::msleep(20);
+				motion.walkInit();
 				/*
 				vector<string> legs (50, "");
 				vector<float> footstep(3, 0.0);
@@ -1220,6 +1224,7 @@ void Executer::walk(const Event& event)
 			{	
 				while (motion.walkIsActive())			
 					qi::os::msleep(20);
+				motion.walkInit();
 				/*			
 				vector<string> legs (50, "");
 				vector<float> footstep(3, 0.0);
@@ -1248,6 +1253,7 @@ void Executer::walk(const Event& event)
 			{		
 				while (motion.walkIsActive())			
 					qi::os::msleep(20);
+				motion.walkInit();
 				/*vector<string> legs (TURN_STEPS, "");
 				vector<float> footstep(3, 0.0);
 				footstep[0] = 0.0;
@@ -1275,6 +1281,7 @@ void Executer::walk(const Event& event)
 			{		
 				while (motion.walkIsActive())			
 					qi::os::msleep(20);
+				motion.walkInit();
 				/*vector<string> legs (TURN_STEPS, "");
 				vector<float> footstep(3, 0.0);
 				footstep[0] = 0.0;
