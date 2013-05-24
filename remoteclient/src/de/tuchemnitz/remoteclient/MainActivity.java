@@ -1,9 +1,14 @@
 package de.tuchemnitz.remoteclient;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -11,6 +16,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
@@ -32,14 +40,26 @@ public class MainActivity extends SherlockActivity {
 	private final int EVENT_BATT = 0;
 	private final int EVENT_STATE = 1;
 	private final int EVENT_CONN = 2;
+	private final int EVENT_MAKRO = 3;
 	
-	private MenuItem BatteryIcon;
-	private MenuItem ConnectIcon;
+	private MenuItem BatteryIcon = null;
+	private MenuItem ConnectIcon = null;
+	
+	private boolean askfor_Makros_once = true;
+	
+	public float param_MOV_F = 5; ///< Parameter for Movement 
+	public float param_MOV_B = 2; ///< Parameter for Movement 
+	public int param_MOV_D = 90;///< Parameter for Movement D for Drehung/Turning
+	public int param_HAD_F = 20;
+	public int param_HAD_B = 20;
+	public int param_HAD_D = 45;
+	public int param_ARM_HR = 45;
+	public int param_ARM_LR = 20;
 	
 	/**
 	* @class EvtHandler
 	*
-	* A class to handle the events vom the callback-message-queue
+	* A class to handle the events from the callback-message-queue
 	*/ 
 	private Handler EvtHandler = new Handler()
 	{
@@ -65,6 +85,14 @@ public class MainActivity extends SherlockActivity {
 			    		Callbacksplit.getConfigActivity().changeConnectionView(msg.arg1);
 			    	
 			    	Callbacksplit.setActBarConnectIcon();
+		    	}
+		    	if(askfor_Makros_once)
+		    	{
+		    		if(msg.arg1 == NetworkModule.CONN_OPEN)
+		    		{
+		    			askfor_Makros_once = false;
+		    			NetworkModule.AskForMakros();
+		    		}
 		    	}
 		    	break;
 		    case EVENT_STATE:
@@ -95,8 +123,10 @@ public class MainActivity extends SherlockActivity {
 			    Callbacksplit.setActBarBatteryIcon(batt_icon_r);
 			    
 			    break;
+		    case EVENT_MAKRO:
+		    	addMakroToList( (String)msg.obj );
+		    	break;
 		    }
-		    
 		    return;
 		}
 	};
@@ -121,11 +151,50 @@ public class MainActivity extends SherlockActivity {
 		NetworkModule.RegisterCallback(EvtHandler,	EVENT_CONN,		NetworkModule.INFO_CONN);
 		NetworkModule.RegisterCallback(EvtHandler,	EVENT_STATE,	NetworkModule.INFO_STATE);
         NetworkModule.RegisterCallback(EvtHandler,	EVENT_BATT,		NetworkModule.INFO_BATT);
+        NetworkModule.RegisterCallback(EvtHandler,	EVENT_MAKRO,	NetworkModule.INFO_MAKRO);
         
         Log.v("MainAct", "Activity started.");
         BattTimer = new Timer();
 		//BattTimer.schedule(new BattTmrTask(EvtHandler), 1000, 10000);
         BattTimer.schedule(new BattTmrTask(), 1000, 10000);
+        
+        //Load Parameters
+        FileInputStream fis = null;
+        String[] paralist = null;
+        try {
+			fis = openFileInput("Parameter.sav");
+			byte[] readData = new byte [fis.available()];
+			fis.read(readData);
+			paralist = (new String(readData)).split("\n");
+			fis.close();
+		}
+        catch(FileNotFoundException fnfe){Log.v("MainAct","paraload: File not found exeption");}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			try{ fis.close();} catch (IOException ex){ex.printStackTrace();}
+			paralist = null;
+			fis = null;
+		}
+        
+        if(paralist!=null && paralist.length == 8)
+        {
+        	param_MOV_F = Float.valueOf(paralist[0]); ///< Parameter for Movement 
+        	param_MOV_B = Float.valueOf(paralist[1]); ///< Parameter for Movement 
+        	param_MOV_D = Integer.valueOf(paralist[2]);///< Parameter for Movement D for Drehung/Turning
+        	param_HAD_F = Integer.valueOf(paralist[3]);
+        	param_HAD_B = Integer.valueOf(paralist[4]);
+        	param_HAD_D = Integer.valueOf(paralist[5]);
+        	param_ARM_HR = Integer.valueOf(paralist[6]);
+        	param_ARM_LR = Integer.valueOf(paralist[7]);
+        }
+
+        
+        VideoModule.init();
+        VideoModule.startVideoServer();
+        
+        newMakroToList();
+        
     }
     
 	@Override
@@ -145,8 +214,24 @@ public class MainActivity extends SherlockActivity {
 	@Override
     public void onDestroy(){
     	super.onDestroy();
+    	VideoModule.closeVideoDialog();
     	BattTimer.cancel();
     	NetworkModule.CloseConnection();
+    	VideoModule.stopVideoServer();
+    	try {
+    		FileOutputStream fos = openFileOutput("Parameter.sav", Context.MODE_PRIVATE);
+			fos.write( (String.valueOf(param_MOV_F)+"\n").getBytes());
+			fos.write( (String.valueOf(param_MOV_B)+"\n").getBytes());
+			fos.write( (String.valueOf(param_MOV_D)+"\n").getBytes());
+			fos.write( (String.valueOf(param_HAD_F)+"\n").getBytes());
+			fos.write( (String.valueOf(param_HAD_B)+"\n").getBytes());
+			fos.write( (String.valueOf(param_HAD_D)+"\n").getBytes());
+			fos.write( (String.valueOf(param_ARM_HR)+"\n").getBytes());
+			fos.write( (String.valueOf(param_ARM_LR)).getBytes());
+			Log.v("MainAct","parasave:" + String.valueOf(param_ARM_LR));
+			fos.close();
+		}
+		catch(Exception e){	e.printStackTrace();}
     }
 
 	/**
@@ -161,8 +246,6 @@ public class MainActivity extends SherlockActivity {
         ConnectIcon = (MenuItem)menu.findItem(R.id.acb_connect);
         BatteryIcon = (MenuItem)menu.findItem(R.id.acb_battery);
         setActBarConnectIcon();
-        
-        ((MenuItem)menu.findItem(R.id.acb_m_1)).setVisible(false);
         
         //getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
     	//setContentView(R.menu.actionbar);
@@ -186,22 +269,28 @@ public class MainActivity extends SherlockActivity {
 		case android.R.id.home:
 			finish();
 			break;
-		case R.id.acb_m_1:
+		case R.id.acb_video:
+			VideoModule.create_dialog(MainActivity.this, true);
 			break;
-		case R.id.acb_m_2:
+		case R.id.acb_m_1:
 			intent = new Intent(this, BewegungActivity.class);
 			startActivity(intent);
 			break;
-		case R.id.acb_m_3:
+		case R.id.acb_m_2:
 			intent = new Intent(this, SprachausgabeActivity.class);
 			startActivity(intent);
 			break;
-		case R.id.acb_m_4:
+		case R.id.acb_m_3:
 			intent = new Intent(this, SpecialsActivity.class);
 			startActivity(intent);
 			break;
-		case R.id.acb_m_5:
+		case R.id.acb_connect:
+		case R.id.acb_m_4:
 			intent = new Intent(this, ConfigActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.acb_m_5:
+			intent = new Intent(this, SettingActivity.class);
 			startActivity(intent);
 			break;
 		}
@@ -213,6 +302,9 @@ public class MainActivity extends SherlockActivity {
      * Refreshes the ActionBar's network state icon.
      */
     public void setActBarConnectIcon(){
+    	if(ConnectIcon == null && BatteryIcon != null)
+    		return;
+    	
     	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);
@@ -300,10 +392,21 @@ public class MainActivity extends SherlockActivity {
 	 * @param view		ignored, ID of the button, which triggers this function
 	 */
     public void menu_button5_event(View view) {
-    	new AlertDialog.Builder(this)
-		.setMessage("Das ist eine App um den NAO zu steuern")
-		.setNeutralButton("Wer weiss?", null)
-		.show();
+    	final Dialog about_dialog = new Dialog(MainActivity.this);
+    	about_dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+    	about_dialog.setContentView(R.layout.dialog_about);
+    	Button Button_close = (Button) about_dialog.findViewById(R.id.aboutdial_closebutton);
+		/**
+		 * By pressing the related buttton the about dialog will be closed
+		 * 
+		 */
+		Button_close.setOnClickListener(new OnClickListener() {			
+			@Override
+			public void onClick(View v) {		    	
+		    	about_dialog.dismiss();
+			}
+		});
+    	about_dialog.show();
     }
     
     /**
@@ -316,6 +419,53 @@ public class MainActivity extends SherlockActivity {
 		public void run()  
 		{
 			NetworkModule.RequestBatteryState();
+		}
+	}
+	
+	//______ Funktions for Makros _________
+	
+	/**
+	 * Appents names of makros which are received from the robot to a list saved in a file (filename is MakroListe.txt).
+	 * With makro the motion sequence created with coreographe were meant
+	 * 
+	 * @param neutext Name of the makro
+	 */
+	private void addMakroToList(String neutext)
+	{
+		FileOutputStream fos = null;
+		
+		try {
+			fos = openFileOutput("MakroListe.txt", Context.MODE_APPEND|Context.MODE_PRIVATE);
+			fos.write( (neutext+"\n").getBytes() );
+			fos.close();
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Creates a new empty file with the filename MakroListe.txt.
+	 * Later there can be saved names of motion sequence as a list in it.
+	 */
+	private void newMakroToList()
+	{
+		FileOutputStream fos = null;
+		
+		try {
+			fos = openFileOutput("MakroListe.txt", Context.MODE_PRIVATE);
+			fos.close();
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
 }

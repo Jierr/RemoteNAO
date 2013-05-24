@@ -4,16 +4,24 @@
     android:layout_height="match_parent"
     tools:context=".SpecialsActivity" >
 
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:padding="4dp"
+        android:src="@drawable/tu_chemnitz_de3" />
+
     <ScrollView
-        android:id="@+id/linearLayout1"
+        android:id="@+id/spec_scrollview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/imageView1"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
         android:paddingLeft="30dp"
         android:paddingRight="30dp" >
 
         <LinearLayout
+            android:id="@+id/spec_linLayout_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" >

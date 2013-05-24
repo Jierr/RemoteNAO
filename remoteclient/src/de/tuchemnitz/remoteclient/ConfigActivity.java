@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
@@ -27,8 +26,8 @@ public class ConfigActivity extends SherlockActivity {
 	/*Buttons*/
 	private Button button_verbindenbutton;
 	
-	private MenuItem BatteryIcon;
-	private MenuItem ConnectIcon;
+	private MenuItem BatteryIcon = null;
+	private MenuItem ConnectIcon = null;
 	
 	
 	/**
@@ -82,6 +81,7 @@ public class ConfigActivity extends SherlockActivity {
     public void onDestroy(){
 		super.onDestroy();
     	Callbacksplit.registerConfigActivity(null);
+    	VideoModule.closeVideoDialog();
     }
 	
 	/**
@@ -99,7 +99,7 @@ public class ConfigActivity extends SherlockActivity {
         ConnectIcon = (MenuItem)menu.findItem(R.id.acb_connect);
         setActBarConnectIcon();
         
-        ((MenuItem)menu.findItem(R.id.acb_m_5)).setVisible(false);
+        ((MenuItem)menu.findItem(R.id.acb_m_4)).setVisible(false);
 
         return true;
     }
@@ -115,27 +115,35 @@ public class ConfigActivity extends SherlockActivity {
 		Intent intent;
 		switch(item.getItemId()){
 		case android.R.id.home:
-		case R.id.acb_m_1:
 			finish();
 			break;
-		case R.id.acb_m_2:
+		case R.id.acb_m_1:
 			intent = new Intent(Callbacksplit.getMainActivity(), BewegungActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_3:
+		case R.id.acb_m_2:
 			intent = new Intent(Callbacksplit.getMainActivity(), SprachausgabeActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_4:
+		case R.id.acb_m_3:
 			intent = new Intent(Callbacksplit.getMainActivity(), SpecialsActivity.class);
 			finish();
 			startActivity(intent);
 			break;
+		case R.id.acb_m_4:
+			break;
 		case R.id.acb_m_5:
+			intent = new Intent(Callbacksplit.getMainActivity(), SettingActivity.class);
+			finish();
+			startActivity(intent);
+			break;
+		case R.id.acb_video:
+			VideoModule.create_dialog(ConfigActivity.this, true);
 			break;
 		}
+		
 		
 		return true;
 	}
@@ -207,8 +215,7 @@ public class ConfigActivity extends SherlockActivity {
 	public void cfgbutton_close_event(View view)
 	{
 		finish();
-	}
-	
+	}	
 	
 	/************ Dynamisches Aenderugszeug *****************
      ********************************************************/
@@ -252,6 +259,9 @@ public class ConfigActivity extends SherlockActivity {
      * Sets the Connection Icon depending on the current connection state.
      */
     public void setActBarConnectIcon(){
+    	if(ConnectIcon == null && BatteryIcon != null)
+    		return;
+    	
     	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);

@@ -69,4 +69,14 @@
 	        android:onClick="menu_button5_event"
 	        android:text="@string/menu_button5_text" />
 
+	    <ImageView
+	        android:id="@+id/main_tulogo"
+	        android:layout_width="100dp"
+	        android:layout_height="50dp"
+	        android:layout_alignParentBottom="true"
+	        android:layout_alignParentRight="true"
+	        android:paddingBottom="4dp"
+	        android:paddingRight="8dp"
+	        android:src="@drawable/tu_chemnitz_de3" />
+
 </RelativeLayout>

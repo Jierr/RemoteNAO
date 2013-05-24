@@ -32,8 +32,8 @@ import com.actionbarsherlock.view.MenuItem;
  */
 public class SprachausgabeActivity extends SherlockActivity {
 
-	private MenuItem BatteryIcon;
-	private MenuItem ConnectIcon;
+	private MenuItem BatteryIcon = null;
+	private MenuItem ConnectIcon = null;
 	
 	/**
 	 * Loads the Activity layout and registers the callback.
@@ -60,6 +60,7 @@ public class SprachausgabeActivity extends SherlockActivity {
     public void onDestroy(){
 		super.onDestroy();
     	Callbacksplit.registerSprachausgabeActivity(null);
+    	VideoModule.closeVideoDialog();
     }
 
 	/**
@@ -77,7 +78,7 @@ public class SprachausgabeActivity extends SherlockActivity {
         ConnectIcon = (MenuItem)menu.findItem(R.id.acb_connect);
         setActBarConnectIcon();
         
-        ((MenuItem)menu.findItem(R.id.acb_m_3)).setVisible(false);
+        ((MenuItem)menu.findItem(R.id.acb_m_2)).setVisible(false);
         
         return true;
     }
@@ -93,25 +94,33 @@ public class SprachausgabeActivity extends SherlockActivity {
 		Intent intent;
 		switch(item.getItemId()){
 		case android.R.id.home:
-		case R.id.acb_m_1:
 			finish();
 			break;
-		case R.id.acb_m_2:
+		case R.id.acb_m_1:
 			intent = new Intent(Callbacksplit.getMainActivity(), BewegungActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_3:
+		case R.id.acb_m_2:
 			break;
-		case R.id.acb_m_4:
+		case R.id.acb_m_3:
 			intent = new Intent(Callbacksplit.getMainActivity(), SpecialsActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_5:
+		case R.id.acb_connect:
+		case R.id.acb_m_4:
 			intent = new Intent(Callbacksplit.getMainActivity(), ConfigActivity.class);
 			finish();
 			startActivity(intent);
+			break;
+		case R.id.acb_m_5:
+			intent = new Intent(Callbacksplit.getMainActivity(), SettingActivity.class);
+			finish();
+			startActivity(intent);
+			break;
+		case R.id.acb_video:
+			VideoModule.create_dialog(SprachausgabeActivity.this, true);
 			break;
 		}
 		
@@ -151,6 +160,9 @@ public class SprachausgabeActivity extends SherlockActivity {
 	 * Refreshes the ActionBar's network state icon.
 	 */
 	public void setActBarConnectIcon(){
+		if(ConnectIcon == null && BatteryIcon != null)
+    		return;
+		
     	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);
@@ -315,7 +327,7 @@ public class SprachausgabeActivity extends SherlockActivity {
 			try {
 				fis = openFileInput("spk_textfile");
 				byte[] readData = new byte [fis.available()];
-				while(fis.read(readData) != -1)
+				while(fis.read(readData) > 0)
 				{
 					collected = new String(readData);
 				}

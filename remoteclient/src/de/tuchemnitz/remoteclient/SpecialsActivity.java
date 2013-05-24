@@ -1,11 +1,18 @@
 package de.tuchemnitz.remoteclient;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -23,8 +30,8 @@ import com.actionbarsherlock.view.MenuItem;
  */
 public class SpecialsActivity extends SherlockActivity {
 	
-	private MenuItem BatteryIcon;
-	private MenuItem ConnectIcon;
+	private MenuItem BatteryIcon = null;
+	private MenuItem ConnectIcon = null;
 	
 	/**
 	 * Loads/sets up the Activity layout and registers the callback.
@@ -38,6 +45,31 @@ public class SpecialsActivity extends SherlockActivity {
 		
 		changeSitButtonText( (String)NetworkModule.GetInfoData(NetworkModule.INFO_STATE) );
 		
+		final LinearLayout linlist = (LinearLayout) findViewById(R.id.spec_linLayout_list);
+		
+		
+		// ------------ add Buttons dynamicly -------
+		String[] makrobehaviors = getMakroList();
+		if(makrobehaviors!=null)
+		{
+			int anzahl_behaviors = makrobehaviors.length;
+			for(int i=0; i<anzahl_behaviors;i++)
+			{
+				final String makroname = makrobehaviors[i];
+				Button btn = new Button(this);
+				btn.setText(makroname);
+				btn.setWidth(LayoutParams.MATCH_PARENT);
+				btn.setHeight(LayoutParams.WRAP_CONTENT);
+				btn.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						NetworkModule.ExecMakro(makroname);
+					}
+				});
+				linlist.addView(btn);
+			}
+		}
+		// ------------------------------------------
 	}
 	
 	@Override
@@ -55,6 +87,7 @@ public class SpecialsActivity extends SherlockActivity {
     public void onDestroy(){
 		super.onDestroy();
     	Callbacksplit.registerSpecialsActivity(null);
+    	VideoModule.closeVideoDialog();
     }
 
 	/**
@@ -72,7 +105,7 @@ public class SpecialsActivity extends SherlockActivity {
         ConnectIcon = (MenuItem)menu.findItem(R.id.acb_connect);
         setActBarConnectIcon();
         
-        ((MenuItem)menu.findItem(R.id.acb_m_4)).setVisible(false);
+        ((MenuItem)menu.findItem(R.id.acb_m_3)).setVisible(false);
         
         return true;
     }
@@ -88,25 +121,33 @@ public class SpecialsActivity extends SherlockActivity {
 		Intent intent;
 		switch(item.getItemId()){
 		case android.R.id.home:
-		case R.id.acb_m_1:
 			finish();
 			break;
-		case R.id.acb_m_2:
+		case R.id.acb_m_1:
 			intent = new Intent(Callbacksplit.getMainActivity(), BewegungActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_3:
+		case R.id.acb_m_2:
 			intent = new Intent(Callbacksplit.getMainActivity(), SprachausgabeActivity.class);
 			finish();
 			startActivity(intent);
 			break;
-		case R.id.acb_m_4:
+		case R.id.acb_m_3:
 			break;
-		case R.id.acb_m_5:
+		case R.id.acb_connect:
+		case R.id.acb_m_4:
 			intent = new Intent(Callbacksplit.getMainActivity(), ConfigActivity.class);
 			finish();
 			startActivity(intent);
+			break;
+		case R.id.acb_m_5:
+			intent = new Intent(Callbacksplit.getMainActivity(), SettingActivity.class);
+			finish();
+			startActivity(intent);
+			break;
+		case R.id.acb_video:
+			VideoModule.create_dialog(SpecialsActivity.this, true);
 			break;
 		}
 		
@@ -230,7 +271,7 @@ public class SpecialsActivity extends SherlockActivity {
      * @param pic	Drawable of the Battery Icon
      */
     public void setActBarBatteryIcon(Drawable pic){
-    	if(pic!=null)
+    	if(pic!=null && BatteryIcon != null)
     		BatteryIcon.setIcon(pic);
     }
     
@@ -238,6 +279,9 @@ public class SpecialsActivity extends SherlockActivity {
      * Refreshes the ActionBar's network state icon.
      */
     public void setActBarConnectIcon(){
+    	if(ConnectIcon == null)
+    		return;
+    	
     	if(NetworkModule.IsConnected()==NetworkModule.CONN_CLOSED)
     	{
     		ConnectIcon.setIcon(R.drawable.network_disconnected);
@@ -248,4 +292,58 @@ public class SpecialsActivity extends SherlockActivity {
     	}
     }
 
+    ///__________________ Makros _______________________
+    /**
+     * Loads a List of names of motion sequence from a file (MakroListe.txt) and returns it.
+     * 
+     * @return Array of Strings which are the names of the makros.
+     */
+    public String[] getMakroList()
+	{
+    	FileInputStream fis = null;
+    	String collected = null;
+		
+		try {
+			fis = openFileInput("MakroListe.txt");
+			byte[] readData = new byte [fis.available()];
+			while(fis.read(readData) > 0)
+			{
+				collected = new String(readData);
+			}
+		}
+		catch (FileNotFoundException e)
+		{
+			e.printStackTrace();
+			collected = null;
+			fis = null;
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			collected = null;
+		}
+		finally
+		{
+			if(fis != null)
+			{
+				try{
+					fis.close();
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				fis = null;
+			}
+		}
+		
+		if(collected==null)
+			return null;
+
+		return collected.split("\n");
+	}
+	
 }
+
+
+

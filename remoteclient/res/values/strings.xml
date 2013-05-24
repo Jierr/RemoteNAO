@@ -28,12 +28,11 @@
     <string name="verbindungsip_text">IP-Adresse : </string>
     <string name="verbindungsip_eingabe">0.0.0.0</string>
     <string name="verbindungsbutton_text">verbinden</string>
-    <string name="verbindungsbutton_close_text"> Schließen </string>
+    <string name="button_close_text"> Schließen </string>
     <string name="bewegungsauswahl_radiobutton1_text">l. Arm bew.</string>
     <string name="bewegungsauswahl_radiobutton2_text">r. Arm bew.</string>
     <string name="bewegungsauswahl_radiobutton3_text">Laufen</string>
     <string name="bewegungsauswahl_radiobutton4_text">Kopf bew.</string>
-    <string name="bewegungsauswahl_OKbutton_text">" OK "</string>
     
     <string name="specials_button1_text"> Ausruhen </string>
     <string name="specials_button2_text"> Setzen/Aufstehen </string>
@@ -41,15 +40,40 @@
     <string name="specials_button4_text"> Winken </string>
     <string name="specials_button5_text"> Stirn wischen </string>
     
-    <string name="acb_m1_text">RemoteApp</string>
-    <string name="acb_m2_text">Bewegen</string>
-    <string name="acb_m3_text">Sprechen</string>
-    <string name="acb_m4_text">Specials</string>
-    <string name="acb_m5_text">Netzwerk</string>
+    <string name="acb_m1_text">Bewegen</string>
+    <string name="acb_m2_text">Sprechen</string>
+    <string name="acb_m3_text">Specials</string>
+    <string name="acb_m4_text">Netzwerk</string>
+    <string name="acb_m5_text">Einstellungen</string>
     
     <string name="title_activity_bewegung">Bewegungsmodus</string>
     <string name="title_activity_sprachausgabe">Sprachausgabe</string>
     <string name="title_activity_config">Netzwerkverbindung</string>
-    <string name="title_activity_specials">SpecialsActivity</string>
+    <string name="title_activity_specials">Specials</string>
+    <string name="title_activity_setting">Einstellungen</string>
+    
+    <string name="About_Headline">Android Remote Steuerung</string>
+    
+    <string name="About_Description">
+        Das ist eine App um den NAO zu steuern.\n
+        Die NAO-Remote-Steuerung wurde im Rahmen des 
+        Softwareengeneering-Praktikums an der TU-Chemnitz entwickelt und im Rahmen des
+        „Differenziertes Mentoring- und Betreuungsprogramm zur Verbesserung der Studienbedingungen 
+        und der Qualität in der Lehre an der TU Chemnitz“ gefördert\n\n
+        Diese Software ist ausschließlich zur nicht kommerziellen Nutzung gedacht.
+    </string>
+    <string name="About_Button">Einverstanden</string>
+    <string name="set_videobewalpha_text">Video-Sichtbarkeit in Bew.-Act.:</string>
+    <string name="set_head1">Einstellungen</string>
+    <string name="set_video_on_text">Video ein-/ausschalten</string>
+    <string name="set_parameterheadline_text">Parametereinstellung</string>
+    <string name="set_param_movF_text">Weite beim Vorwätslaufen:</string>
+    <string name="set_param_movB_text">Weite beim Rückwärtslaufen:</string>
+    <string name="set_param_movD_text">Drehwinkel pro Drehbewegung:</string>
+    <string name="set_param_armHR_text">Winkel Armbewegung hoch/runter:</string>
+    <string name="set_param_armLR_text">Winkel Armseitwärtsbewegung:</string>
+    <string name="set_param_hadF_text">Neigewinkel für Kopfbew. hinter:</string>
+    <string name="set_param_hadB_text">Neigewinkel für Kopfbew. vor:</string>
+    <string name="set_param_hadD_text">Drehwinkel pro Kopfdrehbewegung:</string>
 
 </resources>

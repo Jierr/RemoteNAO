@@ -44,6 +44,7 @@ public class NetworkModule {
 	public static final int INFO_BATT = 0;
 	public static final int INFO_STATE = 1;
 	public static final int INFO_CONN = 2;
+	public static final int INFO_MAKRO = 3;
 	public static final int CONN_CLOSED = 0;
 	public static final int CONN_CONNECTING = 1;
 	public static final int CONN_OPEN = 2;
@@ -54,6 +55,8 @@ public class NetworkModule {
 	public static final String STATE_STOP		= "STOPPING";
 	public static final String STATE_MOVE		= "MOVING";
 	public static final String STATE_UNKNOWN	= "UNKNOWN";
+	
+	public static enum VIDEOSTATE{ OFF, ON	};
 	
 	private static ArrayList<EventCallback> EventList = new ArrayList<EventCallback>();
 	private static RobotInformation RoboInfo = new RobotInformation();
@@ -117,7 +120,7 @@ public class NetworkModule {
 	 * 		2 - move right arm
 	 * 		3 - move head
 	 */
-	public static void Move(int Type, char Direction)
+	public static void Move(int Type, char Direction, float Parameter)
 	{
 		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
 			return;
@@ -148,6 +151,8 @@ public class NetworkModule {
 			return;
 		}
 		
+
+		CommandStr += "_" + String.valueOf(Parameter) + "_";
 		NetTData.QueueCommand(MoveType, CommandStr);
 		
 		return;
@@ -265,6 +270,37 @@ public class NetworkModule {
 	}
 	
 	/**
+	 * Send a signal to the robot to ask for the makros on it available
+	 */
+	public static void AskForMakros()
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.GETMAKROS, null);
+		
+		return;
+	}
+	
+	/**
+	 * Tells the robot to execute the following movement
+	 * 
+	 * @param makroname	name of the makro which the robot should execute
+	 * 
+	 * Note: Underscores are not allowed.
+	 */
+	public static void ExecMakro(String makroname)
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		//makroname = makroname.replace('_', ' ');	// replace _ with a space // gibt kein unterstrich
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.EXECMAKRO, makroname + "_");
+		
+		return;
+	}
+	
+	/**
 	 * Asks the robot for his current battery state.
 	 */
 	public static void RequestBatteryState()
@@ -274,6 +310,45 @@ public class NetworkModule {
 		
 		NetTData.QueueCommand(NetworkThread.CMDTYPE.GETBATT, null);
 		
+		return;
+	}
+	
+	/**
+	 * start and stop the videomodule
+	 * extraparameter for port
+	 * 
+	 * @param state	The wante state of the videoconnection (ON or OFF available)
+	 * @param Port Port where the udp-server is listening
+	 */
+	public static void Video(VIDEOSTATE state, int Port)
+	{
+		String text = null;
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		if(state == VIDEOSTATE.OFF) text="D";
+		else if(state == VIDEOSTATE.ON && Port!=-1) text="A_"+String.valueOf(Port)+"_";
+		else return;
+		NetTData.QueueCommand(NetworkThread.CMDTYPE.VIDEO, text);
+		
+		return;
+	}
+	
+	/**
+	 * only for stop the videomodule
+	 * port is not needed
+	 * 
+	 * @param state	The wante state of the videoconnection (ON or OFF available)
+	 */
+	public static void Video(VIDEOSTATE state)
+	{
+		if (NetTData == null || NetTData.GetConnectionState() != CONN_OPEN)
+			return;
+		
+		if(state == VIDEOSTATE.OFF)
+		{
+			NetTData.QueueCommand(NetworkThread.CMDTYPE.VIDEO, "D");
+		}
 		return;
 	}
 	
@@ -360,7 +435,8 @@ class NetworkThread extends Thread
 {
 	public enum CMDTYPE
 	{
-		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, STANDUP, REST, SPEAK, DANCE, WINK, WIPE, GETBATT
+		NETTEST, MOVE, MOVEARM, MOVEHEAD, STOP, SIT, STANDUP, REST, SPEAK, DANCE, WINK, WIPE, VIDEO,
+		GETBATT, GETMAKROS, EXECMAKRO
 	};
 	private final String CMDTYPE_MOVE	= "MOV";
 	private final String CMDTYPE_MVARM	= "ARM";
@@ -373,10 +449,15 @@ class NetworkThread extends Thread
 	private final String CMDTYPE_DANCE 	= "DNC";
 	private final String CMDTYPE_WINK 	= "WNK";
 	private final String CMDTYPE_WIPE 	= "WIP";
+	private final String CMDTYPE_VIDEO	= "VID";
 	private final String CMDTYPE_BATT	= "BAT";
+	private final String CMDTYPE_MAKRO	= "GEN";
+	private final String CMDTYPE_EMAKRO = "EXE";
+
 	
 	private final String RETCMD_BATT	= "BAT";
 	private final String RETCMD_STATE	= "ZST";
+	private final String RETCMD_MAKRO	= "GEN";
 	
 	private final String TERMINATE_CHR = "";
 	private final String IP_Addr;
@@ -419,8 +500,7 @@ class NetworkThread extends Thread
 	 * @param CBEvtList	NetworkModule EventList member
 	 * @param RbInfo	NetworkModule RoboInfo member
 	 */
-	public NetworkThread(String DestIP, int DestPort, ArrayList<EventCallback> CBEvtList,
-						RobotInformation RbInfo)
+	public NetworkThread(String DestIP, int DestPort, ArrayList<EventCallback> CBEvtList, RobotInformation RbInfo)
 	{
 		IP_Addr = DestIP;
 		Port = DestPort;
@@ -515,8 +595,17 @@ class NetworkThread extends Thread
 				case WIPE:
 					CmdStr = CMDTYPE_WIPE;
 					break;
+				case VIDEO:
+					CmdStr = CMDTYPE_VIDEO;
+					break;
 				case GETBATT:
 					CmdStr = CMDTYPE_BATT;
+					break;
+				case GETMAKROS:
+					CmdStr = CMDTYPE_MAKRO;
+					break;
+				case EXECMAKRO:
+					CmdStr = CMDTYPE_EMAKRO;
 					break;
 				default:
 					CmdStr = "";
@@ -633,6 +722,11 @@ class NetworkThread extends Thread
 			ArgInt = RoboInfo.BattLoad;
 			Log.v("NetMod.BAT", Integer.toHexString(ArgInt));
 		}
+		else if (CmdStr.equals(RETCMD_MAKRO))
+		{
+			DestCB = GetCallback(NetworkModule.INFO_MAKRO);
+			ArgObj = (ReceiveStr.split("_",2))[0];
+		}
 		else
 		{
 			return;
@@ -731,7 +825,7 @@ class NetworkThread extends Thread
 			Log.v("NetMod", "Connecting to " + IP_Addr + " on port " + Port);
 			Client = new Socket();
 			Client.connect(new InetSocketAddress(IP_Addr, Port), 3000);
-			Client.setSoTimeout(1000);
+			Client.setSoTimeout(500);
 			Log.v("NetMod", "Just connected to " + Client.getRemoteSocketAddress());
 			
 			outToServer = Client.getOutputStream();
@@ -868,39 +962,40 @@ class NetworkThread extends Thread
 		try
 		{
 			Log.v("NetMod.Receive", "Waiting for data...");
-			Data = new byte[16];
-			DataLen = inFromServer.read(Data);
-			Log.v("NetMod.Receive", "Received " + Integer.toString(DataLen) + " bytes");
+			Data = new byte[1];
+			char ChrData[] = new char[1];
+			InStr = "";
+			while(true)
+			{
+				DataLen = inFromServer.read(Data);
+				if (DataLen <= 0 || Data[0]==-1)
+					break;
+				
+				ChrData[0] = (char)(Data[0] & 0x00FF);
+				InStr = InStr.concat(new String(ChrData));
+			}
 //			String DebugStr = "";
 //			for (int i=0; i < DataLen; i ++)
 //				DebugStr += Integer.toHexString(Data[i]) + " ";
 //			DebugStr += "[" + Integer.toHexString(Data[DataLen]) + "]";
 //			Log.v("NetMod.Receive", DebugStr);
-			if (DataLen > 0)
-			{
+			
 				//InStr = new String(Data).substring(0, DataLen);
-				char ChrArr[] = new char[DataLen]; 
-				for (int i = 0; i < DataLen; i ++)
-					ChrArr[i] = (char)Data[i];
-				InStr = new String(ChrArr);
+//				char ChrArr[] = new char[DataLen]; 
+//				for (int i = 0; i < DataLen; i ++)
+//					ChrArr[i] = (char)Data[i];
+//				InStr = new String(ChrArr);
 			//	String DebugStr = "";
 			//	for (int i=0; i < InStr.length(); i ++)
 			//		DebugStr += Integer.toHexString(InStr.charAt(i)) + " ";
 			//	Log.v("NetMod.Receive", DebugStr);
-			}
-			//BufferedReader in = new BufferedReader(new InputStreamReader(inFromServer));
-			//inMessage = in.readLine();
-			
-			// Clear buffer
-			//Log.v("NetMod.Receive", "Remaining bytes: " + Integer.toString(inFromServer.available()));
-			while(inFromServer.available() > 0)
-				DataLen = inFromServer.read(Data);
+				
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		
+		Log.v("NetMod.Receive", "Received " + String.valueOf(InStr.length()) + " bytes");
 		return InStr;
 	}
 }
