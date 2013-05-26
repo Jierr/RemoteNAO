@@ -15,9 +15,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Button;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -55,6 +56,11 @@ public class MainActivity extends SherlockActivity {
 	public int param_HAD_D = 45;
 	public int param_ARM_HR = 45;
 	public int param_ARM_LR = 20;
+	
+	// variables used for touchgestures
+	private float gesture_xa,gesture_xe,gesture_ya,gesture_ye;
+	private int displayWidth  = 1;
+	private int displayHeight = 1;
 	
 	/**
 	* @class EvtHandler
@@ -194,6 +200,9 @@ public class MainActivity extends SherlockActivity {
         VideoModule.startVideoServer();
         
         newMakroToList();
+        
+        displayWidth = getWindowManager().getDefaultDisplay().getWidth();
+    	displayHeight = getWindowManager().getDefaultDisplay().getHeight();
         
     }
     
@@ -468,4 +477,45 @@ public class MainActivity extends SherlockActivity {
 			e.printStackTrace();
 		}
 	}
+	
+    
+    /**
+     * Modify the touchlistener for the whole activity to accept a selfdefined wipegesture
+     * This wipe gesture is for changig to another activity with a wipe
+     */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event)
+    {
+    	switch(event.getAction())
+		{
+		case MotionEvent.ACTION_DOWN:
+			gesture_xa=event.getX();
+			gesture_ya=event.getY();
+			break;
+		case MotionEvent.ACTION_UP:
+			gesture_xe=event.getX();
+			gesture_ye=event.getY();
+			//Toast.makeText(SpecialsActivity.this, String.valueOf(gesture_xe-gesture_xa)+"/"+String.valueOf(gesture_ye-gesture_ya)+"/"+String.valueOf(displayWidth/2)+"/"+String.valueOf(displayHeight*0.1), Toast.LENGTH_SHORT).show();
+			if(Math.abs(gesture_ye-gesture_ya) < displayHeight*0.1)
+			{
+				if( gesture_xe-gesture_xa > displayWidth/2 )
+				{
+					// wipe from left to right
+					Intent intent = new Intent(Callbacksplit.getMainActivity(), SettingActivity.class);
+					startActivity(intent);
+					return true;
+				}
+				else if( -(gesture_xe-gesture_xa) > displayWidth/2 )
+				{
+					// wipe from right to left
+					Intent intent = new Intent(Callbacksplit.getMainActivity(), BewegungActivity.class);
+					startActivity(intent);
+					return true;
+				}
+			}
+			break;
+		}
+    	super.dispatchTouchEvent(event);
+    	return true;
+    }
 }

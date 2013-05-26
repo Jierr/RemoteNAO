@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
@@ -33,6 +34,11 @@ public class SpecialsActivity extends SherlockActivity {
 	private MenuItem BatteryIcon = null;
 	private MenuItem ConnectIcon = null;
 	
+	// variables used for touchgestures
+	private float gesture_xa,gesture_xe,gesture_ya,gesture_ye;
+	private int displayWidth  = 1;
+	private int displayHeight = 1;
+	
 	/**
 	 * Loads/sets up the Activity layout and registers the callback.
 	 */
@@ -47,6 +53,8 @@ public class SpecialsActivity extends SherlockActivity {
 		
 		final LinearLayout linlist = (LinearLayout) findViewById(R.id.spec_linLayout_list);
 		
+		displayWidth = getWindowManager().getDefaultDisplay().getWidth();
+    	displayHeight = getWindowManager().getDefaultDisplay().getHeight();
 		
 		// ------------ add Buttons dynamicly -------
 		String[] makrobehaviors = getMakroList();
@@ -79,15 +87,15 @@ public class SpecialsActivity extends SherlockActivity {
 	}
 	@Override
 	protected void onPause(){
-		super.onPause();
 		Callbacksplit.unsetActiveActivity();
+		super.onPause();
 	}
 	
 	@Override
     public void onDestroy(){
-		super.onDestroy();
-    	Callbacksplit.registerSpecialsActivity(null);
+		Callbacksplit.registerSpecialsActivity(null);
     	VideoModule.closeVideoDialog();
+		super.onDestroy();
     }
 
 	/**
@@ -343,6 +351,47 @@ public class SpecialsActivity extends SherlockActivity {
 		return collected.split("\n");
 	}
 	
+    /**
+     * Modify the touchlistener for the whole activity to accept a selfdefined wipegesture
+     * This wipe gesture is for changig to another activity with a wipe
+     */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event)
+    {
+    	switch(event.getAction())
+		{
+		case MotionEvent.ACTION_DOWN:
+			gesture_xa=event.getX();
+			gesture_ya=event.getY();
+			break;
+		case MotionEvent.ACTION_UP:
+			gesture_xe=event.getX();
+			gesture_ye=event.getY();
+			//Toast.makeText(SpecialsActivity.this, String.valueOf(gesture_xe-gesture_xa)+"/"+String.valueOf(gesture_ye-gesture_ya)+"/"+String.valueOf(displayWidth/2)+"/"+String.valueOf(displayHeight*0.1), Toast.LENGTH_SHORT).show();
+			if(Math.abs(gesture_ye-gesture_ya) < displayHeight*0.1)
+			{
+				if( gesture_xe-gesture_xa > displayWidth/2 )
+				{
+					// wipe from left to right
+					Intent intent = new Intent(Callbacksplit.getMainActivity(), SprachausgabeActivity.class);
+					finish();
+					startActivity(intent);
+					return true;
+				}
+				else if( -(gesture_xe-gesture_xa) > displayWidth/2 )
+				{
+					// wipe from right to left
+					Intent intent = new Intent(Callbacksplit.getMainActivity(), ConfigActivity.class);
+					finish();
+					startActivity(intent);
+					return true;
+				}
+			}
+			break;
+		}
+    	super.dispatchTouchEvent(event);
+    	return true;
+    }
 }
 
 
