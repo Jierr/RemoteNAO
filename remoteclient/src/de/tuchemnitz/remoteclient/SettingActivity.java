@@ -4,11 +4,12 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
@@ -37,6 +38,11 @@ public class SettingActivity extends SherlockActivity {
 	private TextView text_value_pArmHR = null;
 	private TextView text_value_pArmLR = null;
 	
+	// variables used for touchgestures
+	private float gesture_xa,gesture_xe,gesture_ya,gesture_ye;
+	private int displayWidth  = 1;
+	private int displayHeight = 1;
+	
 	/**
 	 * Loads/sets up the Activity layout and registers the callback.
 	 */
@@ -64,6 +70,8 @@ public class SettingActivity extends SherlockActivity {
     	text_value_pArmLR = (TextView) findViewById(R.id.set_val_armLR);
     	init_seekbar_parameters();
     	
+    	displayWidth = getWindowManager().getDefaultDisplay().getWidth();
+    	displayHeight = getWindowManager().getDefaultDisplay().getHeight();
 	}
 	
 	@Override
@@ -73,15 +81,15 @@ public class SettingActivity extends SherlockActivity {
 	}
 	@Override
 	protected void onPause(){
-		super.onPause();
 		Callbacksplit.unsetActiveActivity();
+		super.onPause();
 	}
 	
 	@Override
     public void onDestroy(){
-		super.onDestroy();
-    	Callbacksplit.registerSettingActivity(null);
+		Callbacksplit.registerSettingActivity(null);
     	VideoModule.closeVideoDialog();
+		super.onDestroy();
     }
 	
 	/**
@@ -418,6 +426,47 @@ public class SettingActivity extends SherlockActivity {
     	{
     		ConnectIcon.setIcon(R.drawable.network_connected);
     	}
+    }
+ 
+    
+    /**
+     * Modify the touchlistener for the whole activity to accept a selfdefined wipegesture
+     * This wipe gesture is for changig to another activity with a wipe
+     */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event)
+    {
+    	switch(event.getAction())
+		{
+		case MotionEvent.ACTION_DOWN:
+			gesture_xa=event.getX();
+			gesture_ya=event.getY();
+			break;
+		case MotionEvent.ACTION_UP:
+			gesture_xe=event.getX();
+			gesture_ye=event.getY();
+			//Toast.makeText(SpecialsActivity.this, String.valueOf(gesture_xe-gesture_xa)+"/"+String.valueOf(gesture_ye-gesture_ya)+"/"+String.valueOf(displayWidth/2)+"/"+String.valueOf(displayHeight*0.1), Toast.LENGTH_SHORT).show();
+			if(Math.abs(gesture_ye-gesture_ya) < displayHeight*0.1)
+			{
+				if( gesture_xe-gesture_xa > displayWidth/2 )
+				{
+					// wipe from left to right
+					Intent intent = new Intent(Callbacksplit.getMainActivity(), ConfigActivity.class);
+					finish();
+					startActivity(intent);
+					return true;
+				}
+				else if( -(gesture_xe-gesture_xa) > displayWidth/2 )
+				{
+					// wipe from right to left
+					finish();
+					return true;
+				}
+			}
+			break;
+		}
+    	super.dispatchTouchEvent(event);
+    	return true;
     }
 
 }

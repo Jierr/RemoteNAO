@@ -20,6 +20,7 @@
         <activity
             android:name="de.tuchemnitz.remoteclient.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,24 +30,34 @@
         </activity>
         <activity
             android:name="de.tuchemnitz.remoteclient.BewegungActivity"
-            android:label="@string/title_activity_bewegung" >
+            android:label="@string/title_activity_bewegung"
+            android:finishOnTaskLaunch="true"
+            android:noHistory="true" >
         </activity>
         <activity
             android:name="de.tuchemnitz.remoteclient.SprachausgabeActivity"
-            android:label="@string/title_activity_sprachausgabe" >
+            android:label="@string/title_activity_sprachausgabe"
+            android:finishOnTaskLaunch="true"
+            android:noHistory="true" >
         </activity>
         <activity
             android:name="de.tuchemnitz.remoteclient.ConfigActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" 
-            android:label="@string/title_activity_config" >
+            android:label="@string/title_activity_config"
+            android:finishOnTaskLaunch="true"
+            android:noHistory="true" >
         </activity>
         <activity
             android:name="de.tuchemnitz.remoteclient.SpecialsActivity"
-            android:label="@string/title_activity_specials" >
+            android:label="@string/title_activity_specials"
+            android:finishOnTaskLaunch="true"
+            android:noHistory="true" >
         </activity>
         <activity
             android:name="de.tuchemnitz.remoteclient.SettingActivity"
-            android:label="@string/title_activity_setting" >
+            android:label="@string/title_activity_setting"
+            android:finishOnTaskLaunch="true"
+            android:noHistory="true" >
         </activity>
     </application>
 
