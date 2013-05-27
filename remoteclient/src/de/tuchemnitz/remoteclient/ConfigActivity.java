@@ -227,8 +227,8 @@ public class ConfigActivity extends SherlockActivity {
 		finish();
 	}	
 	
-	/************ Dynamisches Aenderugszeug *****************
-     ********************************************************/
+	/* *********** Dynamisches Aenderugszeug *****************
+     ******************************************************* */
     
 	/**
 	 * Refreshes the text of the connection state and button.

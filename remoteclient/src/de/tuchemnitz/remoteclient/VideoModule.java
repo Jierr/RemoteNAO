@@ -33,7 +33,7 @@ public class VideoModule {
 	private static Bitmap bitmap = null;
 	private final static BitmapFactory.Options opt = new BitmapFactory.Options();
 	
-	public static int Videotransparency_bewact = 100;
+	public static int Videotransparency_bewact = 100; ///< defines the alpha value of the picture
 	
 	/**
 	* @class RecvPicHandler

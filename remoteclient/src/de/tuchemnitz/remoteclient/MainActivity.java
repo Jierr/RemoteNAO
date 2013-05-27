@@ -48,14 +48,14 @@ public class MainActivity extends SherlockActivity {
 	
 	private boolean askfor_Makros_once = true;
 	
-	public float param_MOV_F = 5; ///< Parameter for Movement 
-	public float param_MOV_B = 2; ///< Parameter for Movement 
-	public int param_MOV_D = 90;///< Parameter for Movement D for Drehung/Turning
-	public int param_HAD_F = 20;
-	public int param_HAD_B = 20;
-	public int param_HAD_D = 45;
-	public int param_ARM_HR = 45;
-	public int param_ARM_LR = 20;
+	public float param_MOV_F = 5; ///< Parameter for Movement, defines the width the robot walks forward 
+	public float param_MOV_B = 2; ///< Parameter for Movement, defines the width the robot walks backward 
+	public int param_MOV_D = 90; ///< Parameter for Movement (D for Drehung/Turning), the angle around the robot turn itself
+	public int param_HAD_F = 20; ///< Parameter for the angle the robot inclines his head forward
+	public int param_HAD_B = 20; ///< Parameter for the angle the robot inclines his head backward
+	public int param_HAD_D = 45; ///< Parameter for the angle the robot turn his head left or right
+	public int param_ARM_HR = 45; ///< Parameter specified the angle of rotation for the arms (up/down)
+	public int param_ARM_LR = 20; ///< Parameter specified the angle of rotation for the arms (to the body and away)
 	
 	// variables used for touchgestures
 	private float gesture_xa,gesture_xe,gesture_ya,gesture_ye;
@@ -185,9 +185,9 @@ public class MainActivity extends SherlockActivity {
         
         if(paralist!=null && paralist.length == 8)
         {
-        	param_MOV_F = Float.valueOf(paralist[0]); ///< Parameter for Movement 
-        	param_MOV_B = Float.valueOf(paralist[1]); ///< Parameter for Movement 
-        	param_MOV_D = Integer.valueOf(paralist[2]);///< Parameter for Movement D for Drehung/Turning
+        	param_MOV_F = Float.valueOf(paralist[0]); 
+        	param_MOV_B = Float.valueOf(paralist[1]);
+        	param_MOV_D = Integer.valueOf(paralist[2]);
         	param_HAD_F = Integer.valueOf(paralist[3]);
         	param_HAD_B = Integer.valueOf(paralist[4]);
         	param_HAD_D = Integer.valueOf(paralist[5]);
@@ -351,8 +351,8 @@ public class MainActivity extends SherlockActivity {
     
     
     
-    /********************** Menu *************************
-     *****************************************************/
+    /* ********************* Menu *************************
+     **************************************************** */
     
     /**
 	 * Opens and starts the BewegungActivity 

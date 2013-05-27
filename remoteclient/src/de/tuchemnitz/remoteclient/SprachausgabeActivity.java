@@ -151,8 +151,8 @@ public class SprachausgabeActivity extends SherlockActivity {
 	}
 	
 	
-    /************ Dynamisches Aenderugszeug *****************
-     ********************************************************/
+    /* *********** Dynamisches Aenderugszeug *****************
+     ******************************************************* */
     
 	/**
 	 * Sets the Battery Icon in the ActionBar.
