@@ -252,8 +252,8 @@ public class SpecialsActivity extends SherlockActivity {
     	toast.show();
     }
     
-    /************ Dynamisches Aenderugszeug *****************
-     ********************************************************/
+    /* *********** Dynamisches Aenderugszeug *****************
+     ******************************************************* */
     
     /**
      * Changes the text on the button

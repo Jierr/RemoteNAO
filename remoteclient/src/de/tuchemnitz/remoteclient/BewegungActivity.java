@@ -245,8 +245,8 @@ public class BewegungActivity extends SherlockActivity {
 	});*/
 	
 	
-	/************** BEW_BUTTONS ******************
-     *********************************************/
+	/* ************* BEW_BUTTONS ******************
+     ******************************************** */
 	
 	/**
 	 * Functionality for the Arrow-Up-Button
@@ -436,8 +436,8 @@ public class BewegungActivity extends SherlockActivity {
     }
     
     
-    /************ Dynamisches Aenderugszeug *****************
-     ********************************************************/
+    /* *********** Dynamisches Aenderugszeug *****************
+     ******************************************************* */
     
     /**
      * Sets the Battery Icon in the ActionBar.
@@ -468,7 +468,7 @@ public class BewegungActivity extends SherlockActivity {
 
 	/**
      * Modify the touchlistener for the whole activity to accept a selfdefined wipegesture
-     * This wipe gesture is for changig to another activity with a wipe
+     * This wipe gesture is for changig to another activity with a wipe movement
      */
     @Override
     public boolean dispatchTouchEvent(MotionEvent event)

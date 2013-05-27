@@ -26,7 +26,7 @@ public class SettingActivity extends SherlockActivity {
 	
 	private MenuItem BatteryIcon = null;
 	private MenuItem ConnectIcon = null;
-	private SeekBar seekbar_videosichtbarkeit = null;
+	private SeekBar seekbar_videovisibility = null;
 	private ToggleButton video_toggle_OnOff = null;
 	
 	private TextView text_value_pMovF = null;
@@ -196,14 +196,14 @@ public class SettingActivity extends SherlockActivity {
 	 */
 	private void init_seekbar_videotransparency()
 	{
-		seekbar_videosichtbarkeit = (SeekBar) findViewById(R.id.set_videobewalpha_seekBar);
-    	seekbar_videosichtbarkeit.setProgress(VideoModule.Videotransparency_bewact);
+		seekbar_videovisibility = (SeekBar) findViewById(R.id.set_videobewalpha_seekBar);
+    	seekbar_videovisibility.setProgress(VideoModule.Videotransparency_bewact);
     	
-    	seekbar_videosichtbarkeit.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+    	seekbar_videovisibility.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
-				VideoModule.Videotransparency_bewact = seekbar_videosichtbarkeit.getProgress();
+				VideoModule.Videotransparency_bewact = seekbar_videovisibility.getProgress();
 				Log.v("ConfigAct", "Videotransparency_bewact="+String.valueOf(VideoModule.Videotransparency_bewact));
 			}
 			
@@ -222,18 +222,35 @@ public class SettingActivity extends SherlockActivity {
 		});
 	}
 	
-	
+	/**
+	 * 	Help function to transform the parameter of
+	 *  the movement to the right integer for te seekbar.
+	 *  
+	 * @param val The value to transform
+	 * @return the transformed value useable by the seekbar
+	 */
 	private int parameter_float_to_int_mov(float val)
 	{
 		if(val > 5.0) return (((int)val)+50);
 		else return ((int)(val*10));
 	}
+	/**
+	 * Help function to transform the integer deliver
+	 * by the seekbar to the parameter of the movement.
+	 *  
+	 * @param val The value to transform
+	 * @return the transformed float value 
+	 */
 	private float parameter_int_to_float_mov(int val)
 	{
 		if(val > 50) return (float)val-50;
 		else return (((float)val)/10.0f);
 	}
 	
+	/**
+	 * Initializes the seekbars. Set up the listeners
+	 * and adjust the right value to avery seekbar
+	 */
 	private void init_seekbar_parameters()
 	{
 		final SeekBar seekbar_pMovF = (SeekBar) findViewById(R.id.set_param_movF_seekBar);
@@ -398,8 +415,8 @@ public class SettingActivity extends SherlockActivity {
 		
 	}
 	
-	/************ Dynamisches Aenderugszeug *****************
-     ********************************************************/
+	/* *********** Dynamisches Aenderugszeug *****************
+     ******************************************************* */
     
     /**
      * Sets the Battery Icon in the ActionBar.
