@@ -124,7 +124,8 @@ public class MainActivity extends SherlockActivity {
 			    else
 			    	batt_pic = R.drawable.bat0;
 			    batt_icon_r = getResources().getDrawable(batt_pic);
-			    BatteryIcon.setIcon(batt_icon_r);
+			    if( BatteryIcon!=null)
+			    	BatteryIcon.setIcon(batt_icon_r);
 			    Callbacksplit.saveBatteryStateIcon(batt_icon_r);
 			    Callbacksplit.setActBarBatteryIcon(batt_icon_r);
 			    
