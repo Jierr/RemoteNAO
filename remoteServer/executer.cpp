@@ -627,7 +627,9 @@ void* Executer::execute(void* args)
 			aargs->mutex->unlock();
 			break;
 		case CODE_SPK:
+			cout<< "[Executer]<execute> About to speak" << endl;
 			self->speak(aargs->event->ep.sparam);
+			cout<< "[Executer]<execute> Speak ended" << endl;
 			aargs->mutex->lock();
 			self->unblockfor(C_SPK);
 			aargs->mutex->unlock();
@@ -666,7 +668,7 @@ void* Executer::execute(void* args)
 			{
 				fstate = behave->fstate;
 				lstate = behave->lstate;
-				if ((fstate >= 0) && (lstate >= 0))
+				if (((fstate >= 0) || (fstate == -2)) && (lstate >= 0))
 				{
 					++running;
 					aargs->mutex->unlock();			
@@ -682,7 +684,7 @@ void* Executer::execute(void* args)
 					aargs->mutex->unlock();
 					break;
 				}
-				else if ((fstate < 0) && (lstate < 0))
+				else if ((fstate == -1) && (lstate < 0))
 				{
 					
 					aargs->mutex->unlock();	
@@ -1033,7 +1035,7 @@ void Executer::behave_gen(const string& com)
 			if (!pbehav.isBehaviorRunning(curr) && pbehav.isBehaviorInstalled(curr))
 			{
 				cout<< "[Executer] Execute generic Behaviour >" << curr << endl;
-	 			pbehav.preloadBehavior(curr);
+//	 			pbehav.preloadBehavior(curr);
 				pbehav.runBehavior(curr);
 			}
 		}
@@ -1052,7 +1054,7 @@ void Executer::behave_stand()
 	try
 	{
 		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
-		pbehav.preloadBehavior("stand");
+//		pbehav.preloadBehavior("stand");
 		pbehav.runBehavior("stand");
 		//tts.say("Behaviour done");
 	}
@@ -1069,7 +1071,7 @@ void Executer::behave_sit()
 	{
 		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-		pbehav.preloadBehavior("sit");
+//		pbehav.preloadBehavior("sit");
 		pbehav.runBehavior("sit");
 		//tts.say("Behaviour done");
 	}
@@ -1086,7 +1088,7 @@ void Executer::behave_wipe()
 	{
 		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-		pbehav.preloadBehavior("wipe");
+//		pbehav.preloadBehavior("wipe");
 		pbehav.runBehavior("wipe");
 		//tts.say("Behaviour done");
 	}
@@ -1106,7 +1108,7 @@ void Executer::behave_hello()
 		AL::ALProxy tts(string("ALTextToSpeech"), AL::ALProxy::FORCED_LOCAL, 0);
 		tts.pCall<string>("say", "Hi there, my name is NAO");
 		//tts.say("Stop1");
-		pbehav.preloadBehavior("hello");
+//		pbehav.preloadBehavior("hello");
 		pbehav.runBehavior("hello");
 		//tts.say("Behaviour done");
 	}
@@ -1124,7 +1126,7 @@ void Executer::behave_dance()
 		AL::ALBehaviorManagerProxy pbehav(MB_IP, MB_PORT);
 		AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
 		AL::ALValue behav = pbehav.getDefaultBehaviors();
-		pbehav.preloadBehavior("dance");
+//		pbehav.preloadBehavior("dance");
 		pbehav.runBehavior("dance");
 		//tts.say("Behaviour done");
 	}

@@ -144,6 +144,8 @@ void Manager::initblist()
 			{
 				if(curr.compare(0, dfirst, "none") == 0)
 					fstate = -1;
+				else if(curr.compare(0, dfirst, "all") == 0)
+					fstate = -2;
 				else if(curr.compare(0, dfirst, "standing") == 0)
 					fstate = ABS_STANDING;
 				else if(curr.compare(0, dfirst, "sitting") == 0)
@@ -493,6 +495,19 @@ void Manager::initAbsTransition()
 				absTransition[curr->fstate][curr->lstate].sparam = curr->name;
 			}
 		}
+		else if ((curr->fstate == -2) && (curr->lstate>=0) && 
+			     (curr->fstate<NUM_ABS_STATES) && (curr->lstate<NUM_ABS_STATES))
+		{
+			for (int s = 0; s< NUM_ABS_STATES; ++s)
+			{
+			
+				if ((absTransition[s][curr->lstate].type == CODE_INVALID) && (s != curr->lstate))
+				{
+					absTransition[s][curr->lstate].type = CODE_EXE;
+					absTransition[s][curr->lstate].sparam = curr->name;
+				}
+			}
+		}
 	}
 }
 
@@ -616,7 +631,7 @@ int Manager::processConflicts(Event* event)
 			int fstate = blist->getfState(name);
 			int lstate = blist->getlState(name);
 			
-			if ((fstate >= 0) && (lstate >= 0))
+			if (((fstate >= 0) || (fstate == -2)) && (lstate >= 0))
 			{
 				if (isblocked(C_EXE))
 					return -1;
@@ -631,7 +646,7 @@ int Manager::processConflicts(Event* event)
 					return 0;
 				break;
 			}
-			else if ((fstate < 0) && (lstate < 0))
+			else if ((fstate == -1) && (lstate < 0))
 			{
 				blockfor(C_EXE_PAR);
 				return 1;
@@ -983,7 +998,7 @@ void Manager::runExecuter()
 				try 
 				{
 					AL::ALTextToSpeechProxy tts(MB_IP, MB_PORT);
-					tts.say("Oh something went wrong!");
+					tts.say("Careful");
 				}		
 				catch(const AL::ALError& e)
 				{
@@ -1021,7 +1036,7 @@ void Manager::runExecuter()
 				if (conf <= 0)
 				{
 					mutex->unlock();
-					//cout<< "[Manager]<runExecuter> Robot in Motion right now, event waits" << endl;
+					cout<< "[Manager]<runExecuter> Robot in Motion right now, event waits" << endl;
 				}
 				else
 				{
@@ -1033,6 +1048,7 @@ void Manager::runExecuter()
 					}
 					else
 					{
+						cout<< "[Manager]<runExecuter>: Set new Event busy" << endl;
 						eventList->setClassf(event->id, EVT_BUSY);							
 						mutex->unlock();
 						pthread_create(&targ[tnum]->id, 0, &Executer::execute, targ[tnum]);	
