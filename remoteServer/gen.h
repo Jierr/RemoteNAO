@@ -51,7 +51,7 @@
 /*========================================*/
 
 
-#define NUM_CODES 19
+#define NUM_CODES 21
 
 enum codes{
 	C_UNKNOWN = 0,

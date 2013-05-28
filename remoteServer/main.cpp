@@ -339,6 +339,7 @@ int procControl(const string& pip, const int& pport, int* pipefd)
 //			cout<< "[MAIN] Data received" << endl;
 			if ((recvd == SOCK_CLOSED) || (recvd == SOCK_LOST))
 			{
+//				cout<< "[Main] Error with Connection occured" << endl;
 				string com = "DIS";
 				for (int i = 0; i<com.length(); ++i)
 					dec.decode(com[i], &ep);

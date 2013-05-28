@@ -1030,9 +1030,12 @@ void Executer::behave_gen(const string& com)
 		if (bgen)
 		{
 			curr = bgen->full;
-			cout<< "[Executer] Execute generic Behaviour >" << curr << endl;
- 			pbehav.preloadBehavior(curr);
-			pbehav.runBehavior(curr);
+			if (!pbehav.isBehaviorRunning(curr) && pbehav.isBehaviorInstalled(curr))
+			{
+				cout<< "[Executer] Execute generic Behaviour >" << curr << endl;
+	 			pbehav.preloadBehavior(curr);
+				pbehav.runBehavior(curr);
+			}
 		}
 		
 		
