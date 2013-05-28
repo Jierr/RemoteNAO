@@ -445,7 +445,7 @@ public class BewegungActivity extends SherlockActivity {
      * @param pic	Drawable of the Battery Icon
      */
     public void setActBarBatteryIcon(Drawable pic){
-    	if(pic!=null)
+    	if(pic!=null && BatteryIcon!=null)
     		BatteryIcon.setIcon(pic);
     }
     

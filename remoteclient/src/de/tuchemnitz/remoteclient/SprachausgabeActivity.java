@@ -161,7 +161,7 @@ public class SprachausgabeActivity extends SherlockActivity {
      * 
 	 */
 	public void setActBarBatteryIcon(Drawable pic){
-    	if(pic!=null)
+    	if(pic!=null && BatteryIcon!=null)
     		BatteryIcon.setIcon(pic);
     }
 	
