@@ -114,6 +114,7 @@ class NetNao : public AL::ALModule
 		\param sockClient client socket returned by acceptClient()
 		*/
 		void disconnect(const int& sockClient);
+		void ckill(const int& sockClient);
 		/**
 		\brief Closes server socket.
 		

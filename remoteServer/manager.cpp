@@ -620,7 +620,7 @@ int Manager::processConflicts(Event* event)
 			{
 				if (isblocked(C_EXE))
 					return -1;
-				if (retrieveTrans(fstate, lstate, 0) >= 0)
+				if (retrieveTrans(stateAbs, lstate, 0) >= 0)
 				{
 					blockfor(C_EXE);
 					inTransition = 1;

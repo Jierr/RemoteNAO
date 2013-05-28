@@ -49,12 +49,15 @@ void* Decoder::timer(void* args)
 			{
 				cout<< "[Decoder]<timer> Neue Verbindung" << endl;
 				told = time(0);
+				tnew = told;
 				newConn = false;
 			}
-			if((tnew - told >= 20))
+			if((tnew - told > 20))
 			{
 				if (*bat_count < 1)
-					net->disconnect(net->getClient_tcp());
+				{
+					net->ckill(net->getClient_tcp());
+				}
 				else 
 				{
 					told = time(0);

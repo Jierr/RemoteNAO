@@ -150,6 +150,17 @@ void NetNao::disconnect(const int& sockClient)
 	mode = CONN_INACTIVE;
 }
 
+void NetNao::ckill(const int& sockClient)
+{
+	char buf[100];
+	int result = 0;
+	if(sockClient == sclient_tcp)
+		sclient_tcp = 0;
+	shutdown(sockClient, SHUT_RDWR);
+	result = close(sockClient);
+	mode = CONN_INACTIVE;
+}
+
 
 void NetNao::unbind(const int& sockServer)
 {	
@@ -188,6 +199,7 @@ int NetNao::recvData(const int& sockClient, const boost::shared_ptr<char*>& buf,
 	if (sockClient && (mode == CONN_ACTIVE))
 	{
 		result = recv(sockClient, &((*buf.get())[indexStart]), len, 0);
+		//cout<< "[NetNao] recv returned" << endl;
 		if (result <= 0)
 			mode = CONN_INACTIVE;
 	}
