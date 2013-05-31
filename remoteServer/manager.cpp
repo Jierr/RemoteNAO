@@ -80,7 +80,6 @@ void Manager::init()
 {	
 	threadcount = 0;
 	stateAbs = ABS_UNKNOWN;
-	stateDisrupt = false;
 	inTransition = 0;
 	blockGen = 0;
 	cbip = "127.0.0.1";
@@ -982,7 +981,7 @@ void Manager::runExecuter()
 			else 
 			{
 				accessExec.exec->cbcall = false;
-				ticks = 0;
+//				ticks = 0;
 			}
 		}
 		if(ticks >= 1)
@@ -992,7 +991,8 @@ void Manager::runExecuter()
 			if (ticks >= 2000/10)
 			{
 				ticks = 0;
-				stateAbs = ABS_UNKNOWN;
+				if (accessExec.exec->cbstate == STATE_UNKNOWN)
+					stateAbs = ABS_UNKNOWN;
 				accessExec.exec->cbinc = true;
 				accessExec.exec->sendState();		
 				try 

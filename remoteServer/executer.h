@@ -10,14 +10,17 @@
 
 using namespace std;
 
-
+/**
+\brief Structure, which holds arguments for one execution thread created by Manager::runExecuter(). \n
+	   The created thread exectues the given Event
+*/
 struct exec_arg
 {
-	pthread_t id;
-	int tnum;
-	Event* event;
-	boost::shared_ptr<EventList> eventList;
-	boost::shared_ptr<AL::ALMutex> mutex;	
+	pthread_t id; ///< ID of the thread.
+	int tnum; ///< thread number, identifies allocated space in an array for this structure.
+	Event* event; ///< Event to be executed.
+	boost::shared_ptr<EventList> eventList; ///< Access to the Eventlist, functions are atomic.
+	boost::shared_ptr<AL::ALMutex> mutex; ///< mutex to create mutual executions between more than one of those threads.
 };
 
 /**
@@ -32,31 +35,43 @@ class Executer:public AL::ALModule
 {
 	private:
 		boost::shared_ptr<AL::ALMutex> mutex; ///< mutex to grant consistent data --> espec. used in Executer::process()
-		boost::shared_ptr<AL::ALMutex> sync; 
+		boost::shared_ptr<AL::ALMutex> sync; ///< deprecated
 		boost::shared_ptr<EventList> eventList; ///< contains events to be executed
-		boost::shared_ptr<Behavelist> blist;
-		state_t state;	///< logical state of the robot, set through executed functions in process()
+		boost::shared_ptr<Behavelist> blist; ///< List holding all beheaviours 
 		string mpose;	///< physical state of the robot as string, also retrieved through the callback --> cbPoseChanged()
 		AL::ALMemoryProxy mem; ///< Proxy to the atomic memory management of the framework.
 		
-		int* stateAbs;
-		int* inTransition;
-		int* blockGen;
-		bool* block;
-		bool* parblock;
+		int* stateAbs; ///< Pointer to logical state of the robot of class Manager
+		int* inTransition; ///< Pointer to transition identifier of class Manager
+		int* blockGen; ///< deprecated
+		bool* block; ///< pointer to array of blocked absolute (atomic) Events of class Manager
+		bool* parblock; ///< pointer to array of blocked parallel Events of class Manager
 		
 		
+		/**
+		\brief unblocks parallel and absolute Events
+		
+		\param code code of the currently finished Event \n
+		            must be one of the enum codes \see gen.h
+		            
+		\return deprecated, useless
+		*/
 		int unblockfor(const int& code);
 	public:
-		string cbip;
-		unsigned short cbport;
+		string cbip; ///< ip of the Control Broker
+		unsigned short cbport; ///< port of the Control Broker
 		
-		bool cbcall;
-		bool cbinc;
+		bool cbcall; ///< identifies the execution of a Executer::cbPoseChanged() callback
+		bool cbinc; ///< identifies the first detection of STATE_UNKNOWN, and therefor an unsuspected behavior
 		state_t cbstate;	///< physical state of the robot, set through sensors, hence a callback --> cbPoseChanged()
-		static Executer* self;
+		static Executer* self; ///< needed in static method Executer::execute(), which is created as Thread
+		
+		/**
+		\brief set up pointers to #stateAbs #inTransition #blockGen #block #parblock 
+		
+		This is done in Manager::runExecuter()
+		*/
 		void setStateMan(int* abs, int* itrans, int* gblock, bool* b, bool* pb);
-		//always get a shared_ptr from this via lock()	
 		
 		/**
 		\brief Constructor
@@ -82,7 +97,13 @@ class Executer:public AL::ALModule
 		\param eL
 		*/
 		void initEventList(boost::shared_ptr<EventList> eL);
+		
+		/**
+		\brief intializes #blist with bL
+		\param bL
+		*/
 		void initBehavelist(boost::shared_ptr<Behavelist> bL);
+		
 		/**
 		\brief Resolves event - conflicts and executes one fitting event. \n
 			   Sets the #state of the roboter after the event has been executed.
@@ -99,22 +120,7 @@ class Executer:public AL::ALModule
 		\param event Current event to be executed.
 		*/
 		int processConflicts(const Event& event);
-		/**
-		\brief updates logical #state with \a s, also considers the physical state of the robo.
-		
-		\param s New state, defined as #naoStates 
-		*/
-		void setState(state_t s);
-		
-		/**
-		\brief Retrieves the current logical or physical \a state.
-		
-		\param type Can be STATE_ABSOLUT, STATE_ALL, STATE_PARALLEL
-		\return Returns the current \a state.
-		
-		\see naoStates
-		*/
-		state_t getState(int type = 0xFFFF);
+
 		void executerRespond();	
 		
 		void initWalk(); ///< inits position to be "ready to walk".
@@ -126,7 +132,7 @@ class Executer:public AL::ALModule
 		void behave_hello(); ///< lets the roboter wave and say hello
 		void behave_dance(); ///< lets the roboter dance
 		void behave_wipe(); ///< roboter wipes out the world, after that he wipes his forehead
-		void behave_gen(const string& com);
+		void behave_gen(const string& com); ///< executes a generic behavior with simplified name com
 		
 		/**
 		\brief The roboter will walk.
@@ -159,7 +165,20 @@ class Executer:public AL::ALModule
 		*/
 		void moveArm(const Event& event);
 		
+		/**
+		\brief sets exec_arg::event = 0, therefor marking the thread as done and ready for freeing allocated space
+		
+		This function is used in execute()
+		
+		\param aargs equal to the args parameter of method execute 
+		*/
 		static void mark_thread_done(struct exec_arg* aargs);
+		
+		/**
+		\brief This function is used for creating an Execution Thread in Manager::runExecuter 
+		
+		\param args argument as pointer of struct exec_arg
+		*/
 		static void* execute(void* args);
 		
 		/**

@@ -41,7 +41,9 @@ using namespace std;
 #endif
 
 
-
+/**
+\brief Thread argument structure for the actual camera sending thread
+*/
 struct thread_arg
 {
 	pthread_t id;

@@ -221,38 +221,6 @@ int Executer::unblockfor(const int& code)
 }
 
 
-void Executer::setState(state_t s)
-{
-	mutex->lock();
-	if (cbstate == STATE_KNOWN)
-	{
-		//if the motion hasn't been frozen by stop
-		if (((state & STATE_ABSOLUT) == STATE_STOPPED) &&
-			((s & STATE_ABSOLUT) != STATE_STANDING)	  &&
-			((s & STATE_ABSOLUT) != STATE_SITTING))
-			state = s;
-		else if ((state & STATE_ABSOLUT) != STATE_STOPPED)
-			state = s;
-	}
-	else
-		state = STATE_UNKNOWN;
-	mutex->unlock();
-	sendState();
-}
-
-
-state_t Executer::getState(int type)
-{
-	int result;
-	mutex->lock();
-	if (cbstate == STATE_KNOWN)
-		result = state & type;
-	else
-		result = STATE_UNKNOWN;
-	mutex->unlock();
-	return result;
-}
-
 
 //int Executer::processConflicts(const Event& event)
 //{
@@ -519,7 +487,9 @@ void* Executer::execute(void* args)
 			break;
 		case INIT_UP:
 			++running;
+			cout<< "[Executer] Anfang aufstehen" << endl;
 			self->behave_stand();
+			cout<< "[Executer] Ende Aufstehen" << endl;
 			aargs->mutex->lock();
 			if (!stopped)
 			{
@@ -628,6 +598,7 @@ void* Executer::execute(void* args)
 			break;
 		case CODE_SPK:
 			cout<< "[Executer]<execute> About to speak" << endl;
+			qi::os::sleep(3);
 			self->speak(aargs->event->ep.sparam);
 			cout<< "[Executer]<execute> Speak ended" << endl;
 			aargs->mutex->lock();
@@ -1640,9 +1611,9 @@ void Executer::sendState()
 
 void Executer::cbPoseChanged(const string& eventName, const string& postureName, const string& subscriberIdentifier)
 {
-	mpose = (string&)mem.getData("robotPoseChanged");
 	//cout<< ">>>POSTURE CHANGED<<<>" << "[" << postureName << "]:" << mpose << endl;
 	mutex->lock();
+	mpose = (string&)mem.getData("robotPoseChanged");
 	cbcall = true;
 	try
 	{

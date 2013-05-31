@@ -16,7 +16,7 @@ using namespace std;
 typedef struct{
 	int type; ///< Comand Specifier TOKEN --> gen.h
 	int iparams[IPARAM_LEN]; ///< holds integer parameters
-	float fparam;
+	float fparam; ///< holds float parameter 
 	string sparam; ///< holds string parameter
 } event_params_t;
 
@@ -82,7 +82,7 @@ class EventList
 		int order; ///< specifies the priority to execute the events, hence retreiving them via hasPending()
 		Event* first; ///< Pointer to the first Event in the list
 		Event* last; ///< Pointer to the last Event in the list 
-		Event* inspect;
+		Event* inspect; ///< Pointer to the next Event to be searched, when nothing essential hast been changed
 		
 	public:
 		/// Constructor: Creates empty event list.
@@ -171,6 +171,12 @@ class EventList
 		*/ 
 		Event withID(const void* const iid);
 		
+		/**
+		\brief Identify a sequence of walking events and remove all walking events excluding the first and last
+		
+		\return true, when at least 2 walking events are existing \n
+				false, otherwise
+		*/
 		bool reduceLastWalking();
 			
 };
