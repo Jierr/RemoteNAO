@@ -3,6 +3,9 @@ function clean()
 	version=
 	atom=
 	qib=
+	echo "[INFO] Falls Sie die SDK noch nicht installiert haben richten Sie sich bitte nach dieser Anleitung https://developer.aldebaran-robotics.com/doc/1-14/dev/cpp/install_guide.html"
+	echo "[INFO] Weitere wichtige Informationen zum Cross compilen finden Sie hier https://developer.aldebaran-robotics.com/doc/1-14/dev/cpp/tutos/using_qibuild.html"
+	echo "[INFO] Unteranderem ist bei der letzten Seite unter Abschnitt (Creating code running on the robot) ein Hinweis auf 64 Bit Systeme zu finden"
 	exit
 }
 
@@ -60,7 +63,8 @@ if [ -n $qib ]
 then
 	echo -e ['\e[32mOK\e[0m']$qib
 else
-	echo -e ['\e[31mFAIL\e[0m']qibuild konnte nicht gefunden werden, bitte installieren Sie es nach.
+	echo -e ['\e[31mFAIL\e[0m']qibuild konnte nicht gefunden werden, bitte installieren Sie es nach. 
+	echo -e ['\e[31mFAIL\e[0m']> git clone https://github.com/aldebaran/qibuild
 	clean
 fi
 
