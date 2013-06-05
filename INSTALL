@@ -1,0 +1,31 @@
+To build the server which will run on the NAO-roboter run 
+> ./install.sh
+
+This script does the following.
+
+-Looks for the atom toolchain
+-Looks for a correctly installed qibuild, which means the executable needs to be accessible via $PATH
+-Creates a Makefile in the sourcedirectory ./remoteServer
+-Initializes qi Working Tree
+-Builds the server, which includes
+	-a library "librm_manager.so" 
+	-a executable "remoteServer"
+
+
+To load these files onto the NAO switch to directory "remoteServer" and execute
+> make scp
+type in the password everytime you are asked
+
+On the robot:
+The uploaded files are:
+-Executable: 	"rServer" in /home/nao
+-Library: 	"RMlib/naoqi/librm_manager.so" in /home/nao
+
+To make them autostart change the autoload.ini
+-create an entry with the path to the executable under section [program]
+-create an entry with the path to the lib under section [Dont know need to check next time]
+
+To finaly use them make sure NAO is in a safe position and issue the command 
+> nao restart
+via ssh to the nao
+
