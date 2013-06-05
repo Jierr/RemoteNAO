@@ -1,0 +1,82 @@
+  
+     #========#
+     |Hinweise|
+     #========#
+ 
+  RemotreClient V1.2
+  ##################
+  
+  Technische Universität Chemnitz
+  
+Dies ist das Clientprogramm für den RemoteNAO.
+Diese Android-App dient als Grafische Oberfläche, um von einem Android Phone Kommandos zu dem NaoRemoteServer des Projekts zu senden und so den NAO-Roboter zu steuern.
+
+Die Software wurde an der TU-Chemnitz entwickelt und dient zu Demonstrationszwecken an der TU-Chemnitz.
+Sie ist frei verfügbar und ausschließlich für nicht kommerzielle Zwecke gedacht.
+
+
+Installation auf Auf Android:
+----------------------------
+- unterstützte Android Versionen 2.1 bis 4.2
+
+Zum installieren der App auf einem Smartphone mit Android fogende Schritte abarbeiten:
+1. Die APK-Datei von 
+   https://github.com/Jierr/RemoteNAO/blob/master/Binary%20-%20Client%20-%20Android%20App/remoteclient.apk herunterladen
+2. Diese auf dem Smartphone einfach anklicken. 
+   Anschließend kommt die Nachfrage ob die  Software 
+   installiert werden soll. Dies mit "installieren" beantworten.
+   Bei dem Hinweis diese Software benötigt Internetzugriff mit Ja antworten.
+3. Anschließend sollte die Software im Menu zu finden sein
+
+
+
+Einrichten des Frameworks:
+--------------------------
+Falls jemand etwas am Projekt ändern möchte oder 
+sich die App einfach selber compilieren möchte
+fogendendermaßen vorgehen:
+1. Eclipse mit ADT besorgen. Am einfachsten ist es, dass ADT-Bundle 
+   von http://developer.android.com/sdk/index.html herunter zu laden.
+2. Quellcode besorgen
+   Entweder per Browser von der Seite https://github.com/Jierr/RemoteNAO.git
+   ODER mittels "$ git clone git://github.com/Jierr/RemoteNAO.git"
+3. Eclipse starten
+4. neues Projekt anlegen
+   File > New > Android Application Project
+   Bei den Eingabefeldern folgendes eingeben:
+   Application Name: remoteclient
+   Project Name:     remoteclient
+   Package Name:     de.tuchemnitz.remoteclient
+   Minimum Required SDK: API 7: Android 2.1
+   Target SDK:           API 17: Android 4.2
+   Compile With:         API 17: Android 4.2
+   Theme:                Holo Light
+   
+   Danach immer >next< klicken und zumschluss auf >finish<
+5. Eclipse schließen
+6. actionbarsherlock4.2.zip in den workspace von eclipse entpacken
+7. unter "workspace/remoteclient/" die ordner "res/" und "src/" löschen
+8. anschließend alles aus dem gitreposetorie unter git>>.../remoteclient/*
+   in den Workspace von Eclipse unter "workspace/remoteclient/" hinein kopieren
+9. Eclipse wieder starten
+10. File > Import... > Existing Projects into Workspace
+    actionbarsherlock4.2  in Eclipse importieren
+11. Danach die Quelltextdateien von remoteclient neu 
+    einlesen mittels Rechtsklick > Refresh
+12. sollten bei actionbarsherlock4.2 Fehler auftreten dann 
+    Rechtsklick > Tools > Fix Project Properties
+13. Einbinden der ActionBar Sherlock in das remoteclient-Projekt
+    Rechtsklick auf remoteclient > Properties > Android
+    Bei Library Add und anschließend actionbarsherlock4.2 angeben
+14. Fertig danach sollten keine Fehler mehr auftreten 
+    und das ganze sollte sich compilieren lassen
+    
+15. Viel Spass beim spielen
+
+>>Anmerkung<<    
+Falls das Video auf dem Emulation mit getestet werden soll muss der udp-port auf den Emulator durchgelinkt werden
+Einfach eine Console Öffnen und folgendes eingeben
+
+telnet localhost 5554
+redir add udp:32769:32769 
+quit
