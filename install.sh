@@ -4,7 +4,7 @@ function clean()
 	atom=
 	qib=
 	echo "[INFO] Falls Sie die SDK noch nicht installiert haben richten Sie sich bitte nach dieser Anleitung https://developer.aldebaran-robotics.com/doc/1-14/dev/cpp/install_guide.html"
-	echo "[INFO] Weitere wichtige Informationen zum Cross compilen finden Sie hier https://developer.aldebaran-robotics.com/doc/1-14/dev/cpp/tutos/using_qibuild.html"
+	echo "[INFO] Weitere wichtige Informationen zum Crosscompilen finden Sie hier https://developer.aldebaran-robotics.com/doc/1-14/dev/cpp/tutos/using_qibuild.html"
 	echo "[INFO] Unteranderem ist bei der letzten Seite unter Abschnitt (Creating code running on the robot) ein Hinweis auf 64 Bit Systeme zu finden"
 	exit
 }
@@ -13,7 +13,7 @@ function mm()
 {
 echo ATOM=$1 > remoteServer/Makefile
 cat >> remoteServer/Makefile << "EOF"
-PROJECT = .
+PROJECT =
 HOST	=134.109.151.142#10.42.0.55#169.254.130.18
 PORT	=32768
 
