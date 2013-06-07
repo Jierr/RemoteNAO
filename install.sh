@@ -74,6 +74,7 @@ mm $atom
 sleep 1
 echo "[INFO]>qibuild init -f"
 qibuild init -f
+#qibuild convert --go remoteServer
 echo "[INFO]>cd remoteServer"
 cd remoteServer
 echo "[INFO]>make aatom"
